@@ -33,11 +33,6 @@ class UpdateBarangRequest extends FormRequest
                 'nullable',
                 'exists:kategori_barangs,id',
             ],
-            'berat' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
         ];
     }
 

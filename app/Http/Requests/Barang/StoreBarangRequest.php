@@ -28,14 +28,9 @@ class StoreBarangRequest extends FormRequest
                 'string',
                 'max:255',
             ],
-            'id_kategori' => [
+            'id_kategori_barang' => [
                 'required',
                 'exists:kategori_barangs,id',
-            ],
-            'berat' => [
-                'required',
-                'integer',
-                'min:1',
             ],
         ];
     }
@@ -53,9 +48,6 @@ class StoreBarangRequest extends FormRequest
             'nama_barang.max' => 'Nama barang maksimal 255 karakter.',
             
             'id_kategori.exists' => 'Kategori barang yang dipilih tidak ditemukan.',
-
-            'berat.required' => 'Berat barang harus diisi.',
-            'berat.min' => 'Berat barang minimal 1',
         ];
     }
 }

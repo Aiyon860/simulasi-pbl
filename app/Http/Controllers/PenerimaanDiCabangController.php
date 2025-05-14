@@ -18,15 +18,21 @@ class PenerimaanDiCabangController extends Controller
      */
     public function index()
     {
-        $penerimaanDiCabang = PenerimaanDiCabang::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->get();
+        try {
+            $penerimaanDiCabang = PenerimaanDiCabang::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->get();
 
-        // return view('penerimaan-di-cabang.index', compact('penerimaanDiCabang'));
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Data Penerimaan Di Cabang',
-            'data' => $penerimaanDiCabang,
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Penerimaan Di Cabang',
+                'data' => $penerimaanDiCabang,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data Penerimaan Di Cabang.',
+                'error' => $e->getMessage(), // Hanya tampilkan detail error saat development
+            ], 500);
+        }
     }
 
     /**
@@ -34,21 +40,29 @@ class PenerimaanDiCabangController extends Controller
      */
     public function create()
     {
-        $barangs = Barang::all()->where('flag', 1);
-        $jenisPenerimaan = JenisPenerimaan::all();
-        $asalBarang = GudangDanToko::all()->where('flag', 1);
-        $satuanBerat = SatuanBerat::all();
+        try {
+            $barangs = Barang::all()->where('flag', 1);
+            $jenisPenerimaan = JenisPenerimaan::all();
+            $asalBarang = GudangDanToko::all()->where('flag', 1);
+            $satuanBerat = SatuanBerat::all();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
-            'data' => [
-                'barangs' => $barangs,
-                'jenisPenerimaan' => $jenisPenerimaan,
-                'asalBarang' => $asalBarang,
-                'satuanBerat' => $satuanBerat,
-            ]    
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
+                'data' => [
+                    'barangs' => $barangs,
+                    'jenisPenerimaan' => $jenisPenerimaan,
+                    'asalBarang' => $asalBarang,
+                    'satuanBerat' => $satuanBerat,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data Penerimaan Di Cabang.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -66,6 +80,7 @@ class PenerimaanDiCabangController extends Controller
             'tanggal' => 'required|date',
         ]);
 
+
         try {
             return DB::transaction(function () use ($validated) {
                 PenerimaanDiCabang::create($validated);
@@ -79,7 +94,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Gagal menambahkan Data Penerimaan Di Cabang. Silakan coba lagi.',
-            ]);
+            ], 500);
         }
     }
 
@@ -100,7 +115,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Penerimaan Di Cabang dengan ID: {$id} tidak ditemukan.",
-            ]);
+            ], 500);
         }
     }
 
@@ -147,7 +162,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Gagal menghapus Data Penerimaan Di Cabang dengan ID: {$id} {$th->getMessage()}",
-            ]);
+            ], 500);
         }
     }
 }

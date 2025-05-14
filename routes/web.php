@@ -16,7 +16,6 @@ use App\Http\Controllers\DetailPenerimaanBarangController;
 use App\Http\Controllers\StatusPengirimanBarangController;
 use App\Models\CabangKePusat;
 use App\Http\Controllers\CabangKePusatController;
-
 use App\Http\Controllers\SupplierKePusatController;
 use App\Http\Controllers\PenerimaanDiPusatController;
 use App\Http\Controllers\DetailGudangController;

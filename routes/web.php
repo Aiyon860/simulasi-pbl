@@ -30,6 +30,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    Route::get('/dashboard', function () {
+        return view('dashboard.index');
+    })->name('dashboard');
+    
 
     // Routes untuk User & Role Management - hanya SuperAdmin
     Route::middleware(['role:SuperAdmin, Supervisor'])->group(function () {
@@ -64,6 +69,11 @@ Route::middleware(['auth'])->group(function () {
                 ->name('barangs.deactivate');
         });
     });
+
+
+    // Routes untuk KategoriBarang - SuperAdmin, Supervisor, Admin, Supplier, Buyer
+    Route::resource('kategori-barang', KategoriBarangController::class);
+
 
 //     // Routes untuk Gudang - SuperAdmin, Supervisor, Admin
 //     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {

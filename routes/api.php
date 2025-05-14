@@ -40,6 +40,8 @@ Route::patch('suppliers/{id}/activate', [TokoController::class, 'activate'])->na
 Route::patch('suppliers/{id}/deactivate', [TokoController::class, 'activate'])->name('supplier.deactivate');
 
 Route::resource('gudangs', GudangController::class);
+Route::patch('gudangs/{id}/activate', [GudangController::class, 'activate'])->name('gudangs.activate');
+Route::patch('gudangs/{id}/deactivate', [GudangController::class, 'deactivate'])->name('gudangs.deactivate');
 
 Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);
 
@@ -48,6 +50,7 @@ Route::resource('cabang-ke-pusats', CabangKePusatController::class);
 Route::resource('cabang-ke-tokos', CabangKeTokoController::class);
 
 Route::resource('supplier-ke-pusats', SupplierKePusatController::class);
+
 
 Route::resource('penerimaan-di-pusats', PenerimaanDiPusatController::class);
 

@@ -23,62 +23,7 @@
 
         @if ($gudangs->count() > 0)
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="py-3 px-4 text-left font-semibold text-gray-600">ID</th>
-                            <th class="py-3 px-4 text-left font-semibold text-gray-600">Nama Gudang</th>
-                            <th class="py-3 px-4 text-left font-semibold text-gray-600">Alamat</th>
-                            <th class="py-3 px-4 text-left font-semibold text-gray-600">Status</th>
-                            <th class="py-3 px-4 text-center font-semibold text-gray-600">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($gudangs as $gudang)
-                            <tr class="border-t hover:bg-gray-50">
-                                <td class="py-3 px-4">{{ $gudang->id }}</td>
-                                <td class="py-3 px-4">{{ $gudang->nama_gudang }}</td>
-                                <td class="py-3 px-4">{{ $gudang->alamat }}</td>
-                                <td class="py-3 px-4">                                            
-                                    @if ($gudang->flag == 1)
-                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Aktif</span>
-                                    @else
-                                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Nonaktif</span>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-4 text-center">
-                                    <div class="flex justify-center space-x-2">
-                                        <a href="{{ route('gudangs.show', $gudang->id) }}" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded transition duration-300">
-                                            Detail
-                                        </a>
-                                        @if(auth()->check() && auth()->user()->hasRole('SuperAdmin'))
-                                            <a href="{{ route('gudangs.edit', $gudang->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-1 px-3 rounded transition duration-300">
-                                                Edit
-                                            </a>
-                                            @if ($gudang->flag == 1)
-                                                <form action="{{ route('gudangs.deactivate', $gudang->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan gudang ini?');">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded transition duration-300 w-30">
-                                                        Nonaktifkan
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <form action="{{ route('gudangs.activate', $gudang->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mengaktifkan gudang ini?');">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition duration-300 w-30">
-                                                        Aktifkan
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <livewire:gudangs-table />
             </div>
             <div class="mt-4">
                 {{ $gudangs->links() }}

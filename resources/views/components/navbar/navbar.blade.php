@@ -1,5 +1,5 @@
 <nav class="bg-white absolute w-full z-50 mb-4 py-4" x-data="{ open: false }">
-  <div class="mx-auto max-w-7xl pr-8">
+  <div class="mx-auto pr-8">
     <div class="relative flex h-16 items-center justify-between">
       <!-- Menu -->
       <div class="flex flex-1 items-center justify-start">

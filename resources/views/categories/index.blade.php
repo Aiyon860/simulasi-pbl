@@ -3,7 +3,6 @@
 <x-default-layout>
     <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-6 gap-12">
-            <h1 class="text-2xl font-bold text-gray-800">Daftar Kategori Barang</h1>
             @if(auth()->check() && auth()->user()->hasRole('SuperAdmin'))
                 <a href="{{ route('categories.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">
                     Tambah Kategori

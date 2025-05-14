@@ -7,9 +7,6 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <!-- Tombol Tambah Pengguna -->
                     <div class="mb-4">
-                        <h2 class="text-xl font-semibold leading-tight text-gray-800 mb-8">
-                            Manajemen Pengguna
-                        </h2>
                         @if(auth()->user()->hasRole('SuperAdmin'))
                             <a href="{{ route('users.create') }}" class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 inline-block">
                                 Tambah Pengguna Baru

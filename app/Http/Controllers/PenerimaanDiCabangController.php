@@ -71,6 +71,7 @@ class PenerimaanDiCabangController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'id_cabang' => 'required|exists:gudang_dan_tokos,id',
             'id_barang' => 'required|exists:barangs,id',
             'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
             'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
@@ -79,7 +80,6 @@ class PenerimaanDiCabangController extends Controller
             'jumlah_barang' => 'required|integer|min:1',
             'tanggal' => 'required|date',
         ]);
-
 
         try {
             return DB::transaction(function () use ($validated) {
@@ -93,7 +93,8 @@ class PenerimaanDiCabangController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal menambahkan Data Penerimaan Di Cabang. Silakan coba lagi.',
+                // 'message' => 'Gagal menambahkan Data Penerimaan Di Cabang. Silakan coba lagi.',
+                'message' => $th->getMessage(),
             ], 500);
         }
     }

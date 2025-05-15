@@ -13,23 +13,29 @@ class RoleMiddleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  $role 
+     * @param  string  ...$roles
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $hasRole = false;
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'false',
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
         foreach ($roles as $role) {
-            if ($request->user()->hasRole(trim($role))) {
-                $hasRole = true;
-                break;
+            if ($user->hasRole(trim($role))) {
+                return $next($request);
             }
         }
 
-        if (!$hasRole) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
-
-        return $next($request);
+        return response()->json([
+            'status' => 'false',
+            'message' => 'Forbidden: Anda tidak memiliki akses ke halaman ini.',
+        ], 403);
     }
 }

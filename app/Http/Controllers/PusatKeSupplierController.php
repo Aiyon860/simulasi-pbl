@@ -37,7 +37,7 @@ class PusatKeSupplierController extends Controller
     public function create()
     {
         $barangs = Barang::all();
-        $supplier = GudangDanToko::whereIn('id', [6, 7, 8, 9])->get();
+        $supplier = GudangDanToko::whereIn('kategori_bangunan', 1)->get();
         $status = Status::where('id',1)->get();
         $kurir = Kurir::all();
         $pusat = GudangDanToko::where('id',1)->get();
@@ -55,8 +55,6 @@ class PusatKeSupplierController extends Controller
                 'kurir' => $kurir,
             ]
         ]);
-        
-
     }
 
     /**

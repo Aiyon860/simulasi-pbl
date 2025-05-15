@@ -85,12 +85,11 @@ class CabangKePusatController extends Controller
             'berat_satuan_barang' => 'required|numeric|min:1',
             'jumlah_barang' => 'required|integer|min:1',
             'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
         ]);
 
         try {
             return DB::transaction(function () use ($validated, $request) {
-                $barang = DetailGudang::where('id_cabang', $request->id_cabang)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+                $barang = DetailGudang::where('id_gudang', $request->id_cabang)->where('id_barang', $request->id_barang)->first('jumlah_stok');
 
                 if ($barang->jumlah_stok < $request->jumlah_barang) {
                     return response()->json([

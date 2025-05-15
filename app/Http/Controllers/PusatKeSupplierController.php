@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PusatKeSupplier;
-use Illuminate\Support\Facades\DB;
+use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
+use App\Models\DetailGudang;
+use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
-use App\Models\Status;
-use App\Models\Kurir;
+use App\Models\PusatKeSupplier;
+use Illuminate\Support\Facades\DB;
+
 class PusatKeSupplierController extends Controller
 {
     /**
@@ -76,7 +78,16 @@ class PusatKeSupplierController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
+            return DB::transaction(function () use ($validated, $request) {
+                $barang = DetailGudang::where('id_cabang', $request->id_pusat)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+
+                if ($barang->jumlah_stok < $request->jumlah_barang) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Jumlah stok tidak mencukupi untuk diretur.',
+                    ]);
+                }
+
                 PusatKeSupplier::create($validated);
 
                 return response()->json([

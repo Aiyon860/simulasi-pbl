@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CabangKeToko;
 use App\Models\DetailGudang;
+use App\Models\TokoKeCabang;
 use Illuminate\Http\Request;
 use App\Models\CabangKePusat;
 use App\Models\GudangDanToko;
@@ -31,30 +32,34 @@ public function index(Request $request)
 
                 $barangMasukPengirimanCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->sum('jumlah_barang');
+                })->count();
                 $barangMasukPengirimanCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->sum('jumlah_barang');
+                })->count();
 
                 $barangMasukReturCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'retur');
-                })->sum('jumlah_barang');
+                })->count();
                 $barangMasukReturCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'retur');
-                })->sum('jumlah_barang');
+                })->count();
 
-                $barangKeluarCount = PusatKeCabang::sum('jumlah_barang');
-                $barangReturCount = PusatKeSupplier::sum('jumlah_barang');
+                $barangKeluarCount = PusatKeCabang::count();
+                $barangKeluarCount += CabangKeToko::count();
+
+                $barangReturCount = TokoKeCabang::count();
+                $barangReturCount += CabangKePusat::count();
+                $barangReturCount += PusatKeSupplier::count();
 
                 $result = [
                     'jumlah_kategori' => $categoriesCount,
-                    'jumlah_semua_barang_gudang' => (int) $detailGudangBarangCount,
+                    'jumlah_stok_seluruh_gudang' => (int) $detailGudangBarangCount,
                     'jumlah_gudang' => $gudangCount,
                     'jumlah_toko' => $tokoCount,
-                    'jumlah_total_barang_masuk_pengiriman' => $barangMasukPengirimanCount,
-                    'jumlah_total_barang_masuk_retur' => $barangMasukReturCount,
-                    'jumlah_total_barang_keluar' => (int) $barangKeluarCount,
-                    'jumlah_total_barang_retur' => (int) $barangReturCount,
+                    'jumlah_laporan_masuk_pengiriman' => $barangMasukPengirimanCount,
+                    'jumlah_laporan_masuk_retur' => $barangMasukReturCount,
+                    'jumlah_laporan_keluar' => (int) $barangKeluarCount,
+                    'jumlah_laporan_retur' => (int) $barangReturCount,
                 ];
             } else {    // admin cabang
                 $user = $request->user();
@@ -69,19 +74,20 @@ public function index(Request $request)
                 $stokSemuaBarang = DetailGudang::where('id_gudang', $idGudangAdmin)->sum('jumlah_stok');
                 $barangMasukPengirimanCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->sum('jumlah_barang');
+                })->count();
                 $barangMasukReturCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
                     $query->where('nama_jenis_penerimaan', 'retur');
-                })->sum('jumlah_barang');
-                $barangKeluarCount = CabangKeToko::where('id_cabang', $idGudangAdmin)->sum('jumlah_barang');
-                $barangReturCount = CabangKePusat::where('id_cabang', $idGudangAdmin)->sum('jumlah_barang');
+                })->count();
+                $barangKeluarCount = CabangKeToko::where('id_cabang', $idGudangAdmin)->count();
+                $barangReturCount = CabangKePusat::where('id_cabang', $idGudangAdmin)->count();
 
                 $result = [
+                    'id_lokasi' => $user->lokasi->id,
                     'jumlah_barang' => $stokSemuaBarang,
-                    'jumlah_barang_masuk_pengiriman' => $barangMasukPengirimanCount,
-                    'jumlah_barang_masuk_retur' => $barangMasukReturCount,
-                    'jumlah_barang_keluar' => $barangKeluarCount,
-                    'jumlah_barang_retur' => $barangReturCount,
+                    'jumlah_laporan_masuk_pengiriman' => $barangMasukPengirimanCount,
+                    'jumlah_laporan_masuk_retur' => $barangMasukReturCount,
+                    'jumlah_laporan_keluar' => $barangKeluarCount,
+                    'jumlah_laporan_retur' => $barangReturCount,
                 ];
             }
 
@@ -90,7 +96,6 @@ public function index(Request $request)
                 'message' => "Data Dashboard untuk {$request->user()->nama_user}.",
                 'data' => $result,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

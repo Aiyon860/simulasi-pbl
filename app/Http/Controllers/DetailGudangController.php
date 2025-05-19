@@ -17,12 +17,21 @@ class DetailGudangController extends Controller
      */
     public function index()
     {
-        $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->where('id_gudang', auth()->user()->gudang->id)->get();
+        try{
+            $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->where('id_gudang', auth()->user()->gudang->id)->get();
 
-        return view('barangs.index', [
-            'detailGudang' => $detailGudang,
-            'message' => 'Data Detail Gudang retrieved successfully',
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang Gudang',
+                'data' => $detailGudang,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data barang gudang.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -30,16 +39,27 @@ class DetailGudangController extends Controller
      */
     public function create()
     {
-        $barangs = Barang::all();
-        $gudang = GudangDanToko::all();
-        $satuanBerat = SatuanBerat::all();
+        try{
+            $barangs = Barang::all();
+            $gudang = GudangDanToko::all();
+            $satuanBerat = SatuanBerat::all();
 
-        return view('barangs.create', [
-            'barangs' => $barangs,
-            'gudang' => $gudang,
-            'satuanBerat' => $satuanBerat,
-            'message' => 'Form Tambah Barang Gudang',
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Form Tambah Barang Gudang',
+                'data' => [
+                    'barangs' => $barangs,
+                    'gudang' => $gudang,
+                    'satuanBerat' => $satuanBerat,
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menyiapkan form tambah barang gudang.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -59,9 +79,22 @@ class DetailGudangController extends Controller
                 DetailGudang::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('barangs.index')->with('success', 'Data Detail Gudang berhasil ditambahkan');
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('error', 'Gagal menambahkan Data Barang Gudang. Silakan coba lagi.');
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang Gudang berhasil ditambahkan',
+            ], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data Barang Gudang tidak ditemukan',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menambahkan data barang gudang',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -72,12 +105,22 @@ class DetailGudangController extends Controller
     {
         try {
             $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->findOrFail($id);
-            return view('barangs.show', [
-                'detailGudang' => $detailGudang,
-                'message' => "Data Barang Gudang dengan ID: {$id}",
-            ]);
-        } catch (\Throwable $th) {
-            return redirect()->route('barangs.index')->with('error', "Data Barang Gudang dengan ID: {$id} tidak ditemukan");
+            return response()->json([
+                'status' => true,
+                'message' => 'Detail Barang Gudang',
+                'data' => $detailGudang,
+            ], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -92,15 +135,27 @@ class DetailGudangController extends Controller
             $gudang = GudangDanToko::all();
             $satuanBerat = SatuanBerat::all();
 
-            return view('barangs.edit', [
-                'detailGudang' => $detailGudang,
-                'barangs' => $barangs,
-                'gudang' => $gudang,
-                'satuanBerat' => $satuanBerat,
+            return response()->json([
+                'status' => true,
                 'message' => 'Form Edit Barang Gudang',
-            ]);
-        } catch (\Throwable $th) {
-            return redirect()->route('barangs.index')->with('error', "Data Barang Gudang dengan ID: {$id} tidak ditemukan");
+                'data' => [
+                    'detailGudang' => $detailGudang,
+                    'barangs' => $barangs,
+                    'gudang' => $gudang,
+                    'satuanBerat' => $satuanBerat,
+                ],
+            ], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menyiapkan form edit barang gudang",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -123,11 +178,21 @@ class DetailGudangController extends Controller
                 $detailGudang->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('barangs.index')->with('success', "Data Barang Gudang dengan ID: {$detailGudang->id} berhasil diperbarui");
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
+            ], 201);
         } catch (ModelNotFoundException $e) {
-            return redirect()->route('barangs.index')->with('error', "Data Barang Gudang dengan ID: {$id} tidak ditemukan");
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('error', "Gagal memperbarui Data Barang Gudang dengan ID: {$id}. Silakan coba lagi.");
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat memperbarui data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -142,13 +207,21 @@ class DetailGudangController extends Controller
                 $barangGudang->update(['flag' => 0]);
             });
 
-            return redirect()->route('barangs.index')->with('success', "Data 
-            Barang Gudang dengan ID: {$id} berhasil dihapus.");
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+            ], 201);
         } catch (ModelNotFoundException $e) {
-            return redirect()->route('barangs.index')->with('error', "Data 
-            Barang Gudang dengan ID: {$id} tidak ditemukan.");
-        } catch (\Throwable $th) {
-            return redirect()->route('barangs.index')->with('error', "Terjadi kesalahan saat menghapus Data Barang Gudang dengan ID: {$id}.");
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

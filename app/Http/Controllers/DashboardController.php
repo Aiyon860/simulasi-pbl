@@ -665,6 +665,71 @@ class DashboardController extends Controller
                             $description = TimeHelpers::getFourDatesFromLastMonth();
 
                             // data
+                            // laporan masuk pengiriman
+                            $laporanMasukPengiriman = PenerimaanDiCabang::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereHas('jenisPenerimaan', function ($query) {
+                                    $query->where('nama_jenis_penerimaan', 'pengiriman');
+                                })
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4), // e.g., 202519 => "Minggu ke-19"
+                                        'total' => $item->total,
+                                    ];
+                                });
+
+                            // laporan masuk retur
+                            $laporanMasukRetur = PenerimaanDiCabang::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereHas('jenisPenerimaan', function ($query) {
+                                    $query->where('nama_jenis_penerimaan', 'retur');
+                                })
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
+
+                            // laporan keluar
+                            $laporanKeluar = CabangKeToko::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
+
+                            // laporan retur (retur ke pusat)
+                            $laporanRetur = CabangKePusat::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
                             break;
                     }
                 }

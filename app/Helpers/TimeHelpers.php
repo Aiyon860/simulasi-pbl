@@ -117,6 +117,14 @@ class TimeHelpers
         return $start->format('H:i') . ' - ' . $end->format('H:i');
     }
 
+
+    public static function MingguInterval($tanggal)
+    {
+        $start = Carbon::parse($tanggal);
+        $end = $start->copy()->addWeek();
+        return $start->format('d M') . ' - ' . $end->format('d M');
+    }
+  
     public static function hariInterval($tanggal)
     {
         $start = Carbon::parse($tanggal);

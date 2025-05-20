@@ -124,7 +124,7 @@ class TimeHelpers
         $end = $start->copy()->addWeek();
         return $start->format('d M') . ' - ' . $end->format('d M');
     }
-  
+
     public static function hariInterval($tanggal)
     {
         $start = Carbon::parse($tanggal);

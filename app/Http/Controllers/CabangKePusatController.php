@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
-use App\Models\CabangKePusat;
-use App\Models\PenerimaanDiCabang;
 use Attribute;
-use Illuminate\Http\Request;
-use App\Models\Barang;
-use App\Models\GudangDanToko;
-use App\Models\Status;
 use App\Models\Kurir;
+use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
+use App\Models\DetailGudang;
+use Illuminate\Http\Request;
+use App\Models\CabangKePusat;
+use App\Models\GudangDanToko;
+use App\Models\PenerimaanDiCabang;
 
 
 
 
+use Illuminate\Support\Facades\DB;
 use function PHPUnit\Framework\callback;
 
 class CabangKePusatController extends Controller
@@ -88,7 +89,16 @@ class CabangKePusatController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
+            return DB::transaction(function () use ($validated, $request) {
+                $barang = DetailGudang::where('id_cabang', $request->id_cabang)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+
+                if ($barang->jumlah_stok < $request->jumlah_barang) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Jumlah stok tidak mencukupi untuk diretur.',
+                    ]);
+                }
+
                 CabangKePusat::create($validated);
 
                 return response()->json([

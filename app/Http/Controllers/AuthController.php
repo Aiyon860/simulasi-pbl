@@ -3,42 +3,55 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Requests\Auth\LoginRequest;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Auth\LoginRequest;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function showLoginForm()
+    public function login(Request $request)
     {
-        return view('auth.login');
-    }   
+        $credentials = $request->only('email', 'password');
 
-    public function login(LoginRequest $request)
+        try {
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'Invalid credentials'], 401);
+            }
+
+            // Get the authenticated user.
+            $user = auth()->user();
+
+            // (optional) Attach the role to the token.
+            $token = JWTAuth::claims(['role' => $user->role->nama_role])->fromUser($user);
+
+            $user->update(['token_jwt' => $token]);
+
+            return response()->json(compact('token'));
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not create token'], 500);
+        }
+    }
+
+    // Get authenticated user
+    public function getUser()
     {
         try {
-            $request->authenticate();
-
-            if (auth()->user()->hasRole('SuperAdmin')) {
-                return redirect()->intended(route('users.index'));
-            } else if (auth()->user()->hasRole('Supplier')) {
-                auth()->logout();
-                return back()->withErrors(['email' => 'Akun ini tidak memiliki akses ke website ini.'])->withInput($request->only('email', 'password'));
-            } else {
-                return redirect()->intended(route('barangs.index'));
+            if (! $user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['error' => 'User not found'], 404);
             }
-        } catch (ValidationException $exception) {
-            return back()->withErrors($exception->errors())->withInput($request->only('email', 'password'));
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Invalid token'], 400);
         }
+
+        return response()->json(compact('user'));
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        JWTAuth::invalidate(JWTAuth::getToken());
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/login');
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

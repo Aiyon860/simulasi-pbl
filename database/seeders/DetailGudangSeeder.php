@@ -17,14 +17,35 @@ class DetailGudangSeeder extends Seeder
             'id_gudang' => 1,
             'id_barang' => 1,
             'id_satuan_berat' => 1,
-            'jumlah_stok' => 100,
+            'jumlah_stok' => 0,
         ]);
 
         DetailGudang::create([
             'id_gudang' => 2,
             'id_barang' => 1,
             'id_satuan_berat' => 1,
-            'jumlah_stok' => 50,
+            'jumlah_stok' => 0,
+        ]);
+
+        DetailGudang::create([
+            'id_gudang' => 3,
+            'id_barang' => 1,
+            'id_satuan_berat' => 1,
+            'jumlah_stok' => 0,
+        ]);
+
+        DetailGudang::create([
+            'id_gudang' => 4,
+            'id_barang' => 1,
+            'id_satuan_berat' => 1,
+            'jumlah_stok' => 0,
+        ]);
+
+        DetailGudang::create([
+            'id_gudang' => 5,
+            'id_barang' => 1,
+            'id_satuan_berat' => 1,
+            'jumlah_stok' => 0,
         ]);
     }
 }

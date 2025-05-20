@@ -19,9 +19,17 @@ class KategoriBarangController extends Controller
     {
         try {
             $categories = KategoriBarang::orderBy('id')->paginate(10);
-            return view('categories.index', compact('categories'));
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Kategori Barang',
+                'data' => $categories,
+            ]);
         } catch (\Exception $e) {
-            return view('categories.index', ['message' => 'Terjadi kesalahan saat mengambil data Kategori Barang.', 'error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data kategori barang.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -31,9 +39,16 @@ class KategoriBarangController extends Controller
     public function create()
     {
         try {
-            return view('categories.create');
+            return response()->json([
+                'status' => true,
+                'message' => 'Form Tambah Kategori Barang',
+            ]);
         } catch (\Exception $e) {
-            return view('categories.index', ['message' => 'Terjadi kesalahan saat menyiapkan form tambah Kategori Barang.', 'error' => $e->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menyiapkan form tambah kategori barang.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -52,15 +67,25 @@ class KategoriBarangController extends Controller
                 ],
             ]);
 
-            DB::transaction(function () use ($validated) {
+            $category = DB::transaction(function () use ($validated) {
                 KategoriBarang::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('categories.index')->with('success', 'Kategori barang berhasil ditambahkan.');
+            return response()->json([
+                'status' => true,
+                'message' => "Data Kategori Barang {$category->nama_kategori_barang} berhasil ditambahkan",
+            ]. 201);
         } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e)->withInput();
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal menambahkan kategori barang. Silakan coba lagi.",
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Throwable $th) {
-            return redirect()->route('categories.index')->with('error', 'Gagal menambahkan kategori barang. Silakan coba lagi. Error: ' . $th->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal menambahkan kategori barang. Silakan coba lagi. Error: {$th->getMessage()}",
+            ], 500);
         }
     }
 
@@ -71,11 +96,22 @@ class KategoriBarangController extends Controller
     {
         try {
             $category = KategoriBarang::findOrFail($id);
-            return view('categories.show', compact('category'));
+            return response()->json([
+                'status' => true,
+                'message' => "Data Kategori Barang {$id}",
+                'data' => $category,
+            ]);
         } catch (ModelNotFoundException $e) {
-            return view('categories.index', ['message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan."]);
+            return response()->json([
+                'status' => false,
+                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+            ], 404);
         } catch (\Throwable $th) {
-            return view('categories.index', ['message' => "Terjadi kesalahan saat mengambil detail kategori barang dengan ID: {$id}.", 'error' => $th->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data kategori barang dengan ID: {$id}.",
+                'error' => $th->getMessage(),
+            ], 500);
         }
     }
 
@@ -86,11 +122,22 @@ class KategoriBarangController extends Controller
     {
         try {
             $category = KategoriBarang::findOrFail($id);
-            return view('categories.edit', compact('category'));
+            return response()->json([
+                'status' => true,
+                'message' => "Form Edit Kategori Barang {$id}",
+                'data' => $category,
+            ]);
         } catch (ModelNotFoundException $e) {
-            return view('categories.index', ['message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan."]);
+            return response()->json([
+                'status' => false,
+                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+            ], 404);
         } catch (\Throwable $th) {
-            return view('categories.index', ['message' => "Terjadi kesalahan saat mengambil data untuk form edit kategori barang dengan ID: {$id}.", 'error' => $th->getMessage()]);
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menyiapkan form edit kategori barang dengan ID: {$id}.",
+                'error' => $th->getMessage(),
+            ], 500);
         }
     }
 
@@ -120,13 +167,26 @@ class KategoriBarangController extends Controller
                 $category->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('categories.index')->with('success', 'Kategori barang berhasil diperbarui.');
+            return response()->json([
+                'status' => true,
+                'message' => "Data Kategori Barang {$category->nama_kategori_barang} berhasil diperbarui",
+            ]);
         } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e)->withInput();
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal memperbarui kategori barang. Silakan coba lagi.",
+                'errors' => $e->errors(),
+            ], 422);
         } catch (ModelNotFoundException $e) {
-            return redirect()->route('categories.index')->with('error', "Data Kategori Barang dengan ID: {$id} tidak ditemukan.");
+            return response()->json([
+                'status' => false,
+                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+            ], 404);
         } catch (\Throwable $th) {
-            return redirect()->route('categories.index')->with('error', 'Gagal memperbarui kategori barang. Silakan coba lagi. Error: ' . $th->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal memperbarui kategori barang. Silakan coba lagi. Error: {$th->getMessage()}",
+            ], 500);
         }
     }
 
@@ -142,11 +202,20 @@ class KategoriBarangController extends Controller
                 $category->update(['flag' => 0]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('categories.index')->with('success', "Kategori barang {$category->nama_kategori_barang} berhasil dinonaktifkan!");
+            return response()->json([
+                'status' => true,
+                'message' => "Data Kategori barang dengan ID: {$id} berhasil dinonaktifkan"
+            ]);
         } catch (ModelNotFoundException $e) {
-            return redirect()->route('categories.index')->with('error', "Data Kategori Barang dengan ID: {$id} tidak ditemukan.");
+            return response()->json([
+                'status' => false,
+                'message' => "Data Kategori barang dengan ID: {$id} tidak ditemukan"
+            ], 404);
         } catch (\Throwable $th) {
-            return redirect()->route('categories.index')->with('error', "Gagal menonaktifkan kategori barang dengan ID: {$id}. Error: " . $th->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal menonaktifkan Kategori barang dengan ID: {$id}"
+            ], 500);
         }
     }
 
@@ -162,11 +231,20 @@ class KategoriBarangController extends Controller
                 $category->update(['flag' => 1]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return redirect()->route('categories.index')->with('success', "Kategori barang {$category->nama_kategori_barang} berhasil diaktifkan!");
+            return response()->json([
+                'status' => true,
+                'message' => "Kategori barang dengan ID: {$id} berhasil diaktifkan"
+            ]);
         } catch (ModelNotFoundException $e) {
-            return redirect()->route('categories.index')->with('error', "Data Kategori Barang dengan ID: {$id} tidak ditemukan.");
+            return response()->json([
+                'status' => false,
+                'message' => "Data Kategori barang dengan ID: {$id} tidak ditemukan"
+            ], 404);
         } catch (\Throwable $th) {
-            return redirect()->route('categories.index')->with('error', "Gagal mengaktifkan kategori barang dengan ID: {$id}. Error: " . $th->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => "Gagal mengaktifkan Kategori barang dengan ID: {$id}"
+            ], 500);
         }
     }
 }

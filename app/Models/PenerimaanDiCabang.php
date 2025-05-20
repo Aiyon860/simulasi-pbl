@@ -18,6 +18,7 @@ class PenerimaanDiCabang extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'id_cabang',
         'id_jenis_penerimaan',
         'id_asal_barang',
         'id_barang',
@@ -27,6 +28,11 @@ class PenerimaanDiCabang extends Model
         'tanggal',
         'flag',
     ];
+
+    public function cabang(): BelongsTo
+    {
+        return $this->belongsTo(GudangDanToko::class, 'id_cabang');
+    }
 
     public function jenisPenerimaan(): BelongsTo
     {

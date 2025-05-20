@@ -6,6 +6,7 @@ use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\Status;
 use App\Models\SatuanBerat;
+use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\PusatKeCabang;
@@ -72,7 +73,16 @@ class PusatKeCabangController extends Controller
             'berat_satuan_barang' => 'required|numeric|min:1',
         ]);
         try {
-            return DB::transaction(function () use ($validated) {
+            return DB::transaction(function () use ($validated, $request) {
+                $barang = DetailGudang::where('id_gudang', $request->id_pusat)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+
+                if ($barang->jumlah_stok < $request->jumlah_barang) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                    ]);
+                }
+
                 PusatKeCabang::create($validated); 
         
                 return response()->json([
@@ -83,7 +93,8 @@ class PusatKeCabangController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal mengirimkan barang dari Pusat Ke Cabang.',
+                // 'message' => 'Gagal mengirimkan barang dari Pusat Ke Cabang.',
+                'message' => $th->getMessage(),
             ]);
         }
         

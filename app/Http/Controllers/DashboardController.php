@@ -674,6 +674,7 @@ class DashboardController extends Controller
                                     $query->where('nama_jenis_penerimaan', 'pengiriman');
                                 })
                                 ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
                                 ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
                                 ->get()
                                 ->map(function ($item) {
@@ -692,6 +693,7 @@ class DashboardController extends Controller
                                     $query->where('nama_jenis_penerimaan', 'retur');
                                 })
                                 ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
                                 ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
                                 ->get()
                                 ->map(function ($item) {
@@ -707,6 +709,7 @@ class DashboardController extends Controller
                                     DB::raw("COUNT(*) as total")
                                 )
                                 ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
                                 ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
                                 ->get()
                                 ->map(function ($item) {
@@ -722,6 +725,7 @@ class DashboardController extends Controller
                                     DB::raw("COUNT(*) as total")
                                 )
                                 ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
                                 ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
                                 ->get()
                                 ->map(function ($item) {

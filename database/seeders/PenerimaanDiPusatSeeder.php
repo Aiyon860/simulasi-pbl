@@ -13,14 +13,14 @@ class PenerimaanDiPusatSeeder extends Seeder
      */
     public function run(): void
     {
-        // PenerimaanDiPusat::create([
-        //     'id_jenis_penerimaan' => 1,
-        //     'id_asal_barang' => 1,
-        //     'id_barang' => 1,
-        //     'jumlah_barang' => 100,
-        //     'id_satuan_berat' => 1,
-        //     'berat_satuan_barang' => 1000,
-        //     'tanggal' => now(),
-        // ]);
+        PenerimaanDiPusat::create([
+             'id_jenis_penerimaan' => 1,
+             'id_asal_barang' => 1,
+             'id_barang' => 1,
+             'jumlah_barang' => 100,
+             'id_satuan_berat' => 1,
+             'berat_satuan_barang' => 1000,
+             'tanggal' => now(),
+         ]);
     }
 }

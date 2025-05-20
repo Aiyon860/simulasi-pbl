@@ -309,6 +309,7 @@ class DashboardController extends Controller
                                     ->whereHas('jenisPenerimaan', function ($query) {
                                         $query->where('nama_jenis_penerimaan', 'pengiriman');
                                     })
+                                    ->where('id_cabang', $idGudangAdmin)
                                     ->whereDate('tanggal', Carbon::today())
                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                     ->get();
@@ -331,6 +332,7 @@ class DashboardController extends Controller
                                     ->whereHas('jenisPenerimaan', function ($query) {
                                         $query->where('nama_jenis_penerimaan', 'retur');
                                     })
+                                    ->where('id_cabang', $idGudangAdmin)
                                     ->whereDate('tanggal', Carbon::today())
                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                     ->get();
@@ -351,6 +353,7 @@ class DashboardController extends Controller
                                                         DB::raw("COUNT(*) as total")
                                                     )
                                                     ->whereDate('tanggal', Carbon::today())
+                                                    ->where('id_cabang', $idGudangAdmin)
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
@@ -370,6 +373,7 @@ class DashboardController extends Controller
                                                         DB::raw("COUNT(*) as total")
                                                     )
                                                     ->whereDate('tanggal', Carbon::today())
+                                                    ->where('id_cabang', $idGudangAdmin)
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();

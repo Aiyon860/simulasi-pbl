@@ -26,6 +26,7 @@ Route::middleware(['jwt'])->group(function () {
 
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::resource('dashboard', DashboardController::class);
+        Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
     });
 
     Route::middleware(['role:SuperAdmin'])->group(function () {

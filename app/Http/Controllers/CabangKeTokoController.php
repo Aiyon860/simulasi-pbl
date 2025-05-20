@@ -73,7 +73,7 @@ class CabangKeTokoController extends Controller
 
         try {
             return DB::transaction(function () use ($validated, $request) {
-                $barang = DetailGudang::where('id_cabang', $request->id_cabang)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+                $barang = DetailGudang::where('id_gudang', $request->id_cabang)->where('id_barang', $request->id_barang)->first('jumlah_stok');
 
                 if ($barang->jumlah_stok < $request->jumlah_barang) {
                     return response()->json([
@@ -92,7 +92,8 @@ class CabangKeTokoController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal mengirimkan barang. Silakan coba lagi.',
+                // 'message' => 'Gagal mengirimkan barang. Silakan coba lagi.',
+                'message' => $th->getMessage(),
             ]);
         }
     }

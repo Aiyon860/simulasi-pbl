@@ -1,9 +1,7 @@
 <?php
 
-use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TokoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangController;
@@ -18,17 +16,17 @@ use App\Http\Controllers\PusatKeCabangController;
 use App\Http\Controllers\KategoriBarangController;
 use App\Http\Controllers\PusatKeSupplierController;
 use App\Http\Controllers\SupplierKePusatController;
-use App\Http\Controllers\DetailReturBarangController;
 use App\Http\Controllers\PenerimaanDiPusatController;
 use App\Http\Controllers\PenerimaanDiCabangController;
-use App\Http\Controllers\DetailPenerimaanBarangController;
-use App\Http\Controllers\StatusPengirimanBarangController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['jwt'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::resource('dashboard', DashboardController::class);
+        Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
     });
 
     Route::middleware(['role:SuperAdmin'])->group(function () {

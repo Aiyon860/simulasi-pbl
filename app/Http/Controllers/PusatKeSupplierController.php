@@ -79,7 +79,7 @@ class PusatKeSupplierController extends Controller
 
         try {
             return DB::transaction(function () use ($validated, $request) {
-                $barang = DetailGudang::where('id_cabang', $request->id_pusat)->where('id_barang', $request->id_barang)->first('jumlah_stok');
+                $barang = DetailGudang::where('id_gudang', $request->id_pusat)->where('id_barang', $request->id_barang)->first('jumlah_stok');
 
                 if ($barang->jumlah_stok < $request->jumlah_barang) {
                     return response()->json([

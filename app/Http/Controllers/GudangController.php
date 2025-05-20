@@ -72,7 +72,7 @@ class GudangController extends Controller
                 'status' => true,
                 'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
                 'data' => $gudang,
-            ]. 201);
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,

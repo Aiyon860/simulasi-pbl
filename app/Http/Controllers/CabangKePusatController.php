@@ -95,7 +95,6 @@ class CabangKePusatController extends Controller
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
-                'keterangan' => 'nullable|string|max:255',
             ]);
 
             return DB::transaction(function () use ($validated, $request) {

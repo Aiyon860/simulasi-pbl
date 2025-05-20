@@ -4,6 +4,19 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5 mb-6">
+            <!-- Card Kategori -->
+            <div class="flex items-center bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex-1">
+                    <h2 class="text-gray-600 text-sm font-medium mb-1">Kategori Barang</h2>
+                    <p class="text-2xl font-bold">23</p>
+                </div>
+                <div class="p-3 rounded-full bg-purple-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125 2.25 2.25m0 0 2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                    </svg>
+                </div>
+            </div>
+
             <!-- Card Barang -->
             <div class="flex items-center bg-white p-5 rounded-lg shadow-sm">
                 <div class="flex-1">
@@ -11,9 +24,10 @@
                     <p class="text-2xl font-bold">54</p>
                 </div>
                 <div class="p-3 rounded-full bg-yellow-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                     </svg>
+
                 </div>
             </div>
 
@@ -24,56 +38,47 @@
                     <p class="text-2xl font-bold">23</p>
                 </div>
                 <div class="p-3 rounded-full bg-green-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                     </svg>
                 </div>
             </div>
 
-            <!-- Card TBA -->
+            <!-- Card Gudang -->
             <div class="flex items-center bg-white p-6 rounded-lg shadow-sm">
                 <div class="flex-1">
-                    <h2 class="text-gray-600 text-sm font-medium mb-1">TBA</h2>
+                    <h2 class="text-gray-600 text-sm font-medium mb-1">Gudang</h2>
                     <p class="text-2xl font-bold">23</p>
                 </div>
-                <div class="p-3 rounded-full bg-green-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <div class="p-3 rounded-full bg-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
                 </div>
             </div>
 
-            <!-- Card TBA -->
+            <!-- Card Toko -->
             <div class="flex items-center bg-white p-6 rounded-lg shadow-sm">
                 <div class="flex-1">
-                    <h2 class="text-gray-600 text-sm font-medium mb-1">TBA</h2>
+                    <h2 class="text-gray-600 text-sm font-medium mb-1">Toko</h2>
                     <p class="text-2xl font-bold">23</p>
                 </div>
-                <div class="p-3 rounded-full bg-green-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <div class="p-3 rounded-full bg-pink-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
                     </svg>
+
                 </div>
             </div>
 
-            <!-- Card TBA -->
-            <div class="flex items-center bg-white p-6 rounded-lg shadow-sm">
-                <div class="flex-1">
-                    <h2 class="text-gray-600 text-sm font-medium mb-1">TBA</h2>
-                    <p class="text-2xl font-bold">23</p>
-                </div>
-                <div class="p-3 rounded-full bg-green-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-            </div>
+            
         </div>
 
         <!-- Main content -->
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
-            <div class="max-w-full bg-white rounded-lg shadow-sm dark:bg-white p-4 md:p-6">
-                {{-- Header --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Activities -->
+            <div class="lg:col-span-2 max-w-full bg-white rounded-lg shadow-sm dark:bg-white p-4 md:p-6">
+                <!-- Header -->
                 <div class="flex justify-between mb-5">
                     <div>
                         <h2 class="leading-none text-lg font-semibold text-black pb-1">Activities</h2>
@@ -92,12 +97,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        {{-- Dropdown (opsional aktifkan pakai Flowbite/JS lain) --}}
+                        <!-- Dropdown -->
                         <div id="lastDaysdropdown"
                             class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
                             <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-                                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Yesterday</a></li>
-                                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Today</a></li>
                                 <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Last 7 days</a></li>
                                 <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Last 30 days</a></li>
                             </ul>
@@ -105,26 +108,24 @@
                     </div>
                 </div>
 
-                {{-- Chart Area --}}
+                <!-- Chart -->
                 <div class="h-64 w-full">
-                    <div id="activitiesChart" class="w-full h-full"></div>
+                    <div id="labels-chart" class="w-full h-full"></div>
                 </div>
 
-                {{-- Footer Legend --}}
                 <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-5 mt-5">
                     <div class="flex items-center space-x-6">
                         <div class="flex items-center">
-                            <span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                            <span class="w-3 h-3 rounded-full mr-2" style="background-color: #1A56DB;"></span>
                             <span class="text-sm text-gray-600 dark:text-gray-300">Barang Masuk</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                            <span class="w-3 h-3 rounded-full mr-2" style="background-color: #7E3BF2;"></span>
                             <span class="text-sm text-gray-600 dark:text-gray-300">Barang Keluar</span>
                         </div>
                     </div>
                 </div>
             </div>
-
 
             <!-- Stock Running Low -->
             <div class="bg-white rounded-lg shadow-sm p-6">
@@ -144,104 +145,103 @@
                     <a href="#" class="text-blue-500 text-sm hover:underline flex justify-center">Lihat Stock Barang</a>
                 </div>
             </div>
-
-            <!-- Activity Log -->
-            <div class="bg-white rounded-lg shadow-sm p-6 md:col-span-3">
-                <h2 class="text-lg font-medium mb-4">Activity Log</h2>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between bg-white p-4 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
-                                <img src="https://via.placeholder.com/40" alt="Admin" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-medium">Admin bola</p>
-                                <p class="text-sm text-gray-500">menambahkan stock iPhone 19 dengan jumlah 45</p>
-                            </div>
-                        </div>
-                        <span class="text-sm text-gray-500">19:22<br>01/01/2025</span>
-                    </div>
-                    
-                    <!-- Empty activity logs for placeholder -->
-                    @for($i = 0; $i < 2; $i++)
-                    <div class="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
-                                <img src="https://via.placeholder.com/40" alt="Admin" class="w-full h-full object-cover">
-                            </div>
-                            <div class="h-4 bg-gray-200 rounded w-64"></div>
-                        </div>
-                        <div class="h-4 bg-gray-200 rounded w-20"></div>
-                    </div>
-                    @endfor
-                </div>
-            </div>
         </div>
-    </div>
 
-    @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var options = {
-                chart: {
-                    type: 'line',
-                    height: '100%',
-                    toolbar: {
-                        show: false
-                    }
-                },
-                series: [{
-                    name: 'Barang Masuk',
-                    data: [0, 8, 5, 2, 0, 5, 0, 8, 0]
-                }, {
-                    name: 'Barang Keluar',
-                    data: [0, 5, 10, 8, 0, 8, 0, 10, 10]
-                }],
-                colors: ['#10B981', '#EF4444'],
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
+        <!-- JS Graf -->
+        <!-- Tambahkan di akhir halaman -->
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script>
+            const options = {
                 xaxis: {
-                    categories: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '23:59'],
-                },
-                yaxis: {
-                    min: 0,
-                    max: 200,
-                    tickAmount: 4,
+                    show: true,
+                    categories: ['01 Feb', '02 Feb', '03 Feb', '04 Feb', '05 Feb', '06 Feb', '07 Feb'],
                     labels: {
-                        formatter: function(val) {
-                            return val.toFixed(0);
-                        }
-                    }
-                },
-                grid: {
-                    borderColor: '#f1f1f1',
-                    strokeDashArray: 5,
-                    xaxis: {
-                        lines: {
-                            show: true
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
                         }
                     },
-                    yaxis: {
-                        lines: {
-                            show: true
+                    axisBorder: {
+                        show: false,
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                },
+                yaxis: {
+                    show: true,
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function (value) {
+                            return + value;
                         }
                     }
+                },
+                series: [
+                    {
+                        name: "Barang Masuk",
+                        data: [150, 141, 145, 152, 135, 125],
+                        color: "#1A56DB",
+                    },
+                    {
+                        name: "Barang Keluar",
+                        data: [43, 13, 65, 12, 42, 73],
+                        color: "#7E3BF2",
+                    },
+                ],
+                chart: {
+                    sparkline: {
+                        enabled: false
+                    },
+                    height: "100%",
+                    width: "100%",
+                    type: "area",
+                    fontFamily: "Inter, sans-serif",
+                    dropShadow: {
+                        enabled: false,
+                    },
+                    toolbar: {
+                        show: false,
+                    },
+                },
+                tooltip: {
+                    enabled: true,
+                    x: {
+                        show: false,
+                    },
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        opacityFrom: 0.55,
+                        opacityTo: 0,
+                        shade: "#1C64F2",
+                        gradientToColors: ["#1C64F2"],
+                    },
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                stroke: {
+                    width: 6,
                 },
                 legend: {
                     show: false
                 },
-                tooltip: {
-                    shared: true,
-                    intersect: false
-                }
+                grid: {
+                    show: false,
+                },
             };
 
-            var chart = new ApexCharts(document.querySelector("#activitiesChart"), options);
-            chart.render();
-        });
-    </script>
-    @endpush
+            if (document.getElementById("labels-chart") && typeof ApexCharts !== 'undefined') {
+                const chart = new ApexCharts(document.getElementById("labels-chart"), options);
+                chart.render();
+            }
+        </script>
+    </div>
 </x-default-layout>

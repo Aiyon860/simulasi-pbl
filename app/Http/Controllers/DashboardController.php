@@ -457,7 +457,7 @@ class DashboardController extends Controller
                                     ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                     ->get();
-                            
+
                             $laporanMasukPengirimanCabang = $dataCabang = PenerimaanDiCabang::select(
                                         DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                         DB::raw("COUNT(*) as total")
@@ -488,7 +488,7 @@ class DashboardController extends Controller
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
-                            
+
                             $laporanKeluarDariCabang = CabangKeToko::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
@@ -497,7 +497,7 @@ class DashboardController extends Controller
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
-                            
+
                             $laporanKeluarGabungan = $laporanKeluarDariPusat->concat($laporanKeluarDariCabang);
 
                             $laporanKeluar = $laporanKeluarGabungan->groupBy('jam_grup')
@@ -509,7 +509,7 @@ class DashboardController extends Controller
                                     })
                                     ->sortBy('jam_label') // sort optional
                                     ->values();
-                            
+
                             $laporanReturKeSupplier = PusatKeSupplier::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
@@ -518,7 +518,7 @@ class DashboardController extends Controller
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
-                            
+
                             $laporanReturKePusat = CabangKePusat::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
@@ -527,7 +527,7 @@ class DashboardController extends Controller
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
-                            
+
                             $laporanReturKeCabang = TokoKeCabang::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
@@ -536,7 +536,7 @@ class DashboardController extends Controller
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
-                            
+
                             $laporanReturGabungan = $laporanReturKeSupplier->concat($laporanReturKePusat)->concat($laporanReturKeCabang);
 
                             $laporanRetur = $laporanReturGabungan->groupBy('jam_grup')

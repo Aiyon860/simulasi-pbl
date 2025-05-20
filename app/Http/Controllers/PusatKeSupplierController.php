@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PusatKeSupplier;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class PusatKeSupplierController extends Controller
@@ -31,7 +33,7 @@ class PusatKeSupplierController extends Controller
                 'status' => true,
                 'message' => 'Data Pusat Ke Supplier',
                 'data' => $pusatKeSuppliers
-            ]);
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -62,7 +64,7 @@ class PusatKeSupplierController extends Controller
                     'status' => $status,
                     'kurir' => $kurir,
                 ]
-            ]);
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -126,7 +128,7 @@ class PusatKeSupplierController extends Controller
                 'status' => true,
                 'message' => "Detail Pusat ke Supplier ID: {$id}",
                 'data' => $data
-            ]);
+            ], 201);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -165,7 +167,7 @@ class PusatKeSupplierController extends Controller
                 'status' => true,
                 'message' => 'Data Pusat ke Supplier berhasil diperbarui.',
                 'data' => $data,
-            ]);
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -195,7 +197,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Pusat ke Supplier ID {$id} berhasil dihapus.",
-            ]);
+            ], 201);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

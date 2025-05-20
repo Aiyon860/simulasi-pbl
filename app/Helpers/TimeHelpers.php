@@ -121,6 +121,13 @@ class TimeHelpers
     {
         $start = Carbon::parse($tanggal);
         $end = $start->copy()->addDay();
-        return $start->format('d M') . ' - ' . $end->format('d M');
+
+        $startDay = $start->format('d');
+        $startMonth = self::getIndonesianMonthShort($start->format('n'));
+
+        $endDay = $end->format('d');
+        $endMonth = self::getIndonesianMonthShort($end->format('n'));
+
+        return "{$startDay} {$startMonth} - {$endDay} {$endMonth}";
     }
 }

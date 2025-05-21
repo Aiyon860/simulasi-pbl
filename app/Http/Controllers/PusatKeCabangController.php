@@ -144,7 +144,7 @@ class PusatKeCabangController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update()
+    public function update(string $id)
     {
         //
     }

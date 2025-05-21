@@ -447,16 +447,15 @@ class DashboardController extends Controller
                         default:    // 1 bulan yang lalu
                             // description
                             $description = TimeHelpers::getFourDatesFromLastMonth();
-$start = Carbon::yesterday()->copy()->subMonth()->startOfDay();
-$end = Carbon::yesterday()->endOfDay();
+                            $start = Carbon::yesterday()->copy()->subMonth()->startOfDay();
+                            $end = Carbon::yesterday()->endOfDay();
 
-$pusat = PenerimaanDiPusat::select('tanggal')
-    ->whereHas('jenisPenerimaan', fn($q) => $q->where('nama_jenis_penerimaan', 'pengiriman'))
-    ->whereBetween('tanggal', [$start, $end])
-    ->get();
+                            $pusat = PenerimaanDiPusat::select('tanggal')
+                                ->whereHas('jenisPenerimaan', fn($q) => $q->where('nama_jenis_penerimaan', 'pengiriman'))
+                                ->whereBetween('tanggal', [$start, $end])
+                                ->get();
 
-$cabang = 
-    PenerimaanDiCabang::select(
+                            $cabang = PenerimaanDiCabang::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
@@ -466,23 +465,23 @@ $cabang =
                                                     ->orderBy('jam_grup')
                                                     ->get();
 
-$gabungan = $pusat->concat($cabang);
+                            $gabungan = $pusat->concat($cabang);
 
-// dd($pusat->pluck('tanggal'), $cabang->pluck('tanggal'), $gabungan->pluck('tanggal'));
+                            // dd($pusat->pluck('tanggal'), $cabang->pluck('tanggal'), $gabungan->pluck('tanggal'));
 
-$intervals = TimeHelpers::getMingguanIntervals($start, $end);
+                            $intervals = TimeHelpers::getMingguanIntervals($start, $end);
 
-$grouped = collect($intervals)->map(function ($interval) use ($gabungan) {
-    $total = $gabungan->filter(function ($item) use ($interval) {
-        $tanggal = Carbon::parse($item->jam_grup);
-        return $tanggal->betweenIncluded($interval['start'], $interval['end']);
-    })->count();
+                            $grouped = collect($intervals)->map(function ($interval) use ($gabungan) {
+                                $total = $gabungan->filter(function ($item) use ($interval) {
+                                    $tanggal = Carbon::parse($item->jam_grup);
+                                    return $tanggal->betweenIncluded($interval['start'], $interval['end']);
+                                })->count();
 
-    return [
-        'label' => $interval['label'],
-        'total' => $total,
-    ];
-});
+                                return [
+                                    'label' => $interval['label'],
+                                    'total' => $total,
+                                ];
+                            });
 
                             $laporanKeluarDariPusat = PusatKeCabang::select(
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d') as jam_grup"),

@@ -119,10 +119,40 @@ class TimeHelpers
 
 
     public static function MingguInterval($tanggal)
+{
+    $start = Carbon::parse($tanggal);
+    $end = $start->copy()->addDays(7);
+
+    $startFormatted = $start->format('d') . ' ' . self::getIndonesianMonthShort($start->format('n'));
+    $endFormatted = $end->format('d') . ' ' . self::getIndonesianMonthShort($end->format('n'));
+
+    return "{$startFormatted} - {$endFormatted}";
+}
+
+public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
     {
-        $start = Carbon::parse($tanggal);
-        $end = $start->copy()->addWeek();
-        return $start->format('d M') . ' - ' . $end->format('d M');
+        $totalHari = $start->diffInDays($end);
+        $intervalHari = ceil($totalHari / $jumlahInterval);
+
+        $ranges = [];
+        $currentStart = $start->copy();
+
+        for ($i = 0; $i < $jumlahInterval; $i++) {
+            $currentEnd = $currentStart->copy()->addDays($intervalHari);
+            if ($currentEnd->greaterThan($end)) {
+                $currentEnd = $end->copy();
+            }
+
+            $ranges[] = [
+                'label' => $currentStart->format('d M') . ' - ' . $currentEnd->format('d M'),
+                'start' => $currentStart->copy()->startOfDay(),
+                'end' => $currentEnd->copy()->endOfDay(),
+            ];
+
+            $currentStart = $currentEnd->copy();
+        }
+
+        return $ranges;
     }
   
     public static function hariInterval($tanggal)

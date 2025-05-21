@@ -146,40 +146,7 @@ class SupplierKePusatController extends Controller
      */
     public function edit(string $id)
     {
-        try {
-            $SupplierKePusat = SupplierKePusat::findOrFail($id);
-            $barangs = Barang::all();
-            $supplier = GudangDanToko::all();
-            $pusat = $supplier;
-            $status = Status::all();
-            $kurir = Kurir::all();
-            $satuanBerat = SatuanBerat::all();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data untuk Form Edit Pengiriman Supplier Ke Pusat',
-                'data' => [
-                    'supplierKePusat' => $SupplierKePusat,
-                    'barangs' => $barangs,
-                    'supplier' => $supplier,
-                    'satuanBerat' => $satuanBerat,
-                    'status' => $status,
-                    'kurir' => $kurir,
-                    'pusat' => $pusat,
-                ],
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
-            ], 404);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data untuk form edit.",
-                'error' => $th->getMessage(),
-            ], 500);
-        }
+        
     }
 
     /**
@@ -187,49 +154,6 @@ class SupplierKePusatController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        try {
-            $SupplierKePusat = SupplierKePusat::findOrFail($id);
-
-            $validated = $request->validate([
-                'kode' => 'required|string|max:255',
-                'id_supplier' => 'required|exists:gudang_dan_tokos,id',
-                'id_pusat' => 'required|exists:gudang_dan_tokos,id',
-                'id_barang' => 'required|exists:barangs,id',
-                'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'id_kurir' => 'required|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
-                'berat_satuan_barang' => 'required|numeric|min:0',
-            ]);
-
-            DB::transaction(function () use ($SupplierKePusat, $validated) {
-                $SupplierKePusat->update($validated);
-            }, 3);
-
-            return response()->json([
-                'status' => true,
-                'message' => "Data Pengiriman Supplier Ke Pusat dengan ID: {$id} berhasil diperbarui!",
-                'data' => $SupplierKePusat,
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
-            ], 404);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => "Gagal memperbarui Data Pengiriman Supplier Ke Pusat dengan ID: {$id}.",
-                'error' => $th->getMessage(),
-            ], 500);
-        }
     }
 
     /**

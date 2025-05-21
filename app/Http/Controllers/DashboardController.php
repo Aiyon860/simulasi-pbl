@@ -143,7 +143,7 @@ class DashboardController extends Controller
                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                     ->get();
 
-                            $laporanMasukPengirimanCabang = $dataCabang = PenerimaanDiCabang::select(
+                            $laporanMasukPengirimanCabang = PenerimaanDiCabang::select(
                                         DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                         DB::raw("COUNT(*) as total")
                                     )
@@ -178,7 +178,7 @@ class DashboardController extends Controller
                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                     ->get();
 
-                            $laporanReturPengirimanCabang = $dataCabang = PenerimaanDiCabang::select(
+                            $laporanReturPengirimanCabang = PenerimaanDiCabang::select(
                                         DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                         DB::raw("COUNT(*) as total")
                                     )
@@ -487,71 +487,72 @@ class DashboardController extends Controller
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
+                                                    ->whereBetween('tanggal', [Carbon::yesterday()->subMonth()->startOfDay(), Carbon::yesterday()->endOfDay()])
+                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d')"))
+                                                    ->orderBy('jam_grup')
+                                                    ->get();
+
+                            $laporanKeluarDariCabang = CabangKeToko::select(
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
+                                                        DB::raw("COUNT(*) as total")
+                                                    )
                                                     ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
 
-                            $laporanKeluarDariCabang = CabangKeToko::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as mingggu_grup"),
-                                                        DB::raw("COUNT(*) as total")
-                                                    )
-                                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
-                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('mingggu_grup')
-                                                    ->get();
-
                             $laporanKeluarGabungan = $laporanKeluarDariPusat->concat($laporanKeluarDariCabang);
 
-                            $laporanKeluar = $laporanKeluarGabungan->groupBy('mingggu_grup')
+                            $laporanKeluar = $laporanKeluarGabungan->groupBy('jam_grup')
                                     ->map(function ($grouped) {
                                         return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->mingggu_grup),
+                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
+                                            'total' => $grouped->sum('total'),
                                         ];
                                     })
                                     ->sortBy('jam_label') // sort optional
                                     ->values();
 
                             $laporanReturKeSupplier = PusatKeSupplier::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as mingggu_grup"),
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
                                                     ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('mingggu_grup')
+                                                    ->orderBy('jam_grup')
                                                     ->get();
 
                             $laporanReturKePusat = CabangKePusat::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as mingggu_grup"),
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
                                                     ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('mingggu_grup')
+                                                    ->orderBy('jam_grup')
                                                     ->get();
 
                             $laporanReturKeCabang = TokoKeCabang::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as mingggu_grup"),
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
                                                     ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
                                                     ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('mingggu_grup')
+                                                    ->orderBy('jam_grup')
                                                     ->get();
 
                             $laporanReturGabungan = $laporanReturKeSupplier->concat($laporanReturKePusat)->concat($laporanReturKeCabang);
 
-                            $laporanRetur = $laporanReturGabungan->groupBy('mingggu_grup')
+                            $laporanRetur = $laporanReturGabungan->groupBy('jam_grup')
                                     ->map(function ($grouped) {
                                         return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->mingggu_grup),
+                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
                                             'total' => $grouped->sum('total'),
                                         ];
                                     })
                                     ->sortBy('jam_label') // sort optional
                                     ->values();
                             // data
-                            break;
+                        break;
                     }
                 } else {    // admin cabang
                     $user = $request->user();
@@ -568,7 +569,93 @@ class DashboardController extends Controller
                             // description
                             $description = TimeHelpers::getHoursUntilNow();
 
-                            // data
+                            // data (array of from 00.00 to now)
+                            // laporan masuk pengiriman
+                            $laporanMasukPengirimanCabang = PenerimaanDiCabang::select(
+                                        DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
+                                        DB::raw("COUNT(*) as total")
+                                    )
+                                    ->whereHas('jenisPenerimaan', function ($query) {
+                                        $query->where('nama_jenis_penerimaan', 'pengiriman');
+                                    })
+                                    ->where('id_cabang', $idGudangAdmin)
+                                    ->whereDate('tanggal', Carbon::today())
+                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
+                                    ->get();
+
+                            $laporanMasukPengiriman = $laporanMasukPengirimanCabang->groupBy('jam_grup')
+                                    ->map(function ($grouped) {
+                                        return [
+                                            'jam_label' => TimeHelpers::jamInterval($grouped->first()->jam_grup),
+                                            'total' => $grouped->sum('total'),
+                                        ];
+                                    })
+                                    ->sortBy('jam_label') // sort optional
+                                    ->values(); // reset index
+
+                            // laporan massuk retur
+                            $laporanReturPengirimanCabang = $dataCabang = PenerimaanDiCabang::select(
+                                        DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
+                                        DB::raw("COUNT(*) as total")
+                                    )
+                                    ->whereHas('jenisPenerimaan', function ($query) {
+                                        $query->where('nama_jenis_penerimaan', 'retur');
+                                    })
+                                    ->where('id_cabang', $idGudangAdmin)
+                                    ->whereDate('tanggal', Carbon::today())
+                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
+                                    ->get();
+
+                            $laporanMasukRetur = $laporanReturPengirimanCabang->groupBy('jam_grup')
+                                    ->map(function ($grouped) {
+                                        return [
+                                            'jam_label' => TimeHelpers::jamInterval($grouped->first()->jam_grup),
+                                            'total' => $grouped->sum('total'),
+                                        ];
+                                    })
+                                    ->sortBy('jam_label') // sort optional
+                                    ->values();
+
+                            // laporan keluar
+                            $laporanKeluarDariCabang = CabangKeToko::select(
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
+                                                        DB::raw("COUNT(*) as total")
+                                                    )
+                                                    ->whereDate('tanggal', Carbon::today())
+                                                    ->where('id_cabang', $idGudangAdmin)
+                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
+                                                    ->orderBy('jam_grup')
+                                                    ->get();
+
+                            $laporanKeluar = $laporanKeluarDariCabang->groupBy('jam_grup')
+                                    ->map(function ($grouped) {
+                                        return [
+                                            'jam_label' => TimeHelpers::jamInterval($grouped->first()->jam_grup),
+                                            'total' => $grouped->sum('total'),
+                                        ];
+                                    })
+                                    ->sortBy('jam_label') // sort optional
+                                    ->values();
+
+                            $laporanReturKePusat = CabangKePusat::select(
+                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
+                                                        DB::raw("COUNT(*) as total")
+                                                    )
+                                                    ->whereDate('tanggal', Carbon::today())
+                                                    ->where('id_cabang', $idGudangAdmin)
+                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
+                                                    ->orderBy('jam_grup')
+                                                    ->get();
+
+                            $laporanRetur = $laporanReturKePusat->groupBy('jam_grup')
+                                    ->map(function ($grouped) {
+                                        return [
+                                            'jam_label' => TimeHelpers::jamInterval($grouped->first()->jam_grup),
+                                            'total' => $grouped->sum('total'),
+                                        ];
+                                    })
+                                    ->sortBy('jam_label') // sort optional
+                                    ->values();
 
                             break;
                         case '1 minggu yang lalu':
@@ -685,96 +772,77 @@ class DashboardController extends Controller
 
                             // data
                             // laporan masuk pengiriman
-                            $laporanMasukPengirimanCabang = PenerimaanDiCabang::select(
-                                        DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
-                                        DB::raw("COUNT(*) as total")
-                                    )
-                                    ->whereHas('jenisPenerimaan', function ($query) {
-                                        $query->where('nama_jenis_penerimaan', 'pengiriman');
-                                    })
-                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
-                                    ->where('id_cabang', $idGudangAdmin)
-                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                    ->get();
+                            $laporanMasukPengiriman = PenerimaanDiCabang::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereHas('jenisPenerimaan', function ($query) {
+                                    $query->where('nama_jenis_penerimaan', 'pengiriman');
+                                })
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4), // e.g., 202519 => "Minggu ke-19"
+                                        'total' => $item->total,
+                                    ];
+                                });
 
-                            $laporanMasukPengiriman = $laporanMasukPengirimanCabang->groupBy('jam_grup')
-                                    ->map(function ($grouped) {
-                                        return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
-                                            'total' => $grouped->sum('total'),
-                                        ];
-                                    })
-                                    ->sortBy('jam_label') // sort optional
-                                    ->values(); // reset index
-
-                            // laporan massuk retur
-                            $laporanReturPengirimanCabang = PenerimaanDiCabang::select(
-                                        DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
-                                        DB::raw("COUNT(*) as total")
-                                    )
-                                    ->whereHas('jenisPenerimaan', function ($query) {
-                                        $query->where('nama_jenis_penerimaan', 'retur');
-                                    })
-                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
-                                    ->where('id_cabang', $idGudangAdmin)
-                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                    ->get();
-
-                            $laporanMasukRetur = $laporanReturPengirimanCabang->groupBy('jam_grup')
-                                    ->map(function ($grouped) {
-                                        return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
-                                            'total' => $grouped->sum('total'),
-                                        ];
-                                    })
-                                    ->sortBy('jam_label') // sort optional
-                                    ->values();
+                            // laporan masuk retur
+                            $laporanMasukRetur = PenerimaanDiCabang::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereHas('jenisPenerimaan', function ($query) {
+                                    $query->where('nama_jenis_penerimaan', 'retur');
+                                })
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
 
                             // laporan keluar
-                            $laporanKeluarDariCabang = CabangKeToko::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
-                                                        DB::raw("COUNT(*) as total")
-                                                    )
-                                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
-                                                    ->where('id_cabang', $idGudangAdmin)
-                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('jam_grup')
-                                                    ->get();
+                            $laporanKeluar = CabangKeToko::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
 
-                            $laporanKeluar = $laporanKeluarDariCabang->groupBy('jam_grup')
-                                    ->map(function ($grouped) {
-                                        return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
-                                            'total' => $grouped->sum('total'),
-                                        ];
-                                    })
-                                    ->sortBy('jam_label') // sort optional
-                                    ->values();
-
-                            // laporan retur
-                            $laporanReturKePusat = CabangKePusat::select(
-                                                DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00') as jam_grup"),
-                                                        DB::raw("COUNT(*) as total")
-                                                    )
-                                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
-                                                    ->where('id_cabang', $idGudangAdmin)
-                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
-                                                    ->orderBy('jam_grup')
-                                                    ->get();
-
-                            $laporanRetur = $laporanReturKePusat->groupBy('jam_grup')
-                                    ->map(function ($grouped) {
-                                        return [
-                                            'jam_label' => TimeHelpers::MingguInterval($grouped->first()->jam_grup),
-                                            'total' => $grouped->sum('total'),
-                                        ];
-                                    })
-                                    ->sortBy('jam_label') // sort optional
-                                    ->values();
-                            // data
+                            // laporan retur (retur ke pusat)
+                            $laporanRetur = CabangKePusat::select(
+                                    DB::raw("YEARWEEK(tanggal, 1) as minggu_ke"),
+                                    DB::raw("COUNT(*) as total")
+                                )
+                                ->whereBetween('tanggal', [Carbon::now()->subMonth()->startOfDay(), Carbon::now()->endOfDay()])
+                                ->where('id_cabang', $idGudangAdmin)
+                                ->groupBy(DB::raw("YEARWEEK(tanggal, 1)"))
+                                ->get()
+                                ->map(function ($item) {
+                                    return [
+                                        'jam_label' => "Minggu ke-" . substr($item->minggu_ke, 4),
+                                        'total' => $item->total,
+                                    ];
+                                });
                             break;
+                    }
                 }
-            }
 
                 $result = [
                     // 'laporan_masuk_pengiriman' => $laporanMasukPengiriman,

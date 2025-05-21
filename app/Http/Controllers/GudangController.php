@@ -25,7 +25,7 @@ class GudangController extends Controller
                 'status' => true,
                 'message' => 'Data Gudang',
                 'data' => $gudangs,
-            ], 201);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -44,7 +44,7 @@ class GudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Form Tambah Gudang',
-            ], 201);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -100,7 +100,7 @@ class GudangController extends Controller
                 'status' => true,
                 'message' => "Detail Data Gudang dengan ID: {$id}",
                 'data' => $gudang,
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -194,7 +194,7 @@ class GudangController extends Controller
                 'status' => true,
                 'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
                 'data' => $gudang,
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

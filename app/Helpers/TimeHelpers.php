@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 
 class TimeHelpers
@@ -117,12 +118,15 @@ class TimeHelpers
         return $start->format('H:i') . ' - ' . $end->format('H:i');
     }
 
-
     public static function MingguInterval($tanggal)
     {
         $start = Carbon::parse($tanggal);
-        $end = $start->copy()->addWeek();
-        return $start->format('d M') . ' - ' . $end->format('d M');
+        $end = $start->copy()->addDays(7);
+
+        $startFormatted = $start->format('d') . ' ' . self::getIndonesianMonthShort($start->format('n'));
+        $endFormatted = $end->format('d') . ' ' . self::getIndonesianMonthShort($end->format('n'));
+
+        return "{$startFormatted} - {$endFormatted}";
     }
 
     public static function hariInterval($tanggal)
@@ -138,4 +142,36 @@ class TimeHelpers
 
         return "{$startDay} {$startMonth} - {$endDay} {$endMonth}";
     }
+
+public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
+{
+    $totalHari = $start->diffInDays($end) + 1; // +1 untuk inklusif
+    $intervalHari = floor($totalHari / $jumlahInterval);
+    $sisaHari = $totalHari % $jumlahInterval;
+
+    $ranges = [];
+    $currentStart = $start->copy()->startOfDay();
+
+    for ($i = 0; $i < $jumlahInterval; $i++) {
+        // Tambahkan sisa hari ke interval pertama
+        $days = $intervalHari + ($i < $sisaHari ? 1 : 0);
+        $currentEnd = $currentStart->copy()->addDays($days - 1)->endOfDay(); // -1 karena start dihitung juga
+
+        if ($currentEnd->gt($end)) {
+            $currentEnd = $end->copy()->endOfDay();
+        }
+
+        $ranges[] = [
+            'label' => $currentStart->format('d M') . ' - ' . $currentEnd->format('d M'),
+            'start' => $currentStart->copy(),
+            'end' => $currentEnd->copy(),
+        ];
+
+        // Geser ke hari berikutnya, start of day
+        $currentStart = $currentEnd->copy()->addDay()->startOfDay();
+    }
+
+    return $ranges;
+}
+
 }

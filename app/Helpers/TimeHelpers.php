@@ -15,14 +15,15 @@ class TimeHelpers
      */
     public static function getHoursUntilNow(): array
     {
-        // Mendapatkan jam saat ini
+        // Mendapatkan jam saat ini dan tambah 1 jam
         $currentHour = (int)now()->format('H');
+        $maxHour = min($currentHour + 1, 23);
 
         // Inisialisasi array untuk menyimpan jam
         $hours = [];
 
-        // Loop dari jam 00 hingga jam sekarang
-        for ($i = 0; $i <= $currentHour; $i++) {
+        // Loop dari jam 00 hingga jam sekarang + 1
+        for ($i = 0; $i <= $maxHour; $i++) {
             // Format jam dengan leading zero jika diperlukan
             $formattedHour = sprintf("%02d", $i);
 
@@ -143,35 +144,53 @@ class TimeHelpers
         return "{$startDay} {$startMonth} - {$endDay} {$endMonth}";
     }
 
-public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
-{
-    $totalHari = $start->diffInDays($end) + 1; // +1 untuk inklusif
-    $intervalHari = floor($totalHari / $jumlahInterval);
-    $sisaHari = $totalHari % $jumlahInterval;
+    public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
+    {
+        $totalHari = $start->diffInDays($end) + 1; // +1 untuk inklusif
+        $intervalHari = floor($totalHari / $jumlahInterval);
+        $sisaHari = $totalHari % $jumlahInterval;
 
-    $ranges = [];
-    $currentStart = $start->copy()->startOfDay();
+        $ranges = [];
+        $currentStart = $start->copy()->startOfDay();
 
-    for ($i = 0; $i < $jumlahInterval; $i++) {
-        // Tambahkan sisa hari ke interval pertama
-        $days = $intervalHari + ($i < $sisaHari ? 1 : 0);
-        $currentEnd = $currentStart->copy()->addDays($days - 1)->endOfDay(); // -1 karena start dihitung juga
+        for ($i = 0; $i < $jumlahInterval; $i++) {
+            // Tambahkan sisa hari ke interval pertama
+            $days = $intervalHari + ($i < $sisaHari ? 1 : 0);
+            $currentEnd = $currentStart->copy()->addDays($days - 1)->endOfDay(); // -1 karena start dihitung juga
 
-        if ($currentEnd->gt($end)) {
-            $currentEnd = $end->copy()->endOfDay();
+            if ($currentEnd->gt($end)) {
+                $currentEnd = $end->copy()->endOfDay();
+            }
+
+            $ranges[] = [
+                'label' => $currentStart->format('d M') . ' - ' . $currentEnd->format('d M'),
+                'start' => $currentStart->copy(),
+                'end' => $currentEnd->copy(),
+            ];
+
+            // Geser ke hari berikutnya, start of day
+            $currentStart = $currentEnd->copy()->addDay()->startOfDay();
         }
 
-        $ranges[] = [
-            'label' => $currentStart->format('d M') . ' - ' . $currentEnd->format('d M'),
-            'start' => $currentStart->copy(),
-            'end' => $currentEnd->copy(),
-        ];
-
-        // Geser ke hari berikutnya, start of day
-        $currentStart = $currentEnd->copy()->addDay()->startOfDay();
+        return $ranges;
     }
 
-    return $ranges;
-}
+    public static function getHourlyIntervals(): array 
+    {
+        $currentHour = (int) now()->format('H');
+        $intervals = [];
+        
+        for ($i = 0; $i <= $currentHour; $i++) {
+            $start = sprintf("%02d:00", $i);
+            $end = sprintf("%02d:00", $i + 1);
+            $intervals[] = [
+                'start' => Carbon::today()->setTimeFromTimeString($start),
+                'end' => Carbon::today()->setTimeFromTimeString($end),
+                'label' => "{$start} - {$end}"
+            ];
+        }
+        
+        return $intervals;
+    }
 
 }

@@ -10,8 +10,8 @@ use App\Models\CabangKePusat;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Log;
 
 class CabangKePusatController extends Controller
 {
@@ -114,9 +114,9 @@ class CabangKePusatController extends Controller
                 return response()->json([
                     'status' => true,
                     'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
-                ]);
+                ], 201);
             }, 3);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
@@ -151,7 +151,7 @@ class CabangKePusatController extends Controller
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id}",
                 'data' => $cabangKePusat,
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id} tidak ditemukan.",
@@ -193,7 +193,7 @@ class CabangKePusatController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Cabang Ke Pusat dengan ID: {$id} sudah dihapus sebelumnya.",
-                ]);
+                ], 409);
             }
 
             return DB::transaction(function () use ($id, $cabangKePusat) {
@@ -204,7 +204,7 @@ class CabangKePusatController extends Controller
                     'message' => "Berhasil menghapus Data Cabang Ke Pusat dengan ID: {$id}",
                 ]);
             }, 3);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id} tidak ditemukan.",

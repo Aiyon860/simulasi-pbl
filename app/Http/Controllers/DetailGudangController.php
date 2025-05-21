@@ -24,7 +24,7 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Data Barang Gudang',
                 'data' => $detailGudang,
-            ], 201);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -52,7 +52,7 @@ class DetailGudangController extends Controller
                     'gudang' => $gudang,
                     'satuanBerat' => $satuanBerat,
                 ],
-            ], 201);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -109,7 +109,7 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
                 'data' => $detailGudang,
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -144,7 +144,7 @@ class DetailGudangController extends Controller
                     'gudang' => $gudang,
                     'satuanBerat' => $satuanBerat,
                 ],
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -181,7 +181,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -210,7 +210,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
-            ], 201);
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

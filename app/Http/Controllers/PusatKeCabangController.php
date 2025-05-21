@@ -144,51 +144,9 @@ class PusatKeCabangController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update()
     {
-        try {
-            $pusatKeCabang = PusatKeCabang::findOrFail($id);
-
-            $validated = $request->validate([
-                'kode' => 'required|string',
-                'id_pusat' => 'required|exists:gudang_dan_tokos,id',
-                'id_cabang' => 'required|exists:gudang_dan_tokos,id',
-                'id_barang' => 'required|exists:barangs,id',
-                'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'id_kurir' => 'required|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
-            ]);
-
-            return DB::transaction(function () use ($pusatKeCabang, $validated) {
-                $pusatKeCabang->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data pengiriman dari Pusat Ke Cabang dengan ID: {$pusatKeCabang->id} berhasil diperbarui!",
-                    'data' => $pusatKeCabang,
-                ]);
-            }, 3);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} tidak ditemukan.",
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui data pengiriman dari pusat ke cabang.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        //
     }
 
     /**

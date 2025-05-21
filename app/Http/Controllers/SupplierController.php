@@ -13,7 +13,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-       try {
+        try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
                 ->orderBy('id')
                 ->paginate(10);
@@ -50,7 +50,7 @@ class SupplierController extends Controller
 
     public function show($id)
     {
-       try {
+        try {
             $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
 
             return response()->json([

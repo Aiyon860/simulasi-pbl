@@ -487,8 +487,8 @@ class DashboardController extends Controller
                                                 DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d') as jam_grup"),
                                                         DB::raw("COUNT(*) as total")
                                                     )
-                                                    ->whereBetween('tanggal', [Carbon::yesterday()->subMonth()->startOfDay(), Carbon::yesterday()->endOfDay()])
-                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d')"))
+                                                    ->whereBetween('tanggal', [Carbon::now()->subMonthNoOverflow()->startOfMonth(), Carbon::now()->subMonthNoOverflow()->endOfMonth()])
+                                                    ->groupBy(DB::raw("DATE_FORMAT(tanggal, '%Y-%m-%d %H:00:00')"))
                                                     ->orderBy('jam_grup')
                                                     ->get();
 

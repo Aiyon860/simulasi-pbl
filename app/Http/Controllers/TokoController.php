@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\GudangDanToko;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

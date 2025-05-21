@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 
 class TimeHelpers
@@ -117,7 +118,6 @@ class TimeHelpers
         return $start->format('H:i') . ' - ' . $end->format('H:i');
     }
 
-
     public static function MingguInterval($tanggal)
 {
     $start = Carbon::parse($tanggal);
@@ -154,7 +154,7 @@ public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
 
         return $ranges;
     }
-  
+
     public static function hariInterval($tanggal)
     {
         $start = Carbon::parse($tanggal);

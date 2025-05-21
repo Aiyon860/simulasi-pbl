@@ -48,6 +48,7 @@ class CabangKeTokoController extends Controller
             $status = Status::where('id', 1)->get();
             $cabang = GudangDanToko::where('flag', 1)->get();
             $toko = $cabang;
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Barang Cabang ke Toko',
@@ -156,6 +157,7 @@ class CabangKeTokoController extends Controller
             $status = Status::all();
             $cabang = GudangDanToko::where('flag', 1)->get();
             $toko = $cabang;
+            
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Cabang ke Toko',

@@ -1,4 +1,5 @@
 <!-- resources/views/users/index.blade.php -->
+@section('page-title', 'Manajemen User')
 <x-default-layout>
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">

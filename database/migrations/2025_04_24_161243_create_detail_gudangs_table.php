@@ -34,6 +34,7 @@ return new class extends Migration
 
             $table->bigInteger('jumlah_stok');
             $table->integer('stok_opname')->default(0);
+            $table->integer('flag')->default(1);
 
             $table->timestamps();
             $table->softDeletes();

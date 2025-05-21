@@ -1,5 +1,5 @@
-<footer class="bg-gray-200 py-4 text-center text-gray-600 w-full">
+<footer class="mt-4 text-center text-sm text-white/60 border-t border-white/10 pt-2">
     <div class="container mx-auto">
-        &copy; {{ date('Y') }} Sistem Manajemen Gudang
+        {{ date('Y') }} &copy; Polines
     </div>
 </footer>

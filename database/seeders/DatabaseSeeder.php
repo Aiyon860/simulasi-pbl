@@ -23,14 +23,14 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             JenisPenerimaanSeeder::class,
             DetailGudangSeeder::class,
-            CabangKePusatSeeder::class,
-            TokoKeCabangSeeder::class,
-            CabangKeTokoSeeder::class,
-            PusatKeSupplierSeeder::class,
-            PusatKeCabangSeeder::class,
-            PenerimaanDiPusatSeeder::class,
-            PenerimaanDiCabangSeeder::class,
-            SupplierKePusatSeeder::class,
+            // CabangKePusatSeeder::class,
+            // TokoKeCabangSeeder::class,
+            // CabangKeTokoSeeder::class,
+            // PusatKeSupplierSeeder::class,
+            // PusatKeCabangSeeder::class,
+            // PenerimaanDiPusatSeeder::class,
+            // PenerimaanDiCabangSeeder::class,
+            // SupplierKePusatSeeder::class,
         ]);
     }
 }

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\DetailGudang;
 use App\Models\Barang;
-use App\Models\GudangDanToko;
 use App\Models\SatuanBerat;
+use App\Models\DetailGudang;
+use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DetailGudangController extends Controller
 {
@@ -16,13 +17,21 @@ class DetailGudangController extends Controller
      */
     public function index()
     {
-        $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->get();
+        try{
+            $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->where('id_gudang', auth()->user()->gudang->id)->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Detail Gudang retrieved successfully',
-            'data' => $detailGudang
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang Gudang',
+                'data' => $detailGudang,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data barang gudang.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -30,19 +39,27 @@ class DetailGudangController extends Controller
      */
     public function create()
     {
-        $barangs = Barang::all();
-        $gudang = GudangDanToko::all();
-        $satuanBerat = SatuanBerat::all();
+        try{
+            $barangs = Barang::all();
+            $gudang = GudangDanToko::all();
+            $satuanBerat = SatuanBerat::all();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Data Barang, Gudang dan Toko, dan Satuan Berat',
-            'data' => [
-                'barangs' => $barangs,
-                'gudang' => $gudang,
-                'satuanBerat' => $satuanBerat,
-            ]
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Form Tambah Barang Gudang',
+                'data' => [
+                    'barangs' => $barangs,
+                    'gudang' => $gudang,
+                    'satuanBerat' => $satuanBerat,
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menyiapkan form tambah barang gudang.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -58,19 +75,26 @@ class DetailGudangController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
+            DB::transaction(function () use ($validated) {
                 DetailGudang::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Detail Gudang berhasil ditambahkan',
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang Gudang berhasil ditambahkan',
+            ], 201);
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal menambahkan Data Detail Gudang. Silakan coba lagi.',
-            ]);
+                'message' => 'Data Barang Gudang tidak ditemukan',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menambahkan data barang gudang',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -79,18 +103,24 @@ class DetailGudangController extends Controller
      */
     public function show(string $id)
     {
-        try{
+        try {
             $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->findOrFail($id);
             return response()->json([
-                'success' => true,
-                'message' => "Data Detail Gudang dengan ID: {$id}",
-                'data' => $detailGudang
-            ]);
-        } catch (\Throwable $th) {
+                'status' => true,
+                'message' => 'Detail Barang Gudang',
+                'data' => $detailGudang,
+            ], 201);
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Detail Gudang dengan ID: {$id} tidak ditemukan",
-            ]);
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -99,7 +129,34 @@ class DetailGudangController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        try {
+            $detailGudang = DetailGudang::findOrFail($id);
+            $barangs = Barang::all();
+            $gudang = GudangDanToko::all();
+            $satuanBerat = SatuanBerat::all();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Form Edit Barang Gudang',
+                'data' => [
+                    'detailGudang' => $detailGudang,
+                    'barangs' => $barangs,
+                    'gudang' => $gudang,
+                    'satuanBerat' => $satuanBerat,
+                ],
+            ], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menyiapkan form edit barang gudang",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -112,25 +169,30 @@ class DetailGudangController extends Controller
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
             'jumlah_stok' => 'required|integer|min:1',
             'id_satuan_berat' => 'required|exists:satuan_berats,id',
-            'stok_opname' => 'required|integer|min:0|max:1',
+            'stok_opname' => 'nullable|integer|min:0|max:1', // Ditambahkan nullable agar tidak selalu wajib diisi
         ]);
 
-        $detailGudang = DetailGudang::findOrFail($id);
         try {
-
-            return DB::transaction(function () use ($validated, $detailGudang) {
+            $detailGudang = DetailGudang::findOrFail($id);
+            DB::transaction(function () use ($validated, $detailGudang) {
                 $detailGudang->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Detail Gudang dengan ID: {$detailGudang->id} berhasil diperbarui",
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
+            ], 201);
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal memperbarui Data Detail Gudang dengan ID: {$detailGudang->id}. Silakan coba lagi.",
-            ]);
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat memperbarui data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -139,6 +201,27 @@ class DetailGudangController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $barangGudang = DetailGudang::findOrFail($id);
+            DB::transaction(function () use ($barangGudang) {
+                $barangGudang->update(['flag' => 0]);
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+            ], 201);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+            ], 404);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan ID: {$id}",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

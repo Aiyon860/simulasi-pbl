@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('gudang_dan_tokos', function (Blueprint $table) {
             $table->id();
             $table->string('nama_gudang_toko');
+            $table->integer('kategori_bangunan');
             $table->string('alamat')->nullable();
             $table->string('no_telepon')->nullable();
             $table->integer('flag')->default(1);

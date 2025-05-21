@@ -26,6 +26,10 @@ class PenerimaanDiPusat extends Model
         'flag'
     ];
 
+    protected $casts = [
+        'tanggal' => 'datetime',
+    ];
+
     public function jenisPenerimaan(): BelongsTo
     {
         return $this->belongsTo(JenisPenerimaan::class, 'id_jenis_penerimaan');

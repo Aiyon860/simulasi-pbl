@@ -19,6 +19,7 @@ class GudangDanToko extends Model
      */
     protected $fillable = [
         'nama_gudang_toko',
+        'kategori_bangunan',
         'alamat',
         'no_telepon',
         'flag'

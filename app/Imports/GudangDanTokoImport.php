@@ -17,6 +17,7 @@ class GudangDanTokoImport implements ToModel, WithHeadingRow
     {
         return new GudangDanToko([
             'nama_gudang_toko' => $row['nama_gudang_toko'],
+            'kategori_bangunan' => $row['kategori_bangunan'],
             'alamat' => $row['alamat'],
             'no_telepon' => $row['no_telepon'],
         ]);

@@ -21,7 +21,8 @@ class DetailGudang extends Model
         'id_barang',
         'id_satuan_berat',
         'jumlah_stok',
-        'stok_opname'
+        'stok_opname',
+        'flag',
     ];
 
     public function gudang(): BelongsTo

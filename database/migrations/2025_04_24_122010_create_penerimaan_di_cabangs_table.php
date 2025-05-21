@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('penerimaan_di_cabangs', function (Blueprint $table) {
             $table->id();
+
+            $table->unsignedBigInteger('id_cabang');
+            $table->foreign('id_cabang')
+                ->references('id')
+                ->on('gudang_dan_tokos')
+                ->cascadeOnUpdate();
             
             $table->unsignedBigInteger('id_jenis_penerimaan');
             $table->foreign('id_jenis_penerimaan')

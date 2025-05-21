@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -26,7 +27,8 @@ class User extends Authenticatable
         'id_role',
         'id_gudang',
         'id_toko',
-        'flag'
+        'flag',
+        'token_jwt',
     ];
 
     /**
@@ -57,9 +59,9 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'id_role');
     }
 
-    public function gudangToko(): BelongsTo
+    public function lokasi(): BelongsTo
     {
-        return $this->belongsTo(GudangDanToko::class, 'id_toko');
+        return $this->belongsTo(GudangDanToko::class, 'id_lokasi');
     }
 
     public function hasRole(...$roles): bool
@@ -70,5 +72,15 @@ class User extends Authenticatable
             }
         }
         return false;
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

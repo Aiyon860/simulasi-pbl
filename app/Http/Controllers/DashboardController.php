@@ -17,17 +17,19 @@ use App\Models\PusatKeSupplier;
 use App\Models\PenerimaanDiPusat;
 use App\Models\PenerimaanDiCabang;
 use Illuminate\Support\Facades\DB;
+use App\Services\StokBarang\StokBarangService;
 use App\Services\Laporan\AdminCabang\LaporanCabangService;
 use App\Services\Laporan\SuperadminSupervisor\LaporanSuperService;
 
 class DashboardController extends Controller
 {
-    protected $laporanSuperService, $laporanCabangService;
+    protected $laporanSuperService, $laporanCabangService, $stokBarangService;
 
-    public function __construct(LaporanSuperService $laporanSuperService, LaporanCabangService $laporanCabangService)
+    public function __construct(LaporanSuperService $laporanSuperService, LaporanCabangService $laporanCabangService, StokBarangService $stokBarangService)
     {
         $this->laporanSuperService = $laporanSuperService;
         $this->laporanCabangService = $laporanCabangService;
+        $this->stokBarangService = $stokBarangService;
     }
 
     /**
@@ -175,7 +177,7 @@ class DashboardController extends Controller
                     if (!$user->lokasi) {
                         return response()->json([
                             'status' => false,
-                            'message' => 'Pengguna ini tidak terhubung dengan informasi gudang atau toko.',
+                            'message' => 'Pengguna ini tidak terhubung dengan gudang manapun.',
                         ], 400); // Bad Request
                     }
                     $idGudangAdmin = $user->lokasi->id;
@@ -233,6 +235,44 @@ class DashboardController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data dashboard.',
+                'error' => $th->getMessage(),
+            ], 500); // Internal Server Error
+        }
+    }
+
+    public function dashboardLowStock(Request $request)
+    {
+        if (!$request->user()->lokasi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengguna ini tidak terhubung dengan gudang manapun.',
+            ], 400); // Bad Request
+        }
+
+        $lokasi = $request->user()->lokasi;
+
+        try {
+            $barangs = [];
+
+            if ($request->user()->hasRole('SuperAdmin', 'Supervisor')) {
+                // supervisor privilege === superadmin's
+                if ($request->user()->hasRole('Supervisor')) {
+                    $lokasi->id = 1; 
+                }
+                $barangs = $this->stokBarangService->getTopTenLowestStockSuper();
+            } else { // admin cabang
+                $barangs = $this->stokBarangService->getTopTenLowestStockCabang($lokasi->id);
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => "Data barang dengan stok rendah di seluruh gudang.",
+                'data' => $barangs,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah {$lokasi->nama_gudang_toko}.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }

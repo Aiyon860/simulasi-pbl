@@ -2,11 +2,11 @@
 
 namespace App\Services\Laporan\AdminCabang;
 
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use App\Services\Laporan\LaporanService;
 use App\Repositories\Laporan\AdminCabang\LaporanCabangRepository;
 
-class LaporanCabangService
+class LaporanCabangService extends LaporanService
 {
     protected $laporanRepository;
 
@@ -15,21 +15,7 @@ class LaporanCabangService
         $this->laporanRepository = $laporanRepository;
     }
 
-    public function groupLaporanByInterval(Collection $data, array $intervals): Collection
-    {
-        return collect($intervals)->map(function ($interval) use ($data) {
-            $matchingData = $data->filter(function ($item) use ($interval) {
-                $itemTime = Carbon::parse($item->jam_grup);
-                return $itemTime->format('H:00') === $interval['start']->format('H:00');
-            });
-
-            return [
-                'jam_label' => $interval['label'],
-                'total' => $matchingData->sum('total')
-            ];
-        });
-    }
-
+    // Harian
     public function getLaporanMasukPengirimanHarian(int $idGudangAdmin, array $intervals): Collection
     {
         $data = $this->laporanRepository->getLaporanMasukPengirimanHarian($idGudangAdmin);
@@ -52,5 +38,55 @@ class LaporanCabangService
     {
         $data = $this->laporanRepository->getLaporanReturHarian($idGudangAdmin);
         return $this->groupLaporanByInterval($data, $intervals);
+    }
+
+    // Mingguan
+    public function getLaporanMasukPengirimanMingguan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanMasukPengirimanMingguan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "hari");
+    }
+
+    public function getLaporanMasukReturMingguan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanMasukReturMingguan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "hari");
+    }
+
+    public function getLaporanKeluarMingguan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanKeluarMingguan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "hari");
+    }
+
+    public function getLaporanReturMingguan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanReturMingguan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "hari");
+    }
+
+    // Bulanan
+    public function getLaporanMasukPengirimanBulanan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanMasukPengirimanBulanan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "minggu");
+    }
+
+    public function getLaporanMasukReturBulanan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanMasukReturBulanan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "minggu");
+    }
+
+    public function getLaporanKeluarBulanan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanKeluarBulanan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "minggu");
+    }
+
+    public function getLaporanReturBulanan(int $idGudangAdmin, array $intervals): Collection
+    {
+        $data = $this->laporanRepository->getLaporanReturBulanan($idGudangAdmin);
+        return $this->groupLaporanByInterval($data, $intervals, "minggu");
     }
 }

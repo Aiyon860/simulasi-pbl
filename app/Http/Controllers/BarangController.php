@@ -3,12 +3,9 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
-use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Http\Requests\Barang\StoreBarangRequest;
-use App\Http\Requests\Barang\UpdateBarangRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BarangController extends Controller
@@ -19,7 +16,17 @@ class BarangController extends Controller
     public function index()
     {
         try {
-            $barangs = Barang::with(['kategori'])->orderBy('id')->paginate(10);
+            $barangs = Barang::with(['kategori:id,nama_kategori_barang'])
+                ->where('flag', 1)
+                ->orderBy('nama_barang')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'nama_barang' => $item->nama_barang,
+                        'kategori_barang' => $item->kategori->nama_kategori_barang,
+                        'flag' => $item->flag ? 'Aktif' : 'Nonaktif',
+                    ];
+                });
 
             return response()->json([
                 'status' => true,
@@ -41,7 +48,10 @@ class BarangController extends Controller
     public function create()
     {
         try {
-            $categories = KategoriBarang::all();
+            $categories = KategoriBarang::select('id', 'nama_kategori_barang')
+                ->where('flag', 1)
+                ->orderBy('nama_kategori_barang')
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -107,7 +117,15 @@ class BarangController extends Controller
     public function show(string $id)
     {
         try {
-            $barang = Barang::findOrFail($id);
+            $item = Barang::select('id', 'nama_barang', 'flag', 'id_kategori_barang')
+                ->with(['kategori:id,nama_kategori_barang'])
+                ->findOrFail($id);
+            
+            $barang = [
+                'nama_barang' => $item->nama_barang,
+                'kategori_barang' => $item->kategori->nama_kategori_barang,
+                'status' => $item->flag ? 'Aktif' : 'Nonaktif'
+            ];
 
             return response()->json([
                 'status' => true,
@@ -135,15 +153,21 @@ class BarangController extends Controller
     public function edit(string $id)
     {
         try {
-            $barang = Barang::with('kategori')->findOrFail($id);
-            $kategoris = KategoriBarang::all();
+            $barang = Barang::select('id', 'nama_barang', 'id_kategori_barang')
+                ->with('kategori:id,nama_kategori_barang')
+                ->findOrFail($id);
+
+            $categories = KategoriBarang::select('id', 'nama_kategori_barang')
+                ->where('flag', 1)
+                ->orderBy('nama_kategori_barang')
+                ->get();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Barang',
                 'data' => [
                     'barang' => $barang,
-                    'kategoris' => $kategoris,
+                    'categories' => $categories,
                 ],
             ]);
         } catch (ModelNotFoundException $e) {
@@ -223,6 +247,13 @@ class BarangController extends Controller
         try {
             $barang = Barang::findOrFail($id);
 
+            if ($barang->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Barang {$barang->nama_barang} sudah dinonaktifkan!",
+                ]);
+            }
+
             DB::transaction(function () use ($barang) {
                 $barang->update(['flag' => 0]);
             }, 3);
@@ -253,6 +284,13 @@ class BarangController extends Controller
     {
         try {
             $barang = Barang::findOrFail($id);
+
+            if ($barang->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Barang {$barang->nama_barang} sudah diaktifkan!",
+                ]);
+            }
 
             DB::transaction(function () use ($barang) {
                 $barang->update(['flag' => 1]);

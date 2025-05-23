@@ -52,6 +52,23 @@ class AuthController extends Controller
     {
         JWTAuth::invalidate(JWTAuth::getToken());
 
+        $user = auth()->user();
+        $user->update(['token_jwt' => null]);
+
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh()
+    {
+        try {
+            $token = JWTAuth::refresh(JWTAuth::getToken());
+
+            $user = auth()->user();
+            $user->update(['token_jwt' => $token]);
+
+            return response()->json(compact('token'));
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Could not refresh token'], 500);
+        }
     }
 }

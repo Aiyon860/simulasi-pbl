@@ -22,7 +22,9 @@ use App\Http\Controllers\PenerimaanDiCabangController;
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['jwt'])->group(function () {
+    Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/authenticated-user', [AuthController::class, 'getUser']);
 
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::resource('dashboard', DashboardController::class);

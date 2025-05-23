@@ -197,7 +197,7 @@ class DashboardController extends Controller
                             // description
                             $description = TimeHelpers::getLastSevenDays();
                             $intervals = TimeHelpers::getDailyIntervals();
-                                                                                                            
+
                             $laporanMasukPengiriman = $this->laporanCabangService->getLaporanMasukPengirimanMingguan($idGudangAdmin, $intervals);
                             $laporanMasukRetur = $this->laporanCabangService->getLaporanMasukReturMingguan($idGudangAdmin, $intervals);
                             $laporanKeluar = $this->laporanCabangService->getLaporanKeluarMingguan($idGudangAdmin, $intervals);
@@ -257,13 +257,13 @@ class DashboardController extends Controller
             if ($request->user()->hasRole('SuperAdmin', 'Supervisor')) {
                 // supervisor privilege === superadmin's
                 if ($request->user()->hasRole('Supervisor')) {
-                    $lokasi->id = 1; 
+                    $lokasi->id = 1;
                 }
                 $barangs = $this->stokBarangService->getTopTenLowestStockSuper();
             } else { // admin cabang
                 $barangs = $this->stokBarangService->getTopTenLowestStockCabang($lokasi->id);
             }
-    
+
             return response()->json([
                 'status' => true,
                 'message' => "Data barang dengan stok rendah di seluruh gudang.",

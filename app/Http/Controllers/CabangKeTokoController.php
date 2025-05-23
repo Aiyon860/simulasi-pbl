@@ -21,7 +21,28 @@ class CabangKeTokoController extends Controller
     public function index()
     {
         try {
-            $cabangKeToko = CabangKeToko::with('cabang', 'toko', 'barang', 'kurir', 'satuanBerat', 'status')->get();
+            $cabangKeToko = CabangKeToko::select(
+                'id', 'kode', 'id_cabang',
+                'id_toko', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
+                'jumlah_barang', 'tanggal'
+            )->with(
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'toko:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+            )
+            ->where('flag', 1)
+            ->orderBy('tanggal', 'desc')
+            ->get([
+                'id', 'kode', 'id_cabang',
+                'id_toko', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
+                'jumlah_barang', 'tanggal'
+            ]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Toko',
@@ -42,12 +63,19 @@ class CabangKeTokoController extends Controller
     public function create()
     {
         try {
-            $barang = Barang::all()->where('flag', 1);
-            $satuanBerat = SatuanBerat::all();
-            $kurir = Kurir::all();
-            $status = Status::where('id', 1)->get();
-            $cabang = GudangDanToko::where('flag', 1)->get();
-            $toko = $cabang;
+            $barang = Barang::select('id', 'nama_barang')
+            ->where('flag', 1)
+            ->get();
+            $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
+            $kurir = Kurir::select('id', 'nama_kurir')->get();
+            $status = Status::select('id', 'nama_status')->get();
+            $gudangdantoko = GudangDanToko::select('id', 'nama_gudang_toko', 'kategori_bangunan')
+                ->where('id', '!=', 1)
+                ->where('kategori_bangunan', '!=', '1')
+                ->where('flag', 1);
+            $cabang = $gudangdantoko->where('kategori_bangunan', 0)->get();
+
+            $toko = $gudangdantoko->where('kategori_bangunan', 2)->get();
 
             return response()->json([
                 'status' => true,
@@ -129,12 +157,30 @@ class CabangKeTokoController extends Controller
     public function show(string $id)
     {
         try {
-            $CabangKeToko = CabangKeToko::with('cabang', 'toko', 'barang', 'kurir', 'satuanBerat', 'status')->findOrFail($id);
+            $CabangKeToko = CabangKeToko::with(
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'toko:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+                )->findOrFail($id, [
+                'id', 'kode', 'id_cabang',
+                'id_toko', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
+                'jumlah_barang', 'tanggal'
+                ]);
+
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id}",
                 'data' => $CabangKeToko,
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+            ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -149,35 +195,7 @@ class CabangKeTokoController extends Controller
      */
     public function edit(string $id)
     {
-        try {
-            $cabangKeToko = CabangKeToko::findOrFail($id);
-            $barang = Barang::all();
-            $satuanBerat = SatuanBerat::all();
-            $kurir = Kurir::all();
-            $status = Status::all();
-            $cabang = GudangDanToko::where('flag', 1)->get();
-            $toko = $cabang;
-            
-            return response()->json([
-                'status' => true,
-                'message' => 'Data untuk Form Edit Cabang ke Toko',
-                'data' => [
-                    'cabangKeToko' => $cabangKeToko,
-                    'barang' => $barang,
-                    'satuanBerat' => $satuanBerat,
-                    'kurir' => $kurir,
-                    'status' => $status,
-                    'cabang' => $cabang,
-                    'toko' => $toko,
-                ],
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data untuk form edit Cabang ke Toko.',
-                'error' => $th->getMessage(),
-            ], 500); // Internal Server Error
-        }
+
     }
 
     /**
@@ -187,17 +205,9 @@ class CabangKeTokoController extends Controller
     {
         try {
             $CabangKeToko = CabangKeToko::findOrFail($id);
+
             $validated = $request->validate([
-                'kode' => 'required|string',
-                'id_cabang' => 'required|exists:gudang_dan_tokos,id',
-                'id_toko' => 'required|exists:gudang_dan_tokos,id',
-                'id_barang' => 'required|exists:barangs,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'id_kurir' => 'required|exists:kurirs,id',
                 'id_status' => 'required|exists:statuses,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
-                'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
 
             return DB::transaction(function () use ($validated, $CabangKeToko) {

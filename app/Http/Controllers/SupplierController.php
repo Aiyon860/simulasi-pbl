@@ -16,7 +16,9 @@ class SupplierController extends Controller
         try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
                 ->orderBy('id')
-                ->paginate(10);
+                ->get([
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag',
+                ]);
 
             return response()->json([
                 'status' => true,
@@ -51,7 +53,7 @@ class SupplierController extends Controller
     public function show($id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id,['id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag']);
 
             return response()->json([
                 'status' => true,
@@ -110,7 +112,7 @@ class SupplierController extends Controller
     public function edit(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id,['id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag']);
 
             return response()->json([
                 'status' => true,
@@ -172,7 +174,14 @@ class SupplierController extends Controller
     public function deactivate(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id);
+
+            if($supplier->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Kategori barang dengan ID: {$id} sudah diaktifkan"
+                ]);
+            }
 
             $supplier->update(['flag' => 0]);
 
@@ -201,7 +210,13 @@ class SupplierController extends Controller
     public function activate(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id);
+            if($supplier->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Kategori barang dengan ID: {$id} sudah diaktifkan"
+                ]);
+            }
 
             $supplier->update(['flag' => 1]);
 

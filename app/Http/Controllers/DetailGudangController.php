@@ -15,10 +15,14 @@ class DetailGudangController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try{
-            $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->where('id_gudang', auth()->user()->gudang->id)->get();
+            $detailGudang = DetailGudang::with(
+                'barang:',
+                'gudang',
+                'satuanBerat'
+                )->where('id_gudang', $request->user()->gudang->id)->get();
 
             return response()->json([
                 'status' => true,

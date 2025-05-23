@@ -18,7 +18,16 @@ class KategoriBarangController extends Controller
     public function index()
     {
         try {
-            $categories = KategoriBarang::orderBy('id')->paginate(10);
+            $categories = KategoriBarang::select('id', 'nama_kategori_barang', 'flag')
+                ->orderBy('id')
+                ->get()
+                ->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'nama_kategori_barang' => $category->nama_kategori_barang,
+                        'status' => $category->flag ? 'Aktif' : 'Nonaktif',
+                    ];
+                });
             return response()->json([
                 'status' => true,
                 'message' => 'Data Kategori Barang',
@@ -95,11 +104,16 @@ class KategoriBarangController extends Controller
     public function show(string $id)
     {
         try {
-            $category = KategoriBarang::findOrFail($id);
+            $category = KategoriBarang::findOrFail($id, ['id', 'nama_kategori_barang', 'flag']);
+            $kategori = [
+                'id' => $category->id,
+                'nama_kategori_barang' => $category->nama_kategori_barang,
+                'status' => $category->flag ? 'Aktif' : 'Nonaktif',
+            ];
             return response()->json([
                 'status' => true,
                 'message' => "Data Kategori Barang {$id}",
-                'data' => $category,
+                'data' => $kategori,
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -121,7 +135,7 @@ class KategoriBarangController extends Controller
     public function edit(string $id)
     {
         try {
-            $category = KategoriBarang::findOrFail($id);
+            $category = KategoriBarang::findOrFail($id, ['id', 'nama_kategori_barang']);
             return response()->json([
                 'status' => true,
                 'message' => "Form Edit Kategori Barang {$id}",
@@ -198,6 +212,13 @@ class KategoriBarangController extends Controller
         try {
             $category = KategoriBarang::findOrFail($id);
 
+            if($category->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Kategori barang dengan ID: {$id} sudah dinonaktifkan"
+                ]);
+            }
+
             DB::transaction(function () use ($category) {
                 $category->update(['flag' => 0]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
@@ -227,6 +248,13 @@ class KategoriBarangController extends Controller
         try {
             $category = KategoriBarang::findOrFail($id);
 
+            if($category->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Kategori barang dengan ID: {$id} sudah diaktifkan"
+                ]);
+            }
+            
             DB::transaction(function () use ($category) {
                 $category->update(['flag' => 1]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock

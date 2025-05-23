@@ -197,7 +197,7 @@ class DashboardController extends Controller
                             // description
                             $description = TimeHelpers::getLastSevenDays();
                             $intervals = TimeHelpers::getDailyIntervals();
-
+                                                                                                            
                             $laporanMasukPengiriman = $this->laporanCabangService->getLaporanMasukPengirimanMingguan($idGudangAdmin, $intervals);
                             $laporanMasukRetur = $this->laporanCabangService->getLaporanMasukReturMingguan($idGudangAdmin, $intervals);
                             $laporanKeluar = $this->laporanCabangService->getLaporanKeluarMingguan($idGudangAdmin, $intervals);

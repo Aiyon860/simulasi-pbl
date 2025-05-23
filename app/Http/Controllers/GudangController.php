@@ -19,7 +19,9 @@ class GudangController extends Controller
         try {
             $gudangs = GudangDanToko::where('kategori_bangunan', 0)
                 ->orderBy('id')
-                ->paginate(10);
+                ->get([
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                ]);
 
             return response()->json([
                 'status' => true,
@@ -94,7 +96,13 @@ class GudangController extends Controller
     public function show(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id,[
+                'id',
+                'nama_gudang_toko',
+                'alamat',
+                'no_telepon',
+                'flag'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -121,7 +129,12 @@ class GudangController extends Controller
     public function edit(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id, [
+                'id',
+                'nama_gudang_toko',
+                'alamat',
+                'no_telepon'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -148,7 +161,7 @@ class GudangController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id);
 
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
@@ -186,7 +199,14 @@ class GudangController extends Controller
     public function deactivate(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id);
+
+            if ($gudang->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah dinonaktifkan.",
+                ], 400);
+            }
 
             $gudang->update(['flag' => 0]);
 
@@ -212,7 +232,14 @@ class GudangController extends Controller
     public function activate(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id);
+
+            if ($gudang->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah diaktifkan.",
+                ], 400);
+            }
 
             $gudang->update(['flag' => 1]);
 

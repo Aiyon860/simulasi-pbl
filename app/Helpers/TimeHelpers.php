@@ -15,14 +15,15 @@ class TimeHelpers
      */
     public static function getHoursUntilNow(): array
     {
-        // Mendapatkan jam saat ini
+        // Mendapatkan jam saat ini dan tambah 1 jam
         $currentHour = (int)now()->format('H');
+        $maxHour = min($currentHour + 1, 23);
 
         // Inisialisasi array untuk menyimpan jam
         $hours = [];
 
-        // Loop dari jam 00 hingga jam sekarang
-        for ($i = 0; $i <= $currentHour; $i++) {
+        // Loop dari jam 00 hingga jam sekarang + 1
+        for ($i = 0; $i < $maxHour; $i++) {
             // Format jam dengan leading zero jika diperlukan
             $formattedHour = sprintf("%02d", $i);
 
@@ -91,7 +92,7 @@ class TimeHelpers
      * @param int $month Bulan (1-12)
      * @return string
      */
-    private static function getIndonesianMonthShort(int $month): string
+    public static function getIndonesianMonthShort(int $month): string
     {
         $months = [
             1 => 'Jan',
@@ -111,17 +112,10 @@ class TimeHelpers
         return $months[$month] ?? '';
     }
 
-    public static function jamInterval($jamGrup)
-    {
-        $start = Carbon::parse($jamGrup);
-        $end = $start->copy()->addHour();
-        return $start->format('H:i') . ' - ' . $end->format('H:i');
-    }
-
     public static function MingguInterval($tanggal)
     {
         $start = Carbon::parse($tanggal);
-        $end = $start->copy()->addDays(7);
+        $end = $start->copy()->addDay();
 
         $startFormatted = $start->format('d') . ' ' . self::getIndonesianMonthShort($start->format('n'));
         $endFormatted = $end->format('d') . ' ' . self::getIndonesianMonthShort($end->format('n'));
@@ -131,47 +125,80 @@ class TimeHelpers
 
     public static function hariInterval($tanggal)
     {
-        $start = Carbon::parse($tanggal);
-        $end = $start->copy()->addDay();
+        $date = Carbon::parse($tanggal);
 
-        $startDay = $start->format('d');
-        $startMonth = self::getIndonesianMonthShort($start->format('n'));
+        $day = $date->format('d');
+        $month = self::getIndonesianMonthShort($date->format('n'));
 
-        $endDay = $end->format('d');
-        $endMonth = self::getIndonesianMonthShort($end->format('n'));
-
-        return "{$startDay} {$startMonth} - {$endDay} {$endMonth}";
+        return "{$day} {$month}";
     }
 
-public static function getMingguanIntervals($start, $end, $jumlahInterval = 4)
-{
-    $totalHari = $start->diffInDays($end) + 1; // +1 untuk inklusif
-    $intervalHari = floor($totalHari / $jumlahInterval);
-    $sisaHari = $totalHari % $jumlahInterval;
+    public static function getMingguanIntervals($jumlahInterval = 4)
+    {
+        $ranges = [];
+        // Start from yesterday and work backwards
+        $currentEnd = now()->subDay()->endOfDay();
+        $daysPerWeek = 7;
 
-    $ranges = [];
-    $currentStart = $start->copy()->startOfDay();
+        for ($i = 0; $i < $jumlahInterval; $i++) {
+            $currentStart = $currentEnd->copy()->subDays($daysPerWeek - 1)->startOfDay();
 
-    for ($i = 0; $i < $jumlahInterval; $i++) {
-        // Tambahkan sisa hari ke interval pertama
-        $days = $intervalHari + ($i < $sisaHari ? 1 : 0);
-        $currentEnd = $currentStart->copy()->addDays($days - 1)->endOfDay(); // -1 karena start dihitung juga
+            $startFormatted = $currentStart->format('d') . ' ' . self::getIndonesianMonthShort($currentStart->format('n'));
+            $endFormatted = $currentEnd->format('d') . ' ' . self::getIndonesianMonthShort($currentEnd->format('n'));
 
-        if ($currentEnd->gt($end)) {
-            $currentEnd = $end->copy()->endOfDay();
+            // Insert at the beginning of array to maintain chronological order
+            array_unshift($ranges, [
+                'label' => sprintf('Minggu ke-%d (%s - %s)', $i + 1, $startFormatted, $endFormatted),
+                'start' => $currentStart->copy(),
+                'end' => $currentEnd->copy(),
+            ]);
+
+            // Move to previous week
+            $currentEnd = $currentStart->copy()->subDay()->endOfDay();
         }
 
-        $ranges[] = [
-            'label' => $currentStart->format('d M') . ' - ' . $currentEnd->format('d M'),
-            'start' => $currentStart->copy(),
-            'end' => $currentEnd->copy(),
-        ];
-
-        // Geser ke hari berikutnya, start of day
-        $currentStart = $currentEnd->copy()->addDay()->startOfDay();
+        return $ranges;
     }
 
-    return $ranges;
-}
+    public static function getHourlyIntervals(): array 
+    {
+        $currentHour = (int) now()->format('H');
+        $intervals = [];
+        
+        for ($i = 0; $i <= $currentHour; $i++) {
+            $start = sprintf("%02d:00", $i);
+            $end = sprintf("%02d:00", $i + 1);
+            $intervals[] = [
+                'start' => Carbon::today()->setTimeFromTimeString($start),
+                'end' => Carbon::today()->setTimeFromTimeString($end),
+                'label' => "{$start} - {$end}"
+            ];
+        }
+        
+        return $intervals;
+    }
 
+    public static function getDailyIntervals(): array 
+    {
+        $intervals = [];
+        $startDate = Carbon::yesterday()->subDays(6); // 7 days ago from yesterday
+        $endDate = Carbon::yesterday(); // yesterday
+        
+        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            $start = $date->copy();
+            $end = $date->copy()->addDay();
+            
+            $intervals[] = [
+                'start' => $start->startOfDay(),
+                'end' => $start->copy()->endOfDay(),
+                'label' => sprintf(
+                    "%s - %s",
+                    $start->format('d') . ' ' . self::getIndonesianMonthShort($start->format('n')),
+                    $end->format('d') . ' ' . self::getIndonesianMonthShort($end->format('n'))
+                )
+            ];
+        }
+        
+        return $intervals;
+    }
 }

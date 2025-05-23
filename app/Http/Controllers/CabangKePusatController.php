@@ -22,13 +22,18 @@ class CabangKePusatController extends Controller
     {
         try {
             $CabangKePusat = CabangKePusat::with(
-                'pusat',
-                'cabang',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            )->get();
+                'pusat:id,nama_gudang_toko,alamat,no_telepon',
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+            )->get([
+                'id', 'kode', 'id_pusat', 
+                'id_cabang', 'id_barang', 'id_satuan_berat', 
+                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -50,12 +55,14 @@ class CabangKePusatController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::all();
-            $pusat = GudangDanToko::all();
-            $status = Status::all();
-            $kurir = Kurir::all();
-            $cabang = $pusat;
-            $satuanBerat = SatuanBerat::all();
+            $barangs = Barang::select('id', 'nama_barang')->get();
+            $status = Status::select('id', 'nama_status')->get();
+            $kurir = Kurir::select('id', 'nama_kurir')->get();
+            $cabang = GudangDanToko::select('id', 'nama_gudang_toko')
+                ->where('id', '!=', 1)
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
+            $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
 
             return response()->json([
                 'status' => true,
@@ -66,7 +73,6 @@ class CabangKePusatController extends Controller
                     'satuanBerat' => $satuanBerat,
                     'status' => $status,
                     'kurir' => $kurir,
-                    'pusat' => $pusat,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -86,7 +92,6 @@ class CabangKePusatController extends Controller
         try {
             $validated = $request->validate([
                 'kode' => 'required|string',
-                'id_pusat' => 'required|exists:gudang_dan_tokos,id',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
@@ -109,6 +114,7 @@ class CabangKePusatController extends Controller
                     ], 400);
                 }
 
+                $validated['id_pusat'] = 1;
                 CabangKePusat::create($validated);
 
                 return response()->json([
@@ -138,13 +144,18 @@ class CabangKePusatController extends Controller
     {
         try {
             $cabangKePusat = CabangKePusat::with(
-                'pusat',
-                'cabang',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            )->findOrFail($id);
+                'pusat:id,nama_gudang_toko,alamat,no_telepon',
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+            )->findOrFail($id, [
+                'id', 'kode', 'id_pusat', 
+                'id_cabang', 'id_barang', 'id_satuan_berat', 
+                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ]);
 
             return response()->json([
                 'status' => true,

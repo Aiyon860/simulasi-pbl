@@ -21,19 +21,20 @@ class CabangKePusatController extends Controller
     public function index()
     {
         try {
-            $CabangKePusat = CabangKePusat::with(
+            $CabangKePusat = CabangKePusat::select(
+                'id', 'kode', 'id_pusat', 
+                'id_cabang', 'id_barang', 'id_satuan_berat', 
+                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            )->with(
                 'pusat:id,nama_gudang_toko,alamat,no_telepon',
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
-            )->get([
-                'id', 'kode', 'id_pusat', 
-                'id_cabang', 'id_barang', 'id_satuan_berat', 
-                'id_kurir', 'id_status', 'berat_satuan_barang', 
-                'jumlah_barang', 'tanggal'
-            ]);
+            )->where('flag', 1)
+            ->get();
 
             return response()->json([
                 'status' => true,

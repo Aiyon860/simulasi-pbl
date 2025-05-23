@@ -20,7 +20,20 @@ class PenerimaanDiCabangController extends Controller
     public function index()
     {
         try {
-            $penerimaanDiCabang = PenerimaanDiCabang::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->get();
+            $penerimaanDiCabang = PenerimaanDiCabang::select(
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan', 
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            )
+            ->with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])
+            ->where('flag', 1)
+            ->get();
+
 
             return response()->json([
                 'status' => true,

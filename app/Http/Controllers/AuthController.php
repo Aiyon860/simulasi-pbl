@@ -7,7 +7,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {

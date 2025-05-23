@@ -20,4 +20,12 @@ class SatuanBerat extends Model
     protected $fillable = [
         'nama_satuan_berat',
     ];
+    public function penerimaanDiCabang()
+    {
+        return $this->hasMany(PenerimaanDiCabang::class, 'id_satuan_berat');
+    }
+    public function penerimaanDiPusat()
+    {
+        return $this->hasMany(PusatKeSupplier::class, 'id_satuan_berat');
+    }   
 }

@@ -18,4 +18,13 @@ class JenisPenerimaan extends Model
     protected $fillable = [
         'nama_jenis_penerimaan'
     ];
+
+    public function penerimaanDiCabang()
+    {
+        return $this->hasMany(PenerimaanDiCabang::class, 'id_jenis_penerimaan');
+    }
+    public function penerimaanDiPusat()
+    {
+        return $this->hasMany(PusatKeSupplier::class, 'id_jenis_penerimaan');
+    }
 }

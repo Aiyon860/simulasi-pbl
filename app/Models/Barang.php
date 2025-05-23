@@ -69,15 +69,15 @@ class Barang extends Model
     //     return $this->belongsTo(PusatKeSupplier::class, 'id_barang');
     // }
 
-    // public function penerimaanDiPusat(): HasMany
-    // {
-    //     return $this->belongsTo(PenerimaanDiPusat::class, 'id_barang');
-    // }
+    public function penerimaanDiPusat(): HasMany
+    {
+        return $this->hasMany(PenerimaanDiPusat::class, 'id_barang');
+    }
 
-    // public function penerimaanDiCabang(): HasMany
-    // {
-    //     return $this->belongsTo(PenerimaanDiCabang::class, 'id_barang');
-    // }
+    public function penerimaanDiCabang(): HasMany
+    {
+        return $this->hasMany(PenerimaanDiCabang::class, 'id_barang');
+    }
 
     // public function detailPengirimanBarang(): HasMany
     // {

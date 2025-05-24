@@ -15,7 +15,7 @@ class DetailGudangController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try{
             $detailGudang = DetailGudang::select([
@@ -27,7 +27,7 @@ class DetailGudangController extends Controller
                 'barang:id,nama_barang', 
                 'gudang:id,nama_gudang_toko', 
                 'satuanBerat:id,nama_satuan_berat'
-            ])->where('id_gudang', auth()->user()->gudang->id)
+            ])->where('id_gudang', $request->user()->gudang->id)
             ->orderBy('stok_opname', 'asc')
             ->get();
 

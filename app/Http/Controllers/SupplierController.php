@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\GudangDanToko;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -16,7 +15,9 @@ class SupplierController extends Controller
         try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
                 ->orderBy('id')
-                ->paginate(10);
+                ->get([
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                ]);
 
             return response()->json([
                 'status' => true,
@@ -48,10 +49,45 @@ class SupplierController extends Controller
         }
     }
 
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'nama_gudang_toko' => 'required|string|max:255',
+                'alamat' => 'nullable|string',
+                'no_telepon' => 'nullable|string|max:20',
+            ]);
+
+            DB::transaction(function () use ($validated) {
+                $supplier = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 1]));
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Toko {$supplier->nama_gudang_toko} berhasil ditambahkan!",
+                    'data' => $supplier,
+                ], 201);
+            }, 3);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang diberikan tidak valid.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan supplier.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function show($id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id, [
+                'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -72,45 +108,12 @@ class SupplierController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'nama_gudang_toko' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'alamat' => 'nullable|string',
-                'no_telepon' => 'nullable|string|max:20',
-            ]);
-
-            $supplier = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 1]));
-
-            return response()->json([
-                'status' => true,
-                'message' => "Toko {$supplier->nama_gudang_toko} berhasil ditambahkan!",
-                'data' => $supplier,
-            ], 201);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan supplier.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
     public function edit(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id, [
+                'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -134,21 +137,23 @@ class SupplierController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id);
 
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
                 'alamat' => 'nullable|string',
-                'no_telepon' => 'nullable|string|max:20',
+                'no_telepon' => 'nullable|string|max:20',   
             ]);
 
-            $supplier->update($validated);
+            DB::transaction(function () use ($supplier, $validated) {
+                $supplier->update($validated);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diperbarui!",
-                'data' => $supplier,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diperbarui!",
+                    'data' => $supplier,
+                ]);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -172,15 +177,24 @@ class SupplierController extends Controller
     public function deactivate(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id);
 
-            $supplier->update(['flag' => 0]);
+            if ($supplier->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Supplier dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
+                ]);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dinonaktifkan!",
-                'data' => $supplier,
-            ]);
+            return DB::transaction(function ($supplier) {
+                $supplier->update(['flag' => 0]);
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dinonaktifkan!",
+                    'data' => $supplier,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -201,15 +215,24 @@ class SupplierController extends Controller
     public function activate(string $id)
     {
         try {
-            $supplier = GudangDanToko::where('kategori_bangunan', 1)->findOrFail($id);
+            $supplier = GudangDanToko::findOrFail($id);
 
-            $supplier->update(['flag' => 1]);
+            if ($supplier->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Supplier dengan ID: {$id} sudah diaktifkan sebelumnya.",
+                ]);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diaktifkan!",
-                'data' => $supplier,
-            ]);
+            return DB::transaction(function () use ($supplier) {
+                $supplier->update(['flag' => 1]);
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diaktifkan!",
+                    'data' => $supplier,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

@@ -1,13 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Http\Requests\Kategori\StoreKategoriRequest;
-use App\Http\Requests\Kategori\UpdateKategoriRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller
@@ -18,16 +17,18 @@ class KategoriBarangController extends Controller
     public function index()
     {
         try {
-            $categories = KategoriBarang::select('id', 'nama_kategori_barang', 'flag')
-                ->orderBy('id')
-                ->get()
-                ->map(function ($category) {
-                    return [
-                        'id' => $category->id,
-                        'nama_kategori_barang' => $category->nama_kategori_barang,
-                        'status' => $category->flag ? 'Aktif' : 'Nonaktif',
-                    ];
-                });
+            $categories = KategoriBarang::select([
+                'id', 'nama_kategori_barang', 'flag'
+            ])->orderBy('id')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'nama_kategori_barang' => $category->nama_kategori_barang,
+                    'status' => $category->flag ? 'Aktif' : 'Nonaktif',
+                ];
+            });
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Kategori Barang',
@@ -68,22 +69,18 @@ class KategoriBarangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'nama_kategori_barang' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('kategori_barangs'),
-                ],
+                'nama_kategori_barang' => 'required|string|max:255|unique:kategori_barangs',
             ]);
 
-            $category = DB::transaction(function () use ($validated) {
-                KategoriBarang::create($validated);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            return DB::transaction(function () use ($validated) {
+                $kategoriBarang = KategoriBarang::create($validated);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Kategori Barang {$category->nama_kategori_barang} berhasil ditambahkan",
-            ]. 201);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Kategori Barang {$kategoriBarang->nama_kategori_barang} berhasil ditambahkan",
+                    'data' => $kategoriBarang,
+                ]. 201);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -104,12 +101,16 @@ class KategoriBarangController extends Controller
     public function show(string $id)
     {
         try {
-            $category = KategoriBarang::findOrFail($id, ['id', 'nama_kategori_barang', 'flag']);
+            $category = KategoriBarang::findOrFail($id, [
+                'id', 'nama_kategori_barang', 'flag'
+            ]);
+
             $kategori = [
                 'id' => $category->id,
                 'nama_kategori_barang' => $category->nama_kategori_barang,
                 'status' => $category->flag ? 'Aktif' : 'Nonaktif',
             ];
+
             return response()->json([
                 'status' => true,
                 'message' => "Data Kategori Barang {$id}",
@@ -135,7 +136,10 @@ class KategoriBarangController extends Controller
     public function edit(string $id)
     {
         try {
-            $category = KategoriBarang::findOrFail($id, ['id', 'nama_kategori_barang']);
+            $category = KategoriBarang::findOrFail($id, [
+                'id', 'nama_kategori_barang'
+            ]);
+
             return response()->json([
                 'status' => true,
                 'message' => "Form Edit Kategori Barang {$id}",
@@ -164,11 +168,7 @@ class KategoriBarangController extends Controller
             $category = KategoriBarang::findOrFail($id);
 
             $rules = [
-                'nama_kategori_barang' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
+                'nama_kategori_barang' => 'required|string|max:255',
             ];
 
             if ($request->input('nama_kategori_barang') !== $category->nama_kategori_barang) {
@@ -179,12 +179,13 @@ class KategoriBarangController extends Controller
 
             DB::transaction(function () use ($validated, $category) {
                 $category->update($validated);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Kategori Barang {$category->nama_kategori_barang} berhasil diperbarui",
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Kategori Barang {$category->nama_kategori_barang} berhasil diperbarui",
+                    'data' => $category,
+                ]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -219,14 +220,15 @@ class KategoriBarangController extends Controller
                 ]);
             }
 
-            DB::transaction(function () use ($category) {
+            return DB::transaction(function () use ($id, $category) {
                 $category->update(['flag' => 0]);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Kategori barang dengan ID: {$id} berhasil dinonaktifkan"
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Kategori barang dengan ID: {$id} berhasil dinonaktifkan",
+                    'data' => $category,
+                ]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -255,14 +257,15 @@ class KategoriBarangController extends Controller
                 ]);
             }
             
-            DB::transaction(function () use ($category) {
+            return DB::transaction(function () use ($id, $category) {
                 $category->update(['flag' => 1]);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return response()->json([
-                'status' => true,
-                'message' => "Kategori barang dengan ID: {$id} berhasil diaktifkan"
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Kategori barang dengan ID: {$id} berhasil diaktifkan",
+                    'data' => $category,
+                ]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

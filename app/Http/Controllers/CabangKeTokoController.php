@@ -7,7 +7,6 @@ use App\Models\DetailGudang;
 use App\Models\GudangDanToko;
 use App\Models\Kurir;
 use App\Models\SatuanBerat;
-use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -21,27 +20,22 @@ class CabangKeTokoController extends Controller
     public function index()
     {
         try {
-            $cabangKeToko = CabangKeToko::select(
+            $cabangKeToko = CabangKeToko::select([
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
-            )->with(
+            ])->with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
-            )
+            ])
             ->where('flag', 1)
             ->orderBy('tanggal', 'desc')
-            ->get([
-                'id', 'kode', 'id_cabang',
-                'id_toko', 'id_barang', 'id_satuan_berat',
-                'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
-            ]);
+            ->get();
 
             return response()->json([
                 'status' => true,
@@ -63,19 +57,19 @@ class CabangKeTokoController extends Controller
     public function create()
     {
         try {
-            $barang = Barang::select('id', 'nama_barang')
-            ->where('flag', 1)
-            ->get();
-            $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
-            $kurir = Kurir::select('id', 'nama_kurir')->get();
-            $status = Status::select('id', 'nama_status')->get();
-            $gudangdantoko = GudangDanToko::select('id', 'nama_gudang_toko', 'kategori_bangunan')
+            $barang = Barang::select(['id', 'nama_barang'])
+                ->where('flag', 1)
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
+            $kurir = Kurir::select(['id', 'nama_kurir'])->get();
+
+            // Query builder menjadi immutable, maka harus mengclone base query builder nya
+            $gudangDanToko = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where('id', '!=', 1)
                 ->where('kategori_bangunan', '!=', '1')
                 ->where('flag', 1);
-            $cabang = $gudangdantoko->where('kategori_bangunan', 0)->get();
-
-            $toko = $gudangdantoko->where('kategori_bangunan', 2)->get();
+            $cabang = (clone $gudangDanToko)->where('kategori_bangunan', '=', 0)->get();
+            $toko = (clone $gudangDanToko)->where('kategori_bangunan', '=', 2)->get();
 
             return response()->json([
                 'status' => true,
@@ -84,7 +78,6 @@ class CabangKeTokoController extends Controller
                     'barang' => $barang,
                     'satuanBerat' => $satuanBerat,
                     'kurir' => $kurir,
-                    'status' => $status,
                     'cabang' => $cabang,
                     'toko' => $toko,
                 ],
@@ -111,7 +104,6 @@ class CabangKeTokoController extends Controller
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
@@ -129,11 +121,14 @@ class CabangKeTokoController extends Controller
                     ], 400); // Bad Request
                 }
 
-                CabangKeToko::create($validated);
+                $cabangKeToko = CabangKeToko::create(array_merge(
+                    $validated, ['id_status' => 1])
+                );
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Barang berhasil terkirim ke Toko',
+                    'data' => $cabangKeToko,
                 ], 201); // Created
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
@@ -157,19 +152,19 @@ class CabangKeTokoController extends Controller
     public function show(string $id)
     {
         try {
-            $CabangKeToko = CabangKeToko::with(
+            $CabangKeToko = CabangKeToko::with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
-                )->findOrFail($id, [
+            ])->findOrFail($id, [
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
-                ]);
+            ]);
 
             return response()->json([
                 'status' => true,

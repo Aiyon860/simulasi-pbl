@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\DetailGudang;
 use App\Models\PenerimaanDiPusat;
 use App\Models\JenisPenerimaan;
 use App\Models\GudangDanToko;
 use App\Models\SatuanBerat;
 use App\Models\Barang;
 use Illuminate\Support\Facades\DB;
+
 class PenerimaanDiPusatController extends Controller
 {
     /**
@@ -17,7 +17,18 @@ class PenerimaanDiPusatController extends Controller
      */
     public function index()
     {
-        $penerimaanDiPusat = PenerimaanDiPusat::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->get();
+        $penerimaanDiPusat = PenerimaanDiPusat::select([
+            'id', 'id_barang',
+            'id_jenis_penerimaan', 'id_asal_barang', 
+            'id_satuan_berat', 'berat_satuan_barang', 
+            'jumlah_barang', 'tanggal' 
+        ])->with([
+            'jenisPenerimaan:id,nama_jenis_penerimaan', 
+            'asalBarang:id,nama_gudang_toko', 
+            'barang:id,nama_barang', 
+            'satuanBerat:id,nama_satuan_berat'
+        ])->where('flag', '=', 1)
+        ->get();
 
         return response()->json([
             'success' => true,
@@ -31,10 +42,18 @@ class PenerimaanDiPusatController extends Controller
      */
     public function create()
     {
-        $barangs = Barang::all();
-        $jenisPenerimaan = JenisPenerimaan::all();
-        $asalBarang = GudangDanToko::all();
-        $satuanBerat = SatuanBerat::all();
+        $barangs = Barang::select(['id', 'nama_barang'])
+            ->where('flag', '=', 1)
+            ->orderBy('id')
+            ->get();
+        $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
+        $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            ->where('id', '!=', 1)        
+            ->whereIn('kategori_bangunan', [0, 1])
+            ->where('flag', '=', 1)
+            ->orderBy('id')
+            ->get();
+        $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
         return response()->json([
             'status' => true,
@@ -64,13 +83,13 @@ class PenerimaanDiPusatController extends Controller
         ]);
 
         try {
-            // dd($validated);
             return DB::transaction(function () use ($validated) {
-                PenerimaanDiPusat::create($validated);
+                $penerimaanDiPusat = PenerimaanDiPusat::create($validated);
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Data Penerimaan Di Pusat berhasil ditambahkan',
+                    'data' => $penerimaanDiPusat,
                 ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (\Throwable $th) {
@@ -87,7 +106,17 @@ class PenerimaanDiPusatController extends Controller
     public function show(string $id)
     {
         try{
-            $penerimaanDiPusat = PenerimaanDiPusat::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->findOrFail($id);
+            $penerimaanDiPusat = PenerimaanDiPusat::with(
+                'jenisPenerimaan:id,nama_jenis_penerimaan', 
+                'asalBarang:id,nama_gudang_toko', 
+                'barang:id,nama_barang', 
+                'satuanBerat:id,nama_satuan_berat'
+            )->findOrFail($id, [
+                'id', 'id_barang',
+                'id_jenis_penerimaan', 'id_asal_barang', 
+                'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -115,31 +144,7 @@ class PenerimaanDiPusatController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // $validated = $request->validate([
-        //     'id_barang' => 'required|exists:barangs,id',
-        //     'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
-        //     'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
-        //     'jumlah' => 'required|integer|min:1',
-        //     'tanggal' => 'required|date',
-        // ]);
 
-        // try {
-        //     $penerimaanDiPusat = PenerimaanDiPusat::findOrFail($id);
-
-        //     return DB::transaction(function () use ($validated, $id) {
-        //         $penerimaanDiPusat->update($validated);
-
-        //         return response()->json([
-        //             'status' => true,
-        //             'message' => "Data Penerimaan Di Pusat dengan ID: {$penerimaanDiPusat->$id} berhasil diperbarui",
-        //         ]);
-        //     }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-        // } catch (\Throwable $th) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => "Gagal memperbarui Data Penerimaan Di Pusat dengan ID: {$penerimaanDiPusat->$id}. Silakan coba lagi.",
-        //     ]);
-        // }
     }
 
     /**

@@ -4,30 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Kurir;
 use App\Models\Barang;
-use App\Models\Status;
 use App\Models\SatuanBerat;
-use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
-use App\Models\JenisPenerimaan;
 use App\Models\PusatKeSupplier;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\DB;
 
 class PusatKeSupplierController extends Controller
 {
     public function index()
     {
         try {
-            $pusatKeSuppliers = PusatKeSupplier::with([
-                'supplier',
-                'pusat',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            ])->get();
+            $pusatKeSuppliers = PusatKeSupplier::select([
+                'id', 'kode', 'id_barang',
+                'id_pusat', 'id_supplier', 
+                'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal',
+                'id_kurir', 'id_status',
+            ])->with([
+                'pusat:id,nama_gudang_toko', 
+                'supplier:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir', 
+                'satuanBerat:id,nama_satuan_berat', 
+                'status:id,nama_status'
+            ])->where('flag', 1)
+            ->orderBy('tanggal', 'desc')
+            ->get();
 
             return response()->json([
                 'status' => true,
@@ -46,12 +51,13 @@ class PusatKeSupplierController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::all();
-            $supplier = GudangDanToko::whereIn('kategori_bangunan', [1])->get();
-            $status = Status::where('id', 1)->get();
-            $kurir = Kurir::all();
-            $pusat = GudangDanToko::where('id', 1)->get();
-            $satuanBerat = SatuanBerat::all();
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $supplier = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('flag', 1)
+                ->where('kategori_bangunan', 1)
+                ->get();
+            $kurir = Kurir::select(['id', 'nama_kurir'])->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -59,9 +65,7 @@ class PusatKeSupplierController extends Controller
                 'data' => [
                     'barangs' => $barangs,
                     'supplier' => $supplier,
-                    'pusat' => $pusat,
                     'satuanBerat' => $satuanBerat,
-                    'status' => $status,
                     'kurir' => $kurir,
                 ]
             ]);
@@ -78,25 +82,28 @@ class PusatKeSupplierController extends Controller
     {
         try {
             $validated = $request->validate([
-               'kode'=> 'required|string|max:255',
-               'id_supplier' => 'required|exists:gudang_dan_tokos,id',
-               'id_pusat' => 'required|exists:gudang_dan_tokos,id',
-               'id_barang' => 'required|exists:barangs,id',
-               'id_satuan_berat' => 'required|exists:satuan_berats,id',
-               'id_kurir' => 'required|exists:kurirs,id',
-               'id_status' => 'required|exists:statuses,id',
-               'berat_satuan_barang' => 'required|numeric|min:1',
-               'jumlah_barang' => 'required|integer|min:1',
-               'tanggal' => 'required|date',
+                'kode'=> 'required|string|max:255',
+                'id_supplier' => 'required|exists:gudang_dan_tokos,id',
+                'id_barang' => 'required|exists:barangs,id',
+                'id_satuan_berat' => 'required|exists:satuan_berats,id',
+                'id_kurir' => 'required|exists:kurirs,id',
+                'berat_satuan_barang' => 'required|numeric|min:1',
+                'jumlah_barang' => 'required|integer|min:1',
+                'tanggal' => 'required|date',
             ]);
 
-            $data = PusatKeSupplier::create($validated);
+            return DB::transaction(function () use ($validated) {
+                $pusatKeSupplier = PusatKeSupplier::create(array_merge($validated, [
+                    'id_pusat' => 1,
+                    'id_status' => 1,
+                ]));
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Data Pusat ke Supplier berhasil disimpan.',
-                'data' => $data,
-            ], 201);
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data Pusat ke Supplier berhasil disimpan.',
+                    'data' => $pusatKeSupplier,
+                ], 201);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -116,13 +123,19 @@ class PusatKeSupplierController extends Controller
     {
         try {
             $data = PusatKeSupplier::with([
-                'supplier',
-                'pusat',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            ])->findOrFail($id);
+                'pusat:id,nama_gudang_toko', 
+                'supplier:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir', 
+                'satuanBerat:id,nama_satuan_berat', 
+                'status:id,nama_status'
+            ])->findOrFail($id, [
+                'id', 'kode', 'id_barang',
+                'id_pusat', 'id_supplier', 
+                'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal',
+                'id_kurir', 'id_status',
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -143,31 +156,33 @@ class PusatKeSupplierController extends Controller
         }
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        
+    }
+
     public function update(Request $request, string $id)
     {
         try {
-            $data = PusatKeSupplier::findOrFail($id);
+            $pusatKeSupplier = PusatKeSupplier::findOrFail($id);
 
             $validated = $request->validate([
-                'kode'=> 'required|string|max:255',
-                'id_supplier' => 'required|exists:gudang_dan_tokos,id',
-                'id_pusat' => 'required|exists:gudang_dan_tokos,id',
-                'id_barang' => 'required|exists:barangs,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'id_kurir' => 'required|exists:kurirs,id',
                 'id_status' => 'required|exists:statuses,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
-                'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
 
-            $data->update($validated);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data Pusat ke Supplier berhasil diperbarui.',
-                'data' => $data,
-            ]);
+            return DB::transaction(function () use ($id, $validated, $pusatKeSupplier) {
+                $pusatKeSupplier->update($validated);
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Pusat ke Supplier dengan ID: {$id} berhasil diperbarui.",
+                    'data' => $pusatKeSupplier,
+                ]);
+            });
+            
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -191,13 +206,23 @@ class PusatKeSupplierController extends Controller
     public function destroy(string $id)
     {
         try {
-            $data = PusatKeSupplier::findOrFail($id);
-            $data->delete();
+            $pusatKeSupplier = PusatKeSupplier::findOrFail($id);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Pusat ke Supplier ID {$id} berhasil dihapus.",
-            ]);
+            if ($pusatKeSupplier->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Pusat ke Supplier ID {$id} sudah dihapus sebelumnya.",
+                ], 409);
+            }
+
+            return DB::transaction(function () use ($id, $pusatKeSupplier) {
+                $pusatKeSupplier->update(['flag' => 0]);
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Pusat ke Supplier ID {$id} berhasil dihapus.",
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

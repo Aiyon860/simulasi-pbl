@@ -18,7 +18,18 @@ class DetailGudangController extends Controller
     public function index()
     {
         try{
-            $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->where('id_gudang', auth()->user()->gudang->id)->get();
+            $detailGudang = DetailGudang::select([
+                'id', 'id_barang', 'id_gudang', 
+                'id_satuan_berat', 'jumlah_stok', 
+                'stok_opname', 'flag'
+            ])
+            ->with([
+                'barang:id,nama_barang', 
+                'gudang:id,nama_gudang_toko', 
+                'satuanBerat:id,nama_satuan_berat'
+            ])->where('id_gudang', auth()->user()->gudang->id)
+            ->orderBy('stok_opname', 'asc')
+            ->get();
 
             return response()->json([
                 'status' => true,
@@ -40,9 +51,11 @@ class DetailGudangController extends Controller
     public function create()
     {
         try{
-            $barangs = Barang::all();
-            $gudang = GudangDanToko::all();
-            $satuanBerat = SatuanBerat::all();
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -75,14 +88,15 @@ class DetailGudangController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
-                DetailGudang::create($validated);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            return DB::transaction(function () use ($validated) {
+                $detailGudang = DetailGudang::create($validated);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Data Barang Gudang berhasil ditambahkan',
-            ], 201);
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data Barang Gudang berhasil ditambahkan',
+                    'data' => $detailGudang,
+                ], 201);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -104,7 +118,16 @@ class DetailGudangController extends Controller
     public function show(string $id)
     {
         try {
-            $detailGudang = DetailGudang::with('barang', 'gudang', 'satuanBerat')->findOrFail($id);
+            $detailGudang = DetailGudang::with([
+                'barang:id,nama_barang', 
+                'gudang:id,nama_gudang_toko', 
+                'satuanBerat:id,nama_satuan_berat'
+            ])->findOrFail($id, [
+                'id', 'id_barang', 'id_gudang', 
+                'id_satuan_berat', 'jumlah_stok', 
+                'stok_opname', 'flag'
+            ]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
@@ -130,10 +153,20 @@ class DetailGudangController extends Controller
     public function edit(string $id)
     {
         try {
-            $detailGudang = DetailGudang::findOrFail($id);
-            $barangs = Barang::all();
-            $gudang = GudangDanToko::all();
-            $satuanBerat = SatuanBerat::all();
+            $detailGudang = DetailGudang::with([
+                'barang:id,nama_barang', 
+                'gudang:id,nama_gudang_toko', 
+                'satuanBerat:id,nama_satuan_berat'
+            ])->findOrFail($id, [
+                'id', 'id_barang', 'id_gudang', 
+                'id_satuan_berat', 'jumlah_stok', 
+                'stok_opname', 'flag'
+            ]);
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -174,14 +207,17 @@ class DetailGudangController extends Controller
 
         try {
             $detailGudang = DetailGudang::findOrFail($id);
-            DB::transaction(function () use ($validated, $detailGudang) {
-                $detailGudang->update($validated);
+
+            return DB::transaction(function () use ($id, $validated, $detailGudang) {
+                $detailGudang = $detailGudang->update($validated);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
+                    'data' => $detailGudang
+                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
-            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -203,14 +239,16 @@ class DetailGudangController extends Controller
     {
         try {
             $barangGudang = DetailGudang::findOrFail($id);
-            DB::transaction(function () use ($barangGudang) {
-                $barangGudang->update(['flag' => 0]);
-            });
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
-            ]);
+            return DB::transaction(function () use ($id, $barangGudang) {
+                $detailGudang = $barangGudang->update(['flag' => 0]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+                    'data' => $detailGudang
+                ]);
+            });
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

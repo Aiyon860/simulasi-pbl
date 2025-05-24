@@ -20,20 +20,20 @@ class PusatKeCabangController extends Controller
     public function index()
     {
         try {
-            $pusatKeCabang = PusatKeCabang::select(
+            $pusatKeCabang = PusatKeCabang::select([
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_cabang', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
                 'id_kurir', 'id_status',
-            )->with(
+            ])->with([
                 'pusat:id,nama_gudang_toko', 
                 'cabang:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
                 'status:id,nama_status'
-            )->where('flag', '=', 1)
+            ])->where('flag', '=', 1)
             ->get();
 
             return response()->json([
@@ -56,13 +56,13 @@ class PusatKeCabangController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select('id', 'nama_barang')->get();
-            $cabang = GudangDanToko::select('id', 'nama_gudang_toko')
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('id', '!=', 1)
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
-            $kurir = Kurir::select('id', 'nama_kurir')->get();
-            $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
+            $kurir = Kurir::select(['id', 'nama_kurir'])->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -112,14 +112,15 @@ class PusatKeCabangController extends Controller
                     ]);
                 }
 
-                $validated['id_pusat'] = 1;
-                $validated['id_status'] = 1;
-
-                PusatKeCabang::create($validated); 
+                $pusatKeCabang = PusatKeCabang::create(array_merge(
+                    $validated, 
+                    ['id_pusat' => 1, 'id_status' => 1]
+                )); 
         
                 return response()->json([
                     'status' => true,
                     'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
+                    'data' => $pusatKeCabang,
                 ]);
             }, 3);
         } catch (ModelNotFoundException $e) {

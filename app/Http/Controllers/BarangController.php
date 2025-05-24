@@ -48,7 +48,7 @@ class BarangController extends Controller
     public function create()
     {
         try {
-            $categories = KategoriBarang::select('id', 'nama_kategori_barang')
+            $categories = KategoriBarang::select(['id', 'nama_kategori_barang'])
                 ->where('flag', 1)
                 ->orderBy('nama_kategori_barang')
                 ->get();
@@ -76,26 +76,20 @@ class BarangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'nama_barang' => [
-                    'required',
-                    'unique:barangs',
-                    'string',
-                    'max:255',
-                ],
-                'id_kategori_barang' => [
-                    'required',
-                    'exists:kategori_barangs,id',
-                ],
+                'nama_barang' => 'required|unique:barangs|string|max:255',
+                'id_kategori_barang' => 'required|exists:kategori_barangs,id',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                Barang::create($validated);
+            return DB::transaction(function () use ($request, $validated) {
+                $barang = Barang::create($validated);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Barang {$request->input('nama_barang')} berhasil ditambahkan!",
+                    'data' => $barang,
+                ]);
             }, 3);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Barang {$request->input('nama_barang')} berhasil ditambahkan!",
-            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -117,9 +111,10 @@ class BarangController extends Controller
     public function show(string $id)
     {
         try {
-            $item = Barang::select('id', 'nama_barang', 'flag', 'id_kategori_barang')
-                ->with(['kategori:id,nama_kategori_barang'])
-                ->findOrFail($id);
+            $item = Barang::with('kategori:id,nama_kategori_barang')
+                ->findOrFail($id, [
+                    'id', 'nama_barang', 'flag', 'id_kategori_barang'
+            ]);
             
             $barang = [
                 'nama_barang' => $item->nama_barang,
@@ -153,9 +148,10 @@ class BarangController extends Controller
     public function edit(string $id)
     {
         try {
-            $barang = Barang::select('id', 'nama_barang', 'id_kategori_barang')
-                ->with('kategori:id,nama_kategori_barang')
-                ->findOrFail($id);
+            $barang = Barang::with('kategori:id,nama_kategori_barang')
+                ->findOrFail($id, [
+                    'id', 'nama_barang', 'id_kategori_barang'
+            ]);
 
             $categories = KategoriBarang::select('id', 'nama_kategori_barang')
                 ->where('flag', 1)
@@ -193,15 +189,8 @@ class BarangController extends Controller
             $barang = Barang::findOrFail($id);
 
             $rules = [
-                'nama_barang' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-                'id_kategori_barang' => [
-                    'nullable',
-                    'exists:kategori_barangs,id',
-                ],
+                'nama_barang' => 'required|string|max:255',
+                'id_kategori_barang' => 'nullable|exists:kategori_barangs,id',
             ];
 
             if ($request->input('nama_barang') !== $barang->nama_barang) {
@@ -210,15 +199,15 @@ class BarangController extends Controller
 
             $validated = $request->validate($rules);
 
-            DB::transaction(function () use ($validated, $barang) {
+            return DB::transaction(function () use ($validated, $barang) {
                 $barang->update($validated);
-            }, 3);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
-                'data' => $barang,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
+                    'data' => $barang,
+                ]);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -254,15 +243,15 @@ class BarangController extends Controller
                 ]);
             }
 
-            DB::transaction(function () use ($barang) {
+            return DB::transaction(function () use ($barang) {
                 $barang->update(['flag' => 0]);
+                
+                return response()->json([
+                    'status' => true,
+                    'message' => "Barang {$barang->nama_barang} berhasil dinonaktifkan!",
+                    'data' => $barang,
+                ]);
             }, 3);
-
-            return response()->json([
-                'status' => true,
-                'message' => "Barang {$barang->nama_barang} berhasil dinonaktifkan!",
-                'data' => $barang,
-            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -292,15 +281,15 @@ class BarangController extends Controller
                 ]);
             }
 
-            DB::transaction(function () use ($barang) {
+            return DB::transaction(function () use ($barang) {
                 $barang->update(['flag' => 1]);
-            }, 3);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Barang {$barang->nama_barang} berhasil diaktifkan!",
-                'data' => $barang,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Barang {$barang->nama_barang} berhasil diaktifkan!",
+                    'data' => $barang,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

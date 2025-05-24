@@ -97,7 +97,7 @@ class GudangController extends Controller
     public function show(string $id)
     {
         try {
-            $gudang = GudangDanToko::findOrFail($id,[
+            $gudang = GudangDanToko::findOrFail($id, [
                 'id',
                 'nama_gudang_toko',
                 'alamat',

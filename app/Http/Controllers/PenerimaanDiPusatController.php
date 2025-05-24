@@ -17,17 +17,17 @@ class PenerimaanDiPusatController extends Controller
      */
     public function index()
     {
-        $penerimaanDiPusat = PenerimaanDiPusat::select(
+        $penerimaanDiPusat = PenerimaanDiPusat::select([
             'id', 'id_barang',
             'id_jenis_penerimaan', 'id_asal_barang', 
             'id_satuan_berat', 'berat_satuan_barang', 
             'jumlah_barang', 'tanggal' 
-        )->with(
+        ])->with([
             'jenisPenerimaan:id,nama_jenis_penerimaan', 
             'asalBarang:id,nama_gudang_toko', 
             'barang:id,nama_barang', 
             'satuanBerat:id,nama_satuan_berat'
-        )->where('flag', '=', 1)
+        ])->where('flag', '=', 1)
         ->get();
 
         return response()->json([
@@ -42,18 +42,18 @@ class PenerimaanDiPusatController extends Controller
      */
     public function create()
     {
-        $barangs = Barang::select('id', 'nama_barang')
+        $barangs = Barang::select(['id', 'nama_barang'])
             ->where('flag', '=', 1)
             ->orderBy('id')
             ->get();
-        $jenisPenerimaan = JenisPenerimaan::select('id', 'nama_jenis_penerimaan')->get();
-        $asalBarang = GudangDanToko::select('id', 'nama_gudang_toko')
+        $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
+        $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
             ->where('id', '!=', 1)        
             ->whereIn('kategori_bangunan', [0, 1])
             ->where('flag', '=', 1)
             ->orderBy('id')
             ->get();
-        $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
+        $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
         return response()->json([
             'status' => true,
@@ -83,13 +83,13 @@ class PenerimaanDiPusatController extends Controller
         ]);
 
         try {
-            // dd($validated);
             return DB::transaction(function () use ($validated) {
-                PenerimaanDiPusat::create($validated);
+                $penerimaanDiPusat = PenerimaanDiPusat::create($validated);
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Data Penerimaan Di Pusat berhasil ditambahkan',
+                    'data' => $penerimaanDiPusat,
                 ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (\Throwable $th) {

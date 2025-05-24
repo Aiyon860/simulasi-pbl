@@ -21,7 +21,12 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('role')->orderBy('id')->paginate(10);
+            $users = User::with('role:id,nama_role')
+                ->orderBy('id')
+                ->get([
+                    'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+                ]);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Pengguna',
@@ -42,14 +47,15 @@ class UserController extends Controller
     public function create()
     {
         try {
-            $roles = Role::all();
-            $lokasis = GudangDanToko::all(); // Mengambil semua lokasi (gudang dan toko)
+            $roles = Role::select(['id', 'nama_role'])->get();
+            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Tambah Pengguna',
                 'data' => [
                     'roles' => $roles,
-                    'lokasis' => $lokasis,
+                    'lokasi' => $lokasi,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -71,19 +77,21 @@ class UserController extends Controller
                 'nama_user' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
-                'id_role' => 'nullable|exists:roles,id',
-                'id_lokasi' => 'nullable|exists:gudang_dan_tokos,id',
+                'id_role' => 'required|exists:roles,id',
+                'id_lokasi' => 'required|exists:gudang_dan_tokos,id',
             ]);
 
-            $validated['password'] = Hash::make($validated['password']);
-
-            $user = User::create($validated);
-
-            return response()->json([
-                'status' => true,
-                'message' => "Pengguna {$user->nama_user} berhasil ditambahkan!",
-                'data' => $user,
-            ], 201);
+            return DB::transaction(function () use ($validated) {
+                $validated['password'] = Hash::make($validated['password']);
+    
+                $user = User::create($validated);
+    
+                return response()->json([
+                    'status' => true,
+                    'message' => "Pengguna {$user->nama_user} berhasil ditambahkan!",
+                    'data' => $user,
+                ], 201);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -105,7 +113,13 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $user = User::with('role', 'lokasi')->findOrFail($id);
+            $user = User::with([
+                'role:id,nama_role', 
+                'lokasi:id,nama_gudang_toko'
+            ])->findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
+
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Pengguna dengan ID: {$id}",
@@ -131,9 +145,14 @@ class UserController extends Controller
     public function edit(string $id)
     {
         try {
-            $user = User::with('role', 'lokasi')->findOrFail($id);
-            $roles = Role::all();
-            $lokasis = GudangDanToko::all();
+            $user = User::with([
+                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
+            ])->findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
+            $roles = Role::select(['id', 'nama_role'])->get();
+            $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Pengguna',
@@ -163,7 +182,11 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $user = User::findOrFail($id);
+            $user = User::with([
+                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
+            ])->findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
 
             $rules = [
                 'nama_user' => 'required|string|max:255',
@@ -178,17 +201,19 @@ class UserController extends Controller
 
             $validated = $request->validate($rules);
 
-            if ($request->filled('password')) {
-                $validated['password'] = Hash::make($validated['password']);
-            }
+            return DB::transaction(function () use ($user, $validated, $request) {
+                if ($request->filled('password')) {
+                    $validated['password'] = Hash::make($validated['password']);
+                }
 
-            $user->update($validated);
+                $user->update($validated);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data pengguna {$user->nama_user} berhasil diperbarui!",
-                'data' => $user,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data pengguna {$user->nama_user} berhasil diperbarui!",
+                    'data' => $user,
+                ]);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -224,13 +249,23 @@ class UserController extends Controller
                 ], 403); // Forbidden
             }
 
-            $user->update(['flag' => 0]);
+            if ($user->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Pengguna dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
+                ]);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Pengguna {$user->nama_user} berhasil dinonaktifkan!",
-                'data' => $user,
-            ]);
+            return DB::transaction(function () use ($user) {
+                // Soft delete by setting flag to 0
+                $user->update(['flag' => 0]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Pengguna {$user->nama_user} berhasil dinonaktifkan!",
+                    'data' => $user,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -252,13 +287,24 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            $user->update(['flag' => 1]);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Pengguna {$user->nama_user} berhasil diaktifkan!",
-                'data' => $user,
-            ]);
+            if ($user->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Pengguna {$user->nama_user} sudah diaktifkan sebelumnya.",
+                ]);
+            }
+
+            return DB::transaction(function () use ($user) {
+                // Set flag to 1 to activate the user
+                $user->update(['flag' => 1]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Pengguna {$user->nama_user} berhasil diaktifkan!",
+                    'data' => $user,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

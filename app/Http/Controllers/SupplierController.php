@@ -67,7 +67,6 @@ class SupplierController extends Controller
                     'data' => $supplier,
                 ], 201);
             }, 3);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -155,7 +154,6 @@ class SupplierController extends Controller
                     'data' => $supplier,
                 ]);
             }, 3);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -197,7 +195,6 @@ class SupplierController extends Controller
                     'data' => $supplier,
                 ]);
             }, 3);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -236,7 +233,6 @@ class SupplierController extends Controller
                     'data' => $supplier,
                 ]);
             }, 3);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

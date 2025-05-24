@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Barang;
 use App\Helpers\TimeHelpers;
 use App\Models\CabangKeToko;
@@ -16,7 +15,6 @@ use App\Models\KategoriBarang;
 use App\Models\PusatKeSupplier;
 use App\Models\PenerimaanDiPusat;
 use App\Models\PenerimaanDiCabang;
-use Illuminate\Support\Facades\DB;
 use App\Services\StokBarang\StokBarangService;
 use App\Services\Laporan\AdminCabang\LaporanCabangService;
 use App\Services\Laporan\SuperadminSupervisor\LaporanSuperService;

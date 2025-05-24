@@ -7,7 +7,6 @@ use App\Models\SupplierKePusat;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kurir;
 use App\Models\Barang;
-use App\Models\Status;
 use App\Models\SatuanBerat;
 use App\Models\GudangDanToko;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,21 +20,20 @@ class SupplierKePusatController extends Controller
     public function index()
     {
         try {
-            $SupplierKePusat = SupplierKePusat::select(
+            $SupplierKePusat = SupplierKePusat::select([
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
                 'id_kurir', 'id_status',
-            )->with(
+            ])->with([
                 'pusat:id,nama_gudang_toko', 
                 'supplier:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
                 'status:id,nama_status'
-            )
-            ->where('flag', 1)
+            ])->where('flag', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -59,13 +57,13 @@ class SupplierKePusatController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select('id', 'nama_barang')->get();
-            $supplier = GudangDanToko::select('id', 'nama_gudang_toko')
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $supplier = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('flag', 1)
                 ->where('kategori_bangunan', 1)
                 ->get();
-            $kurir = Kurir::select('id', 'nama_kurir')->get();
-            $satuanBerat = SatuanBerat::select('id', 'nama_satuan_berat')->get();
+            $kurir = Kurir::select(['id', 'nama_kurir'])->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -104,14 +102,15 @@ class SupplierKePusatController extends Controller
             ]);
 
             return DB::transaction(function () use ($validated) {
-                $validated['id_status'] = 1;
-                $validated['id_pusat'] = 1;
-
-                SupplierKePusat::create($validated);
+                $supplierKePusat = SupplierKePusat::create(array_merge($validated, [
+                    'id_status' => 1,
+                    'id_pusat' => 1,
+                ]));
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Pengiriman barang berhasil dikirimkan dari Supplier Ke Pusat',
+                    'data' => $supplierKePusat,
                 ], 201);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {

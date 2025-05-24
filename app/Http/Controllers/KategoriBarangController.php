@@ -1,13 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Http\Requests\Kategori\StoreKategoriRequest;
-use App\Http\Requests\Kategori\UpdateKategoriRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller

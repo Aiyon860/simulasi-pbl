@@ -57,7 +57,6 @@ class CabangKePusatController extends Controller
     {
         try {
             $barangs = Barang::select('id', 'nama_barang')->get();
-            $status = Status::select('id', 'nama_status')->get();
             $kurir = Kurir::select('id', 'nama_kurir')->get();
             $cabang = GudangDanToko::select('id', 'nama_gudang_toko')
                 ->where('id', '!=', 1)
@@ -72,7 +71,6 @@ class CabangKePusatController extends Controller
                     'barangs' => $barangs,
                     'cabangs' => $cabang,
                     'satuanBerat' => $satuanBerat,
-                    'status' => $status,
                     'kurir' => $kurir,
                 ]
             ]);
@@ -97,7 +95,6 @@ class CabangKePusatController extends Controller
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
@@ -116,6 +113,8 @@ class CabangKePusatController extends Controller
                 }
 
                 $validated['id_pusat'] = 1;
+                $validated['id_status'] = 1;
+
                 CabangKePusat::create($validated);
 
                 return response()->json([

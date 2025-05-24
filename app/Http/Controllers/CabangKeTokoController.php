@@ -164,12 +164,12 @@ class CabangKeTokoController extends Controller
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
-                )->findOrFail($id, [
+            )->findOrFail($id, [
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
-                ]);
+            ]);
 
             return response()->json([
                 'status' => true,

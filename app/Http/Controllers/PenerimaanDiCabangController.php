@@ -31,7 +31,7 @@ class PenerimaanDiCabangController extends Controller
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             ])
-            ->where('flag', 1)
+            ->where('flag', '=', 1)
             ->get();
 
 

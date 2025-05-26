@@ -10,9 +10,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class GudangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -22,10 +19,18 @@ class GudangController extends Controller
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
                 ]);
 
+            $headings = $gudangs->isEmpty() ? [] : array_keys($gudangs->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Gudang',
-                'data' => $gudangs,
+                'data' => [
+                    'gudangs' => $gudangs,
+                    'headings' => $headings,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -36,9 +41,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -55,9 +57,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -91,9 +90,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -124,9 +120,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         try {
@@ -156,9 +149,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {

@@ -10,9 +10,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TokoController extends Controller
 {
-    /**
-     * Display a listing of the toko.
-     */
     public function index()
     {
         try {
@@ -21,11 +18,19 @@ class TokoController extends Controller
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
                 ]);
+            
+            $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Toko',
-                'data' => $tokos,
+                'data' => [
+                    'tokos' => $tokos,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -36,9 +41,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new toko.
-     */
     public function create()
     {
         try {
@@ -55,9 +57,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Store a newly created toko in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -91,9 +90,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Display the specified toko.
-     */
     public function show(string $id)
     {
         try {
@@ -120,9 +116,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified toko.
-     */
     public function edit(string $id)
     {
         try {
@@ -149,9 +142,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Update the specified toko in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -192,9 +182,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified toko from storage.
-     */
     public function deactivate(string $id)
     {
         try {
@@ -229,9 +216,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Activate the specified toko from storage.
-     */
     public function activate(string $id)
     {
         try {

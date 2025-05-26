@@ -10,9 +10,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BarangController extends Controller
 {
-    /**
-     * Display a listing of the product.
-     */
     public function index()
     {
         try {
@@ -42,9 +39,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new product.
-     */
     public function create()
     {
         try {
@@ -69,9 +63,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created product in storage.
-     */
     public function store(Request $request): JsonResponse
     {
         try {
@@ -89,7 +80,6 @@ class BarangController extends Controller
                     'data' => $barang,
                 ]);
             }, 3);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -105,9 +95,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Display the specified product.
-     */
     public function show(string $id)
     {
         try {
@@ -140,10 +127,6 @@ class BarangController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Show the form for editing the specified product.
-     */
 
     public function edit(string $id)
     {
@@ -180,9 +163,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Update the specified product in storage.
-     */
     public function update(Request $request, string $id): JsonResponse
     {
         try {
@@ -228,9 +208,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified product from storage.
-     */
     public function deactivate(string $id)
     {
         try {
@@ -266,9 +243,6 @@ class BarangController extends Controller
         }
     }
 
-    /**
-     * Activate the specified product from storage.
-     */
     public function activate(string $id)
     {
         try {

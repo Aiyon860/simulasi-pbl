@@ -14,9 +14,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PusatKeCabangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -36,10 +33,18 @@ class PusatKeCabangController extends Controller
             ])->where('flag', '=', 1)
             ->get();
 
+            $headings = $pusatKeCabang->isEmpty() ? [] : array_keys($pusatKeCabang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status'=> true,
                 'message'=> 'Data Penerimaan Di Cabang',
-                'data'=> $pusatKeCabang,
+                'data'=> [
+                    'pusatKeCabangs' => $pusatKeCabang,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -50,9 +55,6 @@ class PusatKeCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -83,9 +85,7 @@ class PusatKeCabangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         try {
@@ -143,9 +143,6 @@ class PusatKeCabangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -183,25 +180,16 @@ class PusatKeCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

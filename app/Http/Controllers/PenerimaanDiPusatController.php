@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class PenerimaanDiPusatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $penerimaanDiPusat = PenerimaanDiPusat::select([
@@ -30,16 +27,21 @@ class PenerimaanDiPusatController extends Controller
         ])->where('flag', '=', 1)
         ->get();
 
+        $headings = $penerimaanDiPusat->isEmpty() ? [] : array_keys($penerimaanDiPusat->first()->getAttributes());
+        $headings = array_map(function ($heading) {
+            return str_replace('_', ' ', ucfirst($heading));
+        }, $headings);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Penerimaan Di Pusat retrieved successfully',
-            'data' => $penerimaanDiPusat
+            'data' => [
+                'penerimaanDiPusats' => $penerimaanDiPusat,
+                'headings' => $headings,
+            ]
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $barangs = Barang::select(['id', 'nama_barang'])
@@ -67,9 +69,6 @@ class PenerimaanDiPusatController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -100,9 +99,6 @@ class PenerimaanDiPusatController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try{
@@ -131,25 +127,16 @@ class PenerimaanDiPusatController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

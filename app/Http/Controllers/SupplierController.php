@@ -19,10 +19,18 @@ class SupplierController extends Controller
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
                 ]);
 
+            $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Supplier',
-                'data' => $suppliers,
+                'data' => [
+                  'suppliers' => $suppliers,
+                  'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -209,9 +217,6 @@ class SupplierController extends Controller
         }
     }
 
-    /**
-     * Activate the specified toko from storage.
-     */
     public function activate(string $id)
     {
         try {
@@ -245,10 +250,5 @@ class SupplierController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function destroy($id)
-    {
-        // Logic to delete a supplier
     }
 }

@@ -11,28 +11,26 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller
 {
-    /**
-     * Display a listing of the category.
-     */
     public function index()
     {
         try {
             $categories = KategoriBarang::select([
                 'id', 'nama_kategori_barang', 'flag'
             ])->orderBy('id')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'nama_kategori_barang' => $category->nama_kategori_barang,
-                    'status' => $category->flag ? 'Aktif' : 'Nonaktif',
-                ];
-            });
+            ->get();
+
+            $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Kategori Barang',
-                'data' => $categories,
+                'data' => [
+                    'kategoriBarangs' => $categories,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -43,9 +41,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new category.
-     */
     public function create()
     {
         try {
@@ -62,9 +57,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created category in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -95,9 +87,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Display the specified category.
-     */
     public function show(string $id)
     {
         try {
@@ -130,9 +119,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified category.
-     */
     public function edit(string $id)
     {
         try {
@@ -159,9 +145,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Update the specified category in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -205,9 +188,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified category from storage.
-     */
     public function deactivate(string $id)
     {
         try {
@@ -242,9 +222,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Activate the specified category from storage.
-     */
     public function activate(string $id)
     {
         try {

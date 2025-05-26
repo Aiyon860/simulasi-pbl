@@ -14,9 +14,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TokoKeCabangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -36,10 +33,18 @@ class TokoKeCabangController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $headings = $TokoKeCabang->isEmpty() ? [] : array_keys($TokoKeCabang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
-                'message' => 'Data Toko Ke Cabang berhasil diambil.',
-                'data' => $TokoKeCabang,
+                'message' => 'Data Toko Ke Cabang',
+                'data' => [
+                    'TokoKeCabangs' => $TokoKeCabang,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -50,9 +55,6 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -90,9 +92,6 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -133,9 +132,6 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -172,17 +168,11 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         // This method is intentionally left empty as per your request.
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -221,9 +211,6 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage (soft delete using 'flag').
-     */
     public function destroy(string $id)
     {
         try {

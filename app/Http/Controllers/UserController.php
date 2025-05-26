@@ -15,9 +15,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the user.
-     */
     public function index(Request $request)
     {
         try {
@@ -27,10 +24,18 @@ class UserController extends Controller
                     'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
                 ]);
 
+            $headings = $users->isEmpty() ? [] : array_keys($users->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Pengguna',
-                'data' => $users,
+                'data' => [
+                    'users' => $users,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -41,9 +46,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new user.
-     */
     public function create()
     {
         try {
@@ -67,9 +69,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Store a newly created user in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -107,9 +106,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Display the specified user.
-     */
     public function show(string $id)
     {
         try {
@@ -139,9 +135,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified user.
-     */
     public function edit(string $id)
     {
         try {
@@ -176,9 +169,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Update the specified user in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -234,9 +224,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified user from storage.
-     */
     public function deactivate(string $id)
     {
         try {
@@ -280,9 +267,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Activate the specified user from storage.
-     */
     public function activate(string $id)
     {
         try {

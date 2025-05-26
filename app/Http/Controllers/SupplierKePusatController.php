@@ -14,9 +14,6 @@ use Illuminate\Validation\ValidationException;
 
 class SupplierKePusatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -37,10 +34,18 @@ class SupplierKePusatController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $headings = $SupplierKePusat->isEmpty() ? [] : array_keys($SupplierKePusat->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Supllier Ke Pusat',
-                'data' => $SupplierKePusat,
+                'data' => [
+                    'SupplierKePusats' => $SupplierKePusat,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -51,9 +56,6 @@ class SupplierKePusatController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -84,9 +86,6 @@ class SupplierKePusatController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -128,9 +127,6 @@ class SupplierKePusatController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -169,17 +165,11 @@ class SupplierKePusatController extends Controller
     }
 
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -218,9 +208,6 @@ class SupplierKePusatController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

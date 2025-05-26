@@ -19,10 +19,18 @@ class SupplierController extends Controller
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
                 ]);
 
+            $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Supplier',
-                'data' => $suppliers,
+                'data' => [
+                  'suppliers' => $suppliers,
+                  'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

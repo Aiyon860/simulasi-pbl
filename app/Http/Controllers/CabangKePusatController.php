@@ -33,10 +33,18 @@ class CabangKePusatController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $headings = $CabangKePusat->isEmpty() ? [] : array_keys($CabangKePusat->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Pusat',
-                'data' => $CabangKePusat,
+                'data' => [
+                    'CabangKePusats' => $CabangKePusat,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -27,10 +27,18 @@ class PenerimaanDiPusatController extends Controller
         ])->where('flag', '=', 1)
         ->get();
 
+        $headings = $penerimaanDiPusat->isEmpty() ? [] : array_keys($penerimaanDiPusat->first()->getAttributes());
+        $headings = array_map(function ($heading) {
+            return str_replace('_', ' ', ucfirst($heading));
+        }, $headings);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Penerimaan Di Pusat retrieved successfully',
-            'data' => $penerimaanDiPusat
+            'data' => [
+                'penerimaanDiPusats' => $penerimaanDiPusat,
+                'headings' => $headings,
+            ]
         ]);
     }
 

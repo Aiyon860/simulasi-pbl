@@ -31,10 +31,18 @@ class PenerimaanDiCabangController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $headings = $penerimaanDiCabang->isEmpty() ? [] : array_keys($penerimaanDiCabang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Penerimaan Di Cabang',
-                'data' => $penerimaanDiCabang,
+                'data' => [
+                    'penerimaanDiCabangs' => $penerimaanDiCabang,
+                    'headings' => $headings,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -24,10 +24,18 @@ class UserController extends Controller
                     'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
                 ]);
 
+            $headings = $users->isEmpty() ? [] : array_keys($users->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Pengguna',
-                'data' => $users,
+                'data' => [
+                    'users' => $users,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

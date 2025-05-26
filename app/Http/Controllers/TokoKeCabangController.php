@@ -33,10 +33,18 @@ class TokoKeCabangController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $headings = $TokoKeCabang->isEmpty() ? [] : array_keys($TokoKeCabang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
-                'message' => 'Data Toko Ke Cabang berhasil diambil.',
-                'data' => $TokoKeCabang,
+                'message' => 'Data Toko Ke Cabang',
+                'data' => [
+                    'TokoKeCabangs' => $TokoKeCabang,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

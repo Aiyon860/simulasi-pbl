@@ -18,11 +18,19 @@ class TokoController extends Controller
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
                 ]);
+            
+            $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Toko',
-                'data' => $tokos,
+                'data' => [
+                    'tokos' => $tokos,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -17,19 +17,20 @@ class KategoriBarangController extends Controller
             $categories = KategoriBarang::select([
                 'id', 'nama_kategori_barang', 'flag'
             ])->orderBy('id')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'nama_kategori_barang' => $category->nama_kategori_barang,
-                    'status' => $category->flag ? 'Aktif' : 'Nonaktif',
-                ];
-            });
+            ->get();
+
+            $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Kategori Barang',
-                'data' => $categories,
+                'data' => [
+                    'kategoriBarangs' => $categories,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

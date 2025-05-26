@@ -28,10 +28,18 @@ class DetailGudangController extends Controller
             ->orderBy('stok_opname', 'asc')
             ->get();
 
+            $headings = $detailGudang->isEmpty() ? [] : array_keys($detailGudang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Barang Gudang',
-                'data' => $detailGudang,
+                'data' => [
+                    'detailGudangs' => $detailGudang,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller
 {
-    /**
-     * Display a listing of the category.
-     */
     public function index()
     {
         try {
@@ -43,9 +40,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new category.
-     */
     public function create()
     {
         try {
@@ -62,9 +56,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created category in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -95,9 +86,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Display the specified category.
-     */
     public function show(string $id)
     {
         try {
@@ -130,9 +118,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified category.
-     */
     public function edit(string $id)
     {
         try {
@@ -159,9 +144,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Update the specified category in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -205,9 +187,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified category from storage.
-     */
     public function deactivate(string $id)
     {
         try {
@@ -242,9 +221,6 @@ class KategoriBarangController extends Controller
         }
     }
 
-    /**
-     * Activate the specified category from storage.
-     */
     public function activate(string $id)
     {
         try {

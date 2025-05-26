@@ -12,9 +12,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DetailGudangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try{
@@ -45,9 +42,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try{
@@ -75,9 +69,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -112,9 +103,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -147,9 +135,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         try {
@@ -192,9 +177,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
@@ -232,9 +214,6 @@ class DetailGudangController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

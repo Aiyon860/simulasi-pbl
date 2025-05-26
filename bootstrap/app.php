@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\Cors;
 use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\RoleMiddleware;

@@ -4,10 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Exception;
-use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class JwtMiddleware
@@ -26,10 +24,9 @@ class JwtMiddleware
                 try {
                     $refreshedToken = JWTAuth::refresh(JWTAuth::getToken());
                     $user = JWTAuth::setToken($refreshedToken)->toUser();
-
-                    $user->update(['token_jwt' => $refreshedToken]);
                     
                     $response = $next($request);
+
                     return $response->withHeaders([
                         'Authorization' => "Bearer {$refreshedToken}",
                         'access_token' => $refreshedToken,
@@ -44,6 +41,7 @@ class JwtMiddleware
                     ], 401);
                 }
             }
+            
             return response()->json([
                 'status' => 'false',
                 'message' => 'Token is invalid.',

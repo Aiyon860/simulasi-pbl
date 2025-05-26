@@ -209,9 +209,6 @@ class SupplierController extends Controller
         }
     }
 
-    /**
-     * Activate the specified toko from storage.
-     */
     public function activate(string $id)
     {
         try {
@@ -245,10 +242,5 @@ class SupplierController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function destroy($id)
-    {
-        // Logic to delete a supplier
     }
 }

@@ -20,9 +20,9 @@ use App\Http\Controllers\PenerimaanDiPusatController;
 use App\Http\Controllers\PenerimaanDiCabangController;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::middleware(['jwt'])->group(function () {
-    Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/authenticated-user', [AuthController::class, 'getUser']);
 
@@ -46,7 +46,7 @@ Route::middleware(['jwt'])->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::patch('suppliers/{id}/activate', [TokoController::class, 'activate'])->name('supplier.activate');
         Route::patch('suppliers/{id}/deactivate', [TokoController::class, 'activate'])->name('supplier.deactivate');
-    
+
         Route::resource('gudangs', GudangController::class);
         Route::patch('gudangs/{id}/activate', [GudangController::class, 'activate'])->name('gudangs.activate');
         Route::patch('gudangs/{id}/deactivate', [GudangController::class, 'deactivate'])->name('gudangs.deactivate');

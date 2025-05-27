@@ -23,9 +23,9 @@ class CabangKePusatController extends Controller
     {
         try {
             $CabangKePusat = CabangKePusat::select([
-                'id', 'kode', 'id_pusat', 
-                'id_cabang', 'id_barang', 'id_satuan_berat', 
-                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'id', 'kode', 'id_pusat',
+                'id_cabang', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ])->with(
                 'pusat:id,nama_gudang_toko,alamat,no_telepon',
@@ -105,7 +105,7 @@ class CabangKePusatController extends Controller
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
             ]);
-            
+
             $barang = DetailGudang::where('id_cabang', $request->id_cabang)
                 ->where('id_barang', $request->id_barang)
                 ->first('jumlah_stok');
@@ -157,9 +157,9 @@ class CabangKePusatController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
             ])->findOrFail($id, [
-                'id', 'kode', 'id_pusat', 
-                'id_cabang', 'id_barang', 'id_satuan_berat', 
-                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'id', 'kode', 'id_pusat',
+                'id_cabang', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ]);
 

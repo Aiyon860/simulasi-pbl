@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\CabangCreateResource;
 use App\Models\Barang;
 use App\Models\CabangKeToko;
 use App\Models\DetailGudang;
@@ -11,6 +13,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\CabangKeTokoIndexResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\TokoCreateResource;
 
 class CabangKeTokoController extends Controller
 {
@@ -43,7 +49,7 @@ class CabangKeTokoController extends Controller
                 'status' => true,
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
-                    'cabangKeTokos' => $cabangKeToko,
+                    'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
                     'headings' => $headings,
                 ],
             ]);
@@ -77,11 +83,11 @@ class CabangKeTokoController extends Controller
                 'status' => true,
                 'message' => 'Data Barang Cabang ke Toko',
                 'data' => [
-                    'barang' => $barang,
-                    'satuanBerat' => $satuanBerat,
-                    'kurir' => $kurir,
-                    'cabang' => $cabang,
-                    'toko' => $toko,
+                    'barang' => BarangCreateResource::collection($barang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
+                    'kurir' => KurirCreateResource::collection($kurir),
+                    'cabang' => CabangCreateResource::collection($cabang),
+                    'toko' => TokoCreateResource::collection($toko),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -108,7 +114,7 @@ class CabangKeTokoController extends Controller
                 'tanggal' => 'required|date',
             ]);
 
-            return DB::transaction(function () use ($validated, $request) {
+            DB::transaction(function () use ($validated, $request) {
                 $barang = DetailGudang::where('id_gudang', $request->id_cabang)
                     ->where('id_barang', $request->id_barang)
                     ->first();
@@ -134,7 +140,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422); // Unprocessable Entity
         } catch (\Throwable $th) {
             return response()->json([
@@ -165,12 +171,13 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id}",
-                'data' => $CabangKeToko,
+                'data' => CabangKeTokoIndexResource::make($CabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
@@ -181,10 +188,10 @@ class CabangKeTokoController extends Controller
         }
     }
 
-    public function edit(string $id)
-    {
+    // public function edit(string $id)
+    // {
 
-    }
+    // }
 
     public function update(Request $request, string $id)
     {
@@ -195,20 +202,20 @@ class CabangKeTokoController extends Controller
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            return DB::transaction(function () use ($validated, $CabangKeToko) {
+            DB::transaction(function () use ($validated, $CabangKeToko) {
                 $CabangKeToko->update($validated);
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Data Cabang Ke Toko berhasil diperbarui',
-                    'data' => $CabangKeToko,
+                    'data' => CabangKeTokoIndexResource::make($CabangKeToko),
                 ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422); // Unprocessable Entity
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -236,7 +243,7 @@ class CabangKeTokoController extends Controller
                 ], 400); // Bad Request
             }
 
-            return DB::transaction(function () use ($id, $CabangKeToko) {
+            DB::transaction(function () use ($id, $CabangKeToko) {
                 $CabangKeToko->update(['flag' => 0]);
 
                 return response()->json([

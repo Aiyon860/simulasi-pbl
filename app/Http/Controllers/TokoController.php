@@ -2,27 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GudangDanToko;
 use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TokoController extends Controller
 {
-    /**
-     * Display a listing of the toko.
-     */
     public function index()
     {
         try {
             $tokos = GudangDanToko::where('kategori_bangunan', 2)
                 ->orderBy('id')
-                ->paginate(10);
+                ->get([
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                ]);
+            
+            $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Toko',
-                'data' => $tokos,
+                'data' => [
+                    'tokos' => $tokos,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -33,9 +41,6 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new toko.
-     */
     public function create()
     {
         try {
@@ -52,29 +57,24 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Store a newly created toko in storage.
-     */
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'nama_gudang_toko' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
+                'nama_gudang_toko' => 'required|string|max:255',
                 'alamat' => 'nullable|string',
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            $toko = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 2]));
+            return DB::transaction(function () use ($validated) {
+                $toko = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 2]));
 
-            return response()->json([
-                'status' => true,
-                'message' => "Toko {$toko->nama_gudang_toko} berhasil ditambahkan!",
-                'data' => $toko,
-            ], 201);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Toko {$toko->nama_gudang_toko} berhasil ditambahkan!",
+                    'data' => $toko,
+                ], 201);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -90,13 +90,12 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Display the specified toko.
-     */
     public function show(string $id)
     {
         try {
-            $toko = GudangDanToko::where('kategori_bangunan', 2)->findOrFail($id);
+            $toko = GudangDanToko::findOrFail($id, [
+                'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -117,13 +116,12 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified toko.
-     */
     public function edit(string $id)
     {
         try {
-            $toko = GudangDanToko::where('kategori_bangunan', 2)->findOrFail($id);
+            $toko = GudangDanToko::findOrFail($id, [
+                'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -144,13 +142,10 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Update the specified toko in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
-            $toko = GudangDanToko::where('kategori_bangunan', 2)->findOrFail($id);
+            $toko = GudangDanToko::findOrFail($id);
 
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
@@ -158,13 +153,15 @@ class TokoController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            $toko->update($validated);
+            return DB::transaction(function () use ($toko, $validated) {
+                $toko->update($validated);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Toko {$toko->nama_gudang_toko} berhasil diperbarui!",
-                'data' => $toko,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Toko {$toko->nama_gudang_toko} berhasil diperbarui!",
+                    'data' => $toko,
+                ]);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -185,21 +182,26 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Deactivate the specified toko from storage.
-     */
     public function deactivate(string $id)
     {
         try {
-            $toko = GudangDanToko::where('kategori_bangunan', 2)->findOrFail($id);
+            $toko = GudangDanToko::findOrFail($id);
 
-            $toko->update(['flag' => 0]);
+            if ($toko->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Toko {$toko->nama_gudang_toko} sudah dinonaktifkan sebelumnya!",
+                ]);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Toko {$toko->nama_gudang_toko} berhasil dinonaktifkan!",
-                'data' => $toko,
-            ]);
+            return DB::transaction(function () use ($toko) {
+                $toko->update(['flag' => 0]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Toko {$toko->nama_gudang_toko} berhasil dinonaktifkan!",
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -214,21 +216,26 @@ class TokoController extends Controller
         }
     }
 
-    /**
-     * Activate the specified toko from storage.
-     */
     public function activate(string $id)
     {
         try {
-            $toko = GudangDanToko::where('kategori_bangunan', 2)->findOrFail($id);
+            $toko = GudangDanToko::findOrFail($id);
 
-            $toko->update(['flag' => 1]);
+            if ($toko->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Toko {$toko->nama_gudang_toko} sudah diaktifkan sebelumnya!",
+                ]);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Toko {$toko->nama_gudang_toko} berhasil diaktifkan!",
-                'data' => $toko,
-            ]);
+            return DB::transaction(function () use ($toko) {
+                $toko->update(['flag' => 1]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Toko {$toko->nama_gudang_toko} berhasil diaktifkan!",
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

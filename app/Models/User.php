@@ -28,7 +28,6 @@ class User extends Authenticatable implements JWTSubject
         'id_gudang',
         'id_toko',
         'flag',
-        'token_jwt',
     ];
 
     /**

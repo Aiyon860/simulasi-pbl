@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Barang;
 use App\Helpers\TimeHelpers;
 use App\Models\CabangKeToko;
@@ -16,7 +15,6 @@ use App\Models\KategoriBarang;
 use App\Models\PusatKeSupplier;
 use App\Models\PenerimaanDiPusat;
 use App\Models\PenerimaanDiCabang;
-use Illuminate\Support\Facades\DB;
 use App\Services\StokBarang\StokBarangService;
 use App\Services\Laporan\AdminCabang\LaporanCabangService;
 use App\Services\Laporan\SuperadminSupervisor\LaporanSuperService;
@@ -32,9 +30,6 @@ class DashboardController extends Controller
         $this->stokBarangService = $stokBarangService;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try {
@@ -197,7 +192,7 @@ class DashboardController extends Controller
                             // description
                             $description = TimeHelpers::getLastSevenDays();
                             $intervals = TimeHelpers::getDailyIntervals();
-                                                                                                            
+
                             $laporanMasukPengiriman = $this->laporanCabangService->getLaporanMasukPengirimanMingguan($idGudangAdmin, $intervals);
                             $laporanMasukRetur = $this->laporanCabangService->getLaporanMasukReturMingguan($idGudangAdmin, $intervals);
                             $laporanKeluar = $this->laporanCabangService->getLaporanKeluarMingguan($idGudangAdmin, $intervals);
@@ -257,13 +252,13 @@ class DashboardController extends Controller
             if ($request->user()->hasRole('SuperAdmin', 'Supervisor')) {
                 // supervisor privilege === superadmin's
                 if ($request->user()->hasRole('Supervisor')) {
-                    $lokasi->id = 1; 
+                    $lokasi->id = 1;
                 }
                 $barangs = $this->stokBarangService->getTopTenLowestStockSuper();
             } else { // admin cabang
                 $barangs = $this->stokBarangService->getTopTenLowestStockCabang($lokasi->id);
             }
-    
+
             return response()->json([
                 'status' => true,
                 'message' => "Data barang dengan stok rendah di seluruh gudang.",
@@ -276,53 +271,5 @@ class DashboardController extends Controller
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

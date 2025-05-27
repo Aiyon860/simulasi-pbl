@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             // PusatKeSupplierSeeder::class,
             // PusatKeCabangSeeder::class,
             // PenerimaanDiPusatSeeder::class,
-            // PenerimaanDiCabangSeeder::class,
+            PenerimaanDiCabangSeeder::class,
             // SupplierKePusatSeeder::class,
         ]);
     }

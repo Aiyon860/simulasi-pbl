@@ -1,5 +1,10 @@
 <?php
 namespace App\Http\Controllers;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\CabangCreateResource;
+use App\Http\Resources\CabangKePusatIndexResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
@@ -42,7 +47,9 @@ class CabangKePusatController extends Controller
                 'status' => true,
                 'message' => 'Data Cabang Ke Pusat',
                 'data' => [
-                    'CabangKePusats' => $CabangKePusat,
+                    'CabangKePusats' => CabangKePusatIndexResource::collection($CabangKePusat),
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -70,10 +77,10 @@ class CabangKePusatController extends Controller
                 'status' => true,
                 'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
                 'data' => [
-                    'barangs' => $barangs,
-                    'cabangs' => $cabang,
-                    'satuanBerat' => $satuanBerat,
-                    'kurir' => $kurir,
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'cabangs' => CabangCreateResource::collection($cabang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
+                    'kurir' => KurirCreateResource::collection($kurir),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -98,37 +105,37 @@ class CabangKePusatController extends Controller
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
             ]);
+            
+            $barang = DetailGudang::where('id_cabang', $request->id_cabang)
+                ->where('id_barang', $request->id_barang)
+                ->first('jumlah_stok');
 
-            return DB::transaction(function () use ($validated, $request) {
-                $barang = DetailGudang::where('id_cabang', $request->id_cabang)
-                    ->where('id_barang', $request->id_barang)
-                    ->first('jumlah_stok');
-
-                if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Jumlah stok tidak mencukupi untuk diretur.',
-                    ], 400);
-                }
-
-                $cabangKePusat = array_merge($validated, [
-                    'id_pusat' => 1,
-                    'id_status' => 1
-                ]);
-
-                CabangKePusat::create($cabangKePusat);
-
+            if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
-                    'data' => $cabangKePusat,
-                ], 201);
+                    'status' => false,
+                    'message' => 'Jumlah stok tidak mencukupi untuk diretur.',
+                ], 400);
+            }
+
+            $cabangKePusat = array_merge($validated, [
+                'id_pusat' => 1,
+                'id_status' => 1
+            ]);
+
+            DB::transaction(function () use ($cabangKePusat) {
+                CabangKePusat::create($cabangKePusat);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
+                'data' => $cabangKePusat,
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -159,12 +166,13 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id}",
-                'data' => $cabangKePusat,
+                'data' => CabangKePusatIndexResource::collection($cabangKePusat),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -173,11 +181,6 @@ class CabangKePusatController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function edit(string $id)
-    {
-        
     }
 
     public function update(Request $request, string $id)
@@ -189,25 +192,26 @@ class CabangKePusatController extends Controller
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            return DB::transaction(function () use ($validated, $CabangKeToko) {
+            DB::transaction(function () use ($validated, $CabangKeToko) {
                 $CabangKeToko->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Toko ke Cabang berhasil diperbarui',
-                    'data' => $CabangKeToko,
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Toko ke Cabang berhasil diperbarui',
+                'data' => CabangKePusatIndexResource::collection($CabangKeToko),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422); // Unprocessable Entity
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
@@ -230,18 +234,19 @@ class CabangKePusatController extends Controller
                 ], 409);
             }
 
-            return DB::transaction(function () use ($id, $cabangKePusat) {
+            DB::transaction(function () use ($id, $cabangKePusat) {
                 $cabangKePusat->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Berhasil menghapus Data Cabang Ke Pusat dengan ID: {$id}",
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil menghapus Data Cabang Ke Pusat dengan ID: {$id}",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

@@ -1,10 +1,13 @@
 <?php
 namespace App\Http\Controllers;
+use App\Http\Resources\BarangStoreResource;
 use App\Models\Barang;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\BarangIndexResource;
+use App\Http\Resources\KategoriBarangResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -16,19 +19,21 @@ class BarangController extends Controller
             $barangs = Barang::with(['kategori:id,nama_kategori_barang'])
                 ->where('flag', 1)
                 ->orderBy('nama_barang')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'nama_barang' => $item->nama_barang,
-                        'kategori_barang' => $item->kategori->nama_kategori_barang,
-                        'flag' => $item->flag ? 'Aktif' : 'Nonaktif',
-                    ];
-                });
+                ->get();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Barang',
-                'data' => $barangs,
+                'data' => [
+                    'barangs' => BarangIndexResource::collection($barangs),
+
+                    /** @var array<int, 'Nama Barang' | 'Kategori Barang' | 'Status'> */
+                    'headings' => [
+                        'Nama Barang',
+                        'Kategori Barang',
+                        'Status'
+                    ],
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -51,7 +56,7 @@ class BarangController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Tambah Barang',
                 'data' => [
-                    'categories' => $categories,
+                    'categories' => KategoriBarangResource::collection($categories),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -71,20 +76,19 @@ class BarangController extends Controller
                 'id_kategori_barang' => 'required|exists:kategori_barangs,id',
             ]);
 
-            return DB::transaction(function () use ($request, $validated) {
-                $barang = Barang::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Barang {$request->input('nama_barang')} berhasil ditambahkan!",
-                    'data' => $barang,
-                ]);
+            DB::transaction(function () use ($validated) {
+                Barang::create($validated);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Barang {$request->input('nama_barang')} berhasil ditambahkan!",
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -98,26 +102,21 @@ class BarangController extends Controller
     public function show(string $id)
     {
         try {
-            $item = Barang::with('kategori:id,nama_kategori_barang')
+            $barang = Barang::with('kategori:id,nama_kategori_barang')
                 ->findOrFail($id, [
                     'id', 'nama_barang', 'flag', 'id_kategori_barang'
             ]);
-            
-            $barang = [
-                'nama_barang' => $item->nama_barang,
-                'kategori_barang' => $item->kategori->nama_kategori_barang,
-                'status' => $item->flag ? 'Aktif' : 'Nonaktif'
-            ];
 
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Barang dengan ID: {$id}",
-                'data' => $barang,
+                'data' => BarangIndexResource::collection($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -145,14 +144,15 @@ class BarangController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Edit Barang',
                 'data' => [
-                    'barang' => $barang,
-                    'categories' => $categories,
+                    'barang' => BarangIndexResource::collection($barang),
+                    'categories' => KategoriBarangResource::collection($categories),
                 ],
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -179,25 +179,26 @@ class BarangController extends Controller
 
             $validated = $request->validate($rules);
 
-            return DB::transaction(function () use ($validated, $barang) {
+            DB::transaction(function () use ($validated, $barang) {
                 $barang->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
-                    'data' => $barang,
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
+                'data' => BarangIndexResource::collection($barang),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -217,22 +218,23 @@ class BarangController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Barang {$barang->nama_barang} sudah dinonaktifkan!",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($barang) {
-                $barang->update(['flag' => 0]);
-                
-                return response()->json([
-                    'status' => true,
-                    'message' => "Barang {$barang->nama_barang} berhasil dinonaktifkan!",
-                    'data' => $barang,
-                ]);
+            DB::transaction(function () use ($barang) {
+                $barang->update(['flag' => 0]);    
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Barang {$barang->nama_barang} berhasil dinonaktifkan!",
+                'data' => BarangIndexResource::collection($barang),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -252,22 +254,23 @@ class BarangController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Barang {$barang->nama_barang} sudah diaktifkan!",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($barang) {
+            DB::transaction(function () use ($barang) {
                 $barang->update(['flag' => 1]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Barang {$barang->nama_barang} berhasil diaktifkan!",
-                    'data' => $barang,
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Barang {$barang->nama_barang} berhasil diaktifkan!",
+                'data' => BarangIndexResource::collection($barang),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

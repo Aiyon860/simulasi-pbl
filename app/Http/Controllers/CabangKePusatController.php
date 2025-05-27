@@ -106,6 +106,7 @@ class CabangKePusatController extends Controller
                 'tanggal' => 'required|date',
             ]);
             
+            
             $barang = DetailGudang::where('id_cabang', $request->id_cabang)
                 ->where('id_barang', $request->id_barang)
                 ->first('jumlah_stok');

@@ -185,20 +185,20 @@ class CabangKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $CabangKeToko = CabangKePusat::findOrFail($id);
+            $cabangKePusat = CabangKePusat::findOrFail($id);
 
             $validated = $request->validate([
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            DB::transaction(function () use ($validated, $CabangKeToko) {
-                $CabangKeToko->update($validated);
+            DB::transaction(function () use ($validated, $cabangKePusat) {
+                $cabangKePusat->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Toko ke Cabang berhasil diperbarui',
-                'data' => CabangKePusatIndexResource::collection($CabangKeToko),
+                'data' => CabangKePusatIndexResource::collection($cabangKePusat),
             ]);
         } catch (ValidationException $e) {
             return response()->json([

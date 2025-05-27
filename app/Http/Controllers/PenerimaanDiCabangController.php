@@ -24,8 +24,8 @@ class PenerimaanDiCabangController extends Controller
     {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::select([
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan', 
-                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang', 
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
@@ -70,7 +70,7 @@ class PenerimaanDiCabangController extends Controller
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
             $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where(function ($query) {
-                    $query->where('id', '=', 1) 
+                    $query->where('id', '=', 1)
                         ->orWhere('kategori_bangunan', '=', 2);
                 })
                 ->where('flag', '=', 1)
@@ -144,8 +144,8 @@ class PenerimaanDiCabangController extends Controller
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan', 
-                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang', 
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ]);
 

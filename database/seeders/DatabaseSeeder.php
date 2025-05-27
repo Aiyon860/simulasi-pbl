@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             // TokoKeCabangSeeder::class,
             // CabangKeTokoSeeder::class,
             // PusatKeSupplierSeeder::class,
-            // PusatKeCabangSeeder::class,
+            PusatKeCabangSeeder::class,
             // PenerimaanDiPusatSeeder::class,
             PenerimaanDiCabangSeeder::class,
             // SupplierKePusatSeeder::class,

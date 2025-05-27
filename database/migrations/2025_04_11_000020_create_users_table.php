@@ -34,7 +34,6 @@ return new class extends Migration
                 ->cascadeOnUpdate();
 
             $table->rememberToken();
-            $table->string('token_jwt', 500)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

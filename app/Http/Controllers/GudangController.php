@@ -5,26 +5,32 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class GudangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
             $gudangs = GudangDanToko::where('kategori_bangunan', 0)
                 ->orderBy('id')
-                ->paginate(10);
+                ->get([
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                ]);
+
+            $headings = $gudangs->isEmpty() ? [] : array_keys($gudangs->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Gudang',
-                'data' => $gudangs,
+                'data' => [
+                    'gudangs' => $gudangs,
+                    'headings' => $headings,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -35,9 +41,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -54,9 +57,6 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -66,13 +66,15 @@ class GudangController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            $gudang = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 0 ]));
+            return DB::transaction(function () use ($validated) {
+                $gudang = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 0]));
 
-            return response()->json([
-                'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
-                'data' => $gudang,
-            ], 201);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
+                    'data' => $gudang,
+                ], 201);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -88,13 +90,16 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id, [
+                'id',
+                'nama_gudang_toko',
+                'alamat',
+                'no_telepon',
+                'flag'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -115,13 +120,15 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id, [
+                'id',
+                'nama_gudang_toko',
+                'alamat',
+                'no_telepon'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -142,27 +149,26 @@ class GudangController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
-
+            
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
                 'alamat' => 'nullable|string',
                 'no_telepon' => 'nullable|string|max:20',
             ]);
+            
+            return DB::transaction(function () use ($id, $validated) {
+                $gudang = GudangDanToko::findOrFail($id);
+                $gudang->update($validated);
 
-            $gudang->update($validated);
-
-            return response()->json([
-                'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diperbarui.",
-                'data' => $gudang,
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diperbarui.",
+                    'data' => $gudang,
+                ]);
+            }, 3);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -186,15 +192,24 @@ class GudangController extends Controller
     public function deactivate(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id);
 
-            $gudang->update(['flag' => 0]);
+            if ($gudang->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah dinonaktifkan.",
+                ], 400);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
-                'data' => $gudang,
-            ]);
+            return DB::transaction(function () use ($gudang) {
+                $gudang->update(['flag' => 0]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
+                    'data' => $gudang,
+                ]);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -212,15 +227,24 @@ class GudangController extends Controller
     public function activate(string $id)
     {
         try {
-            $gudang = GudangDanToko::where('kategori_bangunan', 0)->findOrFail($id);
+            $gudang = GudangDanToko::findOrFail($id);
 
-            $gudang->update(['flag' => 1]);
+            if ($gudang->flag == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah diaktifkan.",
+                ], 400);
+            }
 
-            return response()->json([
-                'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diaktifkan.",
-                'data' => $gudang,
-            ], 201);
+            return DB::transaction(function () use ($gudang) {
+                $gudang->update(['flag' => 1]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diaktifkan.",
+                    'data' => $gudang,
+                ], 201);
+            }, 3);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 use App\Models\Kurir;
 use App\Models\Barang;
-use App\Models\Status;
 use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
 use Illuminate\Http\Request;
@@ -15,25 +14,37 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CabangKePusatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
-            $CabangKePusat = CabangKePusat::with(
-                'pusat',
-                'cabang',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            )->get();
+            $CabangKePusat = CabangKePusat::select([
+                'id', 'kode', 'id_pusat', 
+                'id_cabang', 'id_barang', 'id_satuan_berat', 
+                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ])->with(
+                'pusat:id,nama_gudang_toko,alamat,no_telepon',
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+            )->where('flag', 1)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+            $headings = $CabangKePusat->isEmpty() ? [] : array_keys($CabangKePusat->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Pusat',
-                'data' => $CabangKePusat,
+                'data' => [
+                    'CabangKePusats' => $CabangKePusat,
+                    'headings' => $headings,
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -44,18 +55,16 @@ class CabangKePusatController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
-            $barangs = Barang::all();
-            $pusat = GudangDanToko::all();
-            $status = Status::all();
-            $kurir = Kurir::all();
-            $cabang = $pusat;
-            $satuanBerat = SatuanBerat::all();
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $kurir = Kurir::select(['id', 'nama_kurir'])->get();
+            $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('id', '!=', 1)
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -64,9 +73,7 @@ class CabangKePusatController extends Controller
                     'barangs' => $barangs,
                     'cabangs' => $cabang,
                     'satuanBerat' => $satuanBerat,
-                    'status' => $status,
                     'kurir' => $kurir,
-                    'pusat' => $pusat,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -78,20 +85,15 @@ class CabangKePusatController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
                 'kode' => 'required|string',
-                'id_pusat' => 'required|exists:gudang_dan_tokos,id',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'tanggal' => 'required|date',
@@ -109,11 +111,17 @@ class CabangKePusatController extends Controller
                     ], 400);
                 }
 
-                CabangKePusat::create($validated);
+                $cabangKePusat = array_merge($validated, [
+                    'id_pusat' => 1,
+                    'id_status' => 1
+                ]);
+
+                CabangKePusat::create($cabangKePusat);
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
+                    'data' => $cabangKePusat,
                 ], 201);
             }, 3);
         } catch (ValidationException $e) {
@@ -131,20 +139,22 @@ class CabangKePusatController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
-            $cabangKePusat = CabangKePusat::with(
-                'pusat',
-                'cabang',
-                'barang',
-                'kurir',
-                'satuanBerat',
-                'status'
-            )->findOrFail($id);
+            $cabangKePusat = CabangKePusat::with([
+                'pusat:id,nama_gudang_toko,alamat,no_telepon',
+                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir',
+                'satuanBerat:id,nama_satuan_berat',
+                'status:id,nama_status'
+            ])->findOrFail($id, [
+                'id', 'kode', 'id_pusat', 
+                'id_cabang', 'id_barang', 'id_satuan_berat', 
+                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -165,25 +175,49 @@ class CabangKePusatController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        
+        try {
+            $CabangKeToko = CabangKePusat::findOrFail($id);
+
+            $validated = $request->validate([
+                'id_status' => 'required|exists:statuses,id',
+            ]);
+
+            return DB::transaction(function () use ($validated, $CabangKeToko) {
+                $CabangKeToko->update($validated);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data Toko ke Cabang berhasil diperbarui',
+                    'data' => $CabangKeToko,
+                ]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang diberikan tidak valid.',
+                'errors' => $e->errors(),
+            ], 422); // Unprocessable Entity
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Toko ke Cabang dengan ID: {$id} tidak ditemukan.",
+            ], 404); // Not Found
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal memperbarui data Toko ke Cabang. Silakan coba lagi.',
+                'error' => $th->getMessage(),
+            ], 500); // Internal Server Error
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

@@ -14,18 +14,35 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PenerimaanDiCabangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
-            $penerimaanDiCabang = PenerimaanDiCabang::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->get();
+            $penerimaanDiCabang = PenerimaanDiCabang::select([
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan', 
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ])->with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])
+            ->where('flag', '=', 1)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+            $headings = $penerimaanDiCabang->isEmpty() ? [] : array_keys($penerimaanDiCabang->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Penerimaan Di Cabang',
-                'data' => $penerimaanDiCabang,
+                'data' => [
+                    'penerimaanDiCabangs' => $penerimaanDiCabang,
+                    'headings' => $headings,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -36,16 +53,21 @@ class PenerimaanDiCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
-            $barangs = Barang::where('flag', 1)->get();
-            $jenisPenerimaan = JenisPenerimaan::all();
-            $asalBarang = GudangDanToko::where('flag', 1)->get();
-            $satuanBerat = SatuanBerat::all();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', 1)
+                ->get();
+            $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where(function ($query) {
+                    $query->where('id', '=', 1) 
+                        ->orWhere('kategori_bangunan', '=', 2);
+                })
+                ->where('flag', '=', 1)
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -66,9 +88,6 @@ class PenerimaanDiCabangController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -85,15 +104,15 @@ class PenerimaanDiCabangController extends Controller
                 'tanggal' => 'required|date',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                PenerimaanDiCabang::create($validated);
+            return DB::transaction(function () use ($validated) {
+                $penerimaanDiCabang = PenerimaanDiCabang::create($validated);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
+                    'data' => $penerimaanDiCabang,
+                ], 201); // 201 Created
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
-            ], 201); // 201 Created
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -109,13 +128,19 @@ class PenerimaanDiCabangController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
-            $penerimaanDiCabang = PenerimaanDiCabang::with('jenisPenerimaan', 'asalBarang', 'barang', 'satuanBerat')->findOrFail($id);
+            $penerimaanDiCabang = PenerimaanDiCabang::with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])->findOrFail($id, [
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan', 
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal'
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -136,25 +161,16 @@ class PenerimaanDiCabangController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {
@@ -168,14 +184,14 @@ class PenerimaanDiCabangController extends Controller
                 ], 409); // 409 Conflict
             }
 
-            DB::transaction(function () use ($penerimaanDiCabang) {
+            return DB::transaction(function () use ($id, $penerimaanDiCabang) {
                 $penerimaanDiCabang->update(['flag' => 0]); // Soft delete dengan mengubah flag
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
-            return response()->json([
-                'status' => true,
-                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
+                ]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

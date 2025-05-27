@@ -20,13 +20,16 @@ use App\Http\Controllers\PenerimaanDiPusatController;
 use App\Http\Controllers\PenerimaanDiCabangController;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::middleware(['jwt'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/authenticated-user', [AuthController::class, 'getUser']);
 
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::resource('dashboard', DashboardController::class);
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
+        Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
     });
 
     Route::middleware(['role:SuperAdmin'])->group(function () {
@@ -43,7 +46,7 @@ Route::middleware(['jwt'])->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::patch('suppliers/{id}/activate', [TokoController::class, 'activate'])->name('supplier.activate');
         Route::patch('suppliers/{id}/deactivate', [TokoController::class, 'activate'])->name('supplier.deactivate');
-    
+
         Route::resource('gudangs', GudangController::class);
         Route::patch('gudangs/{id}/activate', [GudangController::class, 'activate'])->name('gudangs.activate');
         Route::patch('gudangs/{id}/deactivate', [GudangController::class, 'deactivate'])->name('gudangs.deactivate');

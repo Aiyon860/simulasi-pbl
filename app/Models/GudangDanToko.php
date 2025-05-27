@@ -67,6 +67,6 @@ class GudangDanToko extends Model
 
     public function asalPenerimaanDiCabang(): HasMany
     {
-        return $this->hasMany(PenerimaanDiPusat::class, 'id_asal_barang');
+        return $this->hasMany(PenerimaanDiCabang::class, 'id_asal_barang');
     }
 }

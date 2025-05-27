@@ -15,8 +15,8 @@ class SupplierCreateResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'nama_gudang_toko' => $this->nama_gudang_toko
+            'id' => (int) $this->id,
+            'nama_supplier' => $this->nama_gudang_toko,
         ];
     }
 }

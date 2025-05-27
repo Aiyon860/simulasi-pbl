@@ -65,6 +65,7 @@ class GudangController extends Controller
 
     public function store(Request $request)
     {
+        $gudang = GudangDanToko::all();
         try {
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
@@ -75,17 +76,17 @@ class GudangController extends Controller
             DB::transaction(function () use ($validated) {
                 $gudang = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 0]));
 
-                return response()->json([
-                    'status' => true,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
-                    'data' => $gudang,
-                ], 201);
             }, 3);
+            return response()->json([
+                'status' => true,
+                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
+                'data' => $gudang,
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

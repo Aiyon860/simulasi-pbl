@@ -129,7 +129,6 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
-                'data' => $cabangKePusat,
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([

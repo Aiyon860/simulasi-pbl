@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\SupplierCreateResource;
+use App\Http\Resources\SupplierKePusatIndexResource;
 use App\Models\GudangDanToko;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
@@ -43,7 +48,8 @@ class SupplierKePusatController extends Controller
                 'status' => true,
                 'message' => 'Data Supllier Ke Pusat',
                 'data' => [
-                    'SupplierKePusats' => $SupplierKePusat,
+                    'SupplierKePusats' => SupplierKePusatIndexResource::collection($SupplierKePusats),
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -71,10 +77,10 @@ class SupplierKePusatController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Tambah Pengiriman Supplier Ke Pusat',
                 'data' => [
-                    'barangs' => $barangs,
-                    'supplier' => $supplier,
-                    'satuanBerat' => $satuanBerat,
-                    'kurir' => $kurir,
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'supplier' => SupplierCreateResource::collection($supplier),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
+                    'kurir' => KurirCreateResource::collection($kurir),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -100,7 +106,7 @@ class SupplierKePusatController extends Controller
                 'berat_satuan_barang' => 'required|numeric|min:0',
             ]);
 
-            return DB::transaction(function () use ($validated) {
+            DB::transaction(function () use ($validated) {
                 $supplierKePusat = SupplierKePusat::create(array_merge($validated, [
                     'id_status' => 1,
                     'id_pusat' => 1,
@@ -109,14 +115,14 @@ class SupplierKePusatController extends Controller
                 return response()->json([
                     'status' => true,
                     'message' => 'Pengiriman barang berhasil dikirimkan dari Supplier Ke Pusat',
-                    'data' => $supplierKePusat,
-                ], 201);
+                    
+                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $th) {
             return response()->json([
@@ -148,12 +154,13 @@ class SupplierKePusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Supplier Ke Pusat dengan ID: {$id}",
-                'data' => $SupplierKePusat,
+                'data' => SupplierKePusatIndexResource::collection($SupplierKePusats),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage()
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
@@ -179,25 +186,26 @@ class SupplierKePusatController extends Controller
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            return DB::transaction(function () use ($id, $validated, $supplierKePusat) {
+            DB::transaction(function () use ($id, $validated, $supplierKePusat) {
                 $supplierKePusat->update($validated);
     
                 return response()->json([
                     'status' => true,
                     'message' => "Data Pusat ke Supplier dengan ID: {$id} berhasil diperbarui.",
-                    'data' => $supplierKePusat,
+                    'data' => SupplierKePusatIndexResource::collection($SupplierKePusat),
                 ]);
             });
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Pusat ke Supplier dengan ID {$id} tidak ditemukan.",
+                'error' => $e->getMessage()
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -220,7 +228,7 @@ class SupplierKePusatController extends Controller
                 ]);
             }
 
-            return DB::transaction(function () use ($id, $SupplierKePusat) {
+             DB::transaction(function () use ($id, $SupplierKePusat) {
                 $SupplierKePusat->update(['flag' => 0]);
 
                 return response()->json([
@@ -233,6 +241,7 @@ class SupplierKePusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage()
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
@@ -242,4 +251,4 @@ class SupplierKePusatController extends Controller
             ], 500);
         }
     }
-}
+} 

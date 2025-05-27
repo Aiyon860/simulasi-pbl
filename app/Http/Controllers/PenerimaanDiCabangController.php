@@ -9,7 +9,13 @@ use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiCabang;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\BarangIndexResource;
+use App\Http\Resources\BarangCreateResource;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\AsalBarangCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\JenisPenerimaanCreateResource;
+use App\Http\Resources\PenerimaanDiCabangIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PenerimaanDiCabangController extends Controller
@@ -40,7 +46,9 @@ class PenerimaanDiCabangController extends Controller
                 'status' => true,
                 'message' => 'Data Penerimaan Di Cabang',
                 'data' => [
-                    'penerimaanDiCabangs' => $penerimaanDiCabang,
+                    'penerimaanDiCabangs' => PenerimaanDiCabangIndexResource::collection($penerimaanDiCabang),
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ],
             ]);
@@ -73,10 +81,10 @@ class PenerimaanDiCabangController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Tambah Penerimaan Di Cabang',
                 'data' => [
-                    'barangs' => $barangs,
-                    'jenisPenerimaan' => $jenisPenerimaan,
-                    'asalBarang' => $asalBarang,
-                    'satuanBerat' => $satuanBerat,
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'jenisPenerimaan' => JenisPenerimaanCreateResource::collection($jenisPenerimaan),
+                    'asalBarang' => AsalBarangCreateResource::collection($asalBarang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -104,20 +112,19 @@ class PenerimaanDiCabangController extends Controller
                 'tanggal' => 'required|date',
             ]);
 
-            return DB::transaction(function () use ($validated) {
-                $penerimaanDiCabang = PenerimaanDiCabang::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
-                    'data' => $penerimaanDiCabang,
-                ], 201); // 201 Created
+            DB::transaction(function () use ($validated) {
+                PenerimaanDiCabang::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
+            ], 201); // 201 Created
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422); // 422 Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([
@@ -145,12 +152,13 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Penerimaan Di Cabang dengan ID: {$id}",
-                'data' => $penerimaanDiCabang,
+                'data' => PenerimaanDiCabangIndexResource::make($penerimaanDiCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Penerimaan Di Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // 404 Not Found
         } catch (\Exception $e) {
             return response()->json([
@@ -159,16 +167,6 @@ class PenerimaanDiCabangController extends Controller
                 'error' => $e->getMessage(),
             ], 500); // 500 Internal Server Error
         }
-    }
-
-    public function edit(string $id)
-    {
-        //
-    }
-
-    public function update(Request $request, string $id)
-    {
-        //
     }
 
     public function destroy(string $id)
@@ -184,18 +182,19 @@ class PenerimaanDiCabangController extends Controller
                 ], 409); // 409 Conflict
             }
 
-            return DB::transaction(function () use ($id, $penerimaanDiCabang) {
+            DB::transaction(function () use ($penerimaanDiCabang) {
                 $penerimaanDiCabang->update(['flag' => 0]); // Soft delete dengan mengubah flag
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Penerimaan Di Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

@@ -205,7 +205,7 @@ class SupplierController extends Controller
             return response()->json([
                     'status' => true,
                     'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dinonaktifkan!",
-                    'data' => $supplier,
+                    'data' => SupplierIndexResource::collection($supplier),
             ]);
 
         } catch (ModelNotFoundException $e) {

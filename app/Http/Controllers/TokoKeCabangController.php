@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\CabangCreateResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\TokoCreateResource;
+use App\Http\Resources\TokoKeCabangIndexResource;
 use Illuminate\Http\Request;
 use App\Models\TokoKeCabang;
 use Illuminate\Support\Facades\DB;
@@ -9,8 +15,9 @@ use App\Models\Barang;
 use App\Models\Kurir;
 use App\Models\GudangDanToko;
 use App\Models\SatuanBerat;
+use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;;
 
 class TokoKeCabangController extends Controller
 {
@@ -42,7 +49,7 @@ class TokoKeCabangController extends Controller
                 'status' => true,
                 'message' => 'Data Toko Ke Cabang',
                 'data' => [
-                    'TokoKeCabangs' => $TokoKeCabang,
+                    'TokoKeCabangs' => TokoKeCabangIndexResource::collection($TokoKeCabang),
                     'headings' => $headings,
                 ]
             ]);
@@ -76,11 +83,11 @@ class TokoKeCabangController extends Controller
                 'status' => true,
                 'message' => 'Data pendukung untuk form Toko Ke Cabang.',
                 'data' => [
-                    'barang' => $barang,
-                    'satuanBerat' => $satuanBerat,
-                    'kurir' => $kurir,
-                    'toko' => $toko,
-                    'cabang' => $cabang,
+                    'barang' => BarangCreateResource::collection($barang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
+                    'kurir' => KurirCreateResource::collection($kurir),
+                    'toko' => TokoCreateResource::collection($toko),
+                    'cabang' => CabangCreateResource::collection($cabang),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -108,15 +115,21 @@ class TokoKeCabangController extends Controller
                 'tanggal' => 'required|date',
             ]);
 
-            return DB::transaction(function () use ($validated) {
-                $tokoKeCabang = TokoKeCabang::create($validated);
+            $tokoKeCabang = array_merge($validated, [
+                'id_toko' => 1, // Default flag value
+                'id_status' => 1, // Default status value
+            ]);
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Retur berhasil dikirim dari Toko ke Cabang.',
-                    'data' => $tokoKeCabang,
-                ], 201); // 201 Created
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            DB::transaction(function () use ($tokoKeCabang) {
+                $tokoKeCabang = TokoKeCabang::create($tokoKeCabang);
+            }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Retur berhasil dikirim dari Toko ke Cabang.',
+                'data' => $tokoKeCabang,
+            ], 201); // 201 Created
+
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -152,7 +165,7 @@ class TokoKeCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Toko Ke Cabang dengan ID: {$id}.",
-                'data' => $tokoKeCabang,
+                'data' => TokoKeCabangIndexResource::collection($tokoKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -182,25 +195,25 @@ class TokoKeCabangController extends Controller
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            return DB::transaction(function () use ($validated, $CabangKeToko) {
+            DB::transaction(function () use ($validated, $CabangKeToko) {
                 $CabangKeToko->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Toko ke Cabang berhasil diperbarui',
-                    'data' => $CabangKeToko,
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Toko ke Cabang berhasil diperbarui',
+                'data' => TokoKeCabangIndexResource::collection($CabangKeToko),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422); // Unprocessable Entity
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
@@ -223,18 +236,20 @@ class TokoKeCabangController extends Controller
                 ], 409); // Conflict status code for already deleted
             }
 
-            return DB::transaction(function () use ($tokoKeCabang, $id) {
+            DB::transaction(function () use ($tokoKeCabang, $id) {
                 $tokoKeCabang->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Toko Ke Cabang dengan ID: {$id} berhasil dihapus (dinonaktifkan).",
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Toko Ke Cabang dengan ID: {$id} berhasil dihapus (dinonaktifkan).",
+            ]);
+
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko Ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([

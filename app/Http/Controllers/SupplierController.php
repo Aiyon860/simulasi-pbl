@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+use App\Http\Resources\SupplierIndexResource;
 class SupplierController extends Controller
 {
     public function index()
@@ -28,7 +28,7 @@ class SupplierController extends Controller
                 'status' => true,
                 'message' => 'Data Supplier',
                 'data' => [
-                  'suppliers' => $suppliers,
+                  'suppliers' => SupplierIndexResource::collection($suppliers),
                   'headings' => $headings,
                 ]
             ]);
@@ -68,18 +68,19 @@ class SupplierController extends Controller
 
             DB::transaction(function () use ($validated) {
                 $supplier = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 1]));
-    
-                return response()->json([
+            }, 3);
+
+            return response()->json([
                     'status' => true,
                     'message' => "Toko {$supplier->nama_gudang_toko} berhasil ditambahkan!",
                     'data' => $supplier,
-                ], 201);
-            }, 3);
+            ], 201);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -100,8 +101,9 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Supplier dengan ID: {$id}",
-                'data' => $supplier,
+                'data' => SupplierIndexResource::collection($supplier),
             ]);
+            
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -126,8 +128,9 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Toko',
-                'data' => $supplier,
+                'data' => SupplierIndexResource::collection($supplier),
             ]);
+
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -155,18 +158,19 @@ class SupplierController extends Controller
 
             DB::transaction(function () use ($supplier, $validated) {
                 $supplier->update($validated);
+            }, 3);
 
-                return response()->json([
+            return response()->json([
                     'status' => true,
                     'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diperbarui!",
-                    'data' => $supplier,
-                ]);
-            }, 3);
+                    'data' => SupplierIndexResource::collection($supplier),
+            ]);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'errors' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -194,15 +198,16 @@ class SupplierController extends Controller
                 ]);
             }
 
-            return DB::transaction(function ($supplier) {
+            DB::transaction(function ($supplier) {
                 $supplier->update(['flag' => 0]);
-    
-                return response()->json([
+            }, 3);
+
+            return response()->json([
                     'status' => true,
                     'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dinonaktifkan!",
                     'data' => $supplier,
-                ]);
-            }, 3);
+            ]);
+
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -229,15 +234,16 @@ class SupplierController extends Controller
                 ]);
             }
 
-            return DB::transaction(function () use ($supplier) {
+            DB::transaction(function () use ($supplier) {
                 $supplier->update(['flag' => 1]);
-    
-                return response()->json([
+            }, 3);
+
+            return response()->json([
                     'status' => true,
                     'message' => "Supplier {$supplier->nama_gudang_toko} berhasil diaktifkan!",
-                    'data' => $supplier,
-                ]);
-            }, 3);
+                    'data' => SupplierIndexResource::collection($supplier),
+            ]);
+            
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

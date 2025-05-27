@@ -2,71 +2,96 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PenerimaanDiPusat;
-use App\Models\JenisPenerimaan;
-use App\Models\GudangDanToko;
-use App\Models\SatuanBerat;
 use App\Models\Barang;
+use App\Models\SatuanBerat;
+use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
+use App\Models\JenisPenerimaan;
+use App\Models\PenerimaanDiPusat;
 use Illuminate\Support\Facades\DB;
+use Dotenv\Exception\ValidationException;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\AsalBarangCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\JenisPenerimaanCreateResource;
+use App\Http\Resources\PenerimaanDiPusatIndexResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PenerimaanDiPusatController extends Controller
 {
     public function index()
     {
-        $penerimaanDiPusat = PenerimaanDiPusat::select([
-            'id', 'id_barang',
-            'id_jenis_penerimaan', 'id_asal_barang', 
-            'id_satuan_berat', 'berat_satuan_barang', 
-            'jumlah_barang', 'tanggal' 
-        ])->with([
-            'jenisPenerimaan:id,nama_jenis_penerimaan', 
-            'asalBarang:id,nama_gudang_toko', 
-            'barang:id,nama_barang', 
-            'satuanBerat:id,nama_satuan_berat'
-        ])->where('flag', '=', 1)
-        ->get();
+        try {
+            $penerimaanDiPusat = PenerimaanDiPusat::select([
+                'id', 'id_barang',
+                'id_jenis_penerimaan', 'id_asal_barang',
+                'id_satuan_berat', 'berat_satuan_barang',
+                'jumlah_barang', 'tanggal'
+            ])->with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])->where('flag', '=', 1)
+            ->get();
 
-        $headings = $penerimaanDiPusat->isEmpty() ? [] : array_keys($penerimaanDiPusat->first()->getAttributes());
-        $headings = array_map(function ($heading) {
-            return str_replace('_', ' ', ucfirst($heading));
-        }, $headings);
+            $headings = $penerimaanDiPusat->isEmpty() ? [] : array_keys($penerimaanDiPusat->first()->getAttributes());
+            $headings = array_map(function ($heading) {
+                return str_replace('_', ' ', ucfirst($heading));
+            }, $headings);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Penerimaan Di Pusat retrieved successfully',
-            'data' => [
-                'penerimaanDiPusats' => $penerimaanDiPusat,
-                'headings' => $headings,
-            ]
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Penerimaan Di Pusat retrieved successfully',
+                'data' => [
+                    'penerimaanDiPusats' => PenerimaanDiPusatIndexResource::collection($penerimaanDiPusat),
+
+                    /** @var array<int, string> */
+                    'headings' => $headings,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data Penerimaan Di Pusat.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function create()
     {
-        $barangs = Barang::select(['id', 'nama_barang'])
-            ->where('flag', '=', 1)
-            ->orderBy('id')
-            ->get();
-        $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-        $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
-            ->where('id', '!=', 1)        
-            ->whereIn('kategori_bangunan', [0, 1])
-            ->where('flag', '=', 1)
-            ->orderBy('id')
-            ->get();
-        $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
+        try{
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->orderBy('id')
+                ->get();
+            $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('id', '!=', 1)
+                ->whereIn('kategori_bangunan', [0, 1])
+                ->where('flag', '=', 1)
+                ->orderBy('id')
+                ->get();
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
-            'data' => [
-                'barangs' => $barangs,
-                'jenisPenerimaan' => $jenisPenerimaan,
-                'asalBarang' => $asalBarang,
-                'satuanBerat' => $satuanBerat,
-            ]
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
+                'data' => [
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'jenisPenerimaan' => JenisPenerimaanCreateResource::collection($jenisPenerimaan),
+                    'asalBarang' => AsalBarangCreateResource::collection($asalBarang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data untuk form tambah Penerimaan Di Pusat.",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -82,20 +107,20 @@ class PenerimaanDiPusatController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
-                $penerimaanDiPusat = PenerimaanDiPusat::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Penerimaan Di Pusat berhasil ditambahkan',
-                    'data' => $penerimaanDiPusat,
-                ]);
+            DB::transaction(function () use ($validated) {
+                PenerimaanDiPusat::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Penerimaan Di Pusat berhasil ditambahkan',
+            ]);
+        } catch (ValidationException $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menambahkan Data Penerimaan Di Pusat. Silakan coba lagi. {$th->getMessage()}",
-            ]);
+                'message' => "Data yang dikirim tidak valid.",
+                'error' => $th->getMessage(),
+            ], 422);
         }
     }
 
@@ -103,38 +128,29 @@ class PenerimaanDiPusatController extends Controller
     {
         try{
             $penerimaanDiPusat = PenerimaanDiPusat::with(
-                'jenisPenerimaan:id,nama_jenis_penerimaan', 
-                'asalBarang:id,nama_gudang_toko', 
-                'barang:id,nama_barang', 
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             )->findOrFail($id, [
                 'id', 'id_barang',
-                'id_jenis_penerimaan', 'id_asal_barang', 
-                'id_satuan_berat', 'berat_satuan_barang', 
+                'id_jenis_penerimaan', 'id_asal_barang',
+                'id_satuan_berat', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => "Data Penerimaan Di Pusat {$id}",
-                'data' => $penerimaanDiPusat
+                'data' => PenerimaanDiPusatIndexResource::make($penerimaanDiPusat)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Penerimaan Di Pusat dengan ID: {$id} tidak ditemukan.",
-            ]);
+                'error' => $th->getMessage(),
+            ], 404);
         }
-    }
-
-    public function edit(string $id)
-    {
-        //
-    }
-
-    public function update(Request $request, string $id)
-    {
-
     }
 
     public function destroy(string $id)
@@ -146,22 +162,29 @@ class PenerimaanDiPusatController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Penerimaan Di Pusat dengan ID: {$id} sudah dihapus sebelumnya",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($id, $penerimaanDiPusat) {
+            DB::transaction(function () use ($id, $penerimaanDiPusat) {
                 $penerimaanDiPusat->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Penerimaan Di Pusat dengan ID: {$id} berhasil dihapus",
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
-        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} berhasil dihapus",
+            ]);
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menghapus Data Penerimaan Di Pusat dengan ID: {$id}. Silakan coba lagi.",
-            ]);
+                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $th) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Pusat dengan ID: {$id}.",
+                'error' => $th->getMessage(),
+            ], 500);
         }
     }
 }

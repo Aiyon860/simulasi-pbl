@@ -17,7 +17,7 @@ class TokoController extends Controller
             $tokos = GudangDanToko::where('kategori_bangunan', 2)
                 ->orderBy('id')
                 ->get([
-                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
             
             $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());

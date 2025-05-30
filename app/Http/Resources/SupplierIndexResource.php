@@ -15,10 +15,10 @@ class SupplierIndexResource extends JsonResource
     public function toArray(Request $request): array
     {
         return[
+            'id' => (int) $this->id,
             'nama_gudang_toko' => $this->nama_gudang_toko,
             'alamat' => $this->alamat,
             'no_telepon' => $this->no_telepon,
-            'flag' => $this->flag,
         ];
     }
 }

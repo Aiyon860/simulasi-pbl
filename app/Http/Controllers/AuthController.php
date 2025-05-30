@@ -51,6 +51,8 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid token'], 401);
         }
 
+        $user->load('role');
+
         return response()->json(compact('user'));
     }
 

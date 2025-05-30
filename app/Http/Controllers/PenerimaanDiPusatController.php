@@ -9,7 +9,7 @@ use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiPusat;
 use Illuminate\Support\Facades\DB;
-use Dotenv\Exception\ValidationException;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\AsalBarangCreateResource;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -23,15 +23,17 @@ class PenerimaanDiPusatController extends Controller
     {
         try {
             $penerimaanDiPusat = PenerimaanDiPusat::select([
-                'id', 'id_barang',
+                'id', 'kode', 'id_barang',
                 'id_jenis_penerimaan', 'id_asal_barang',
                 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_kurir', 'id_status',
             ])->with([
+                'barang:id,nama_barang',
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
-                'barang:id,nama_barang',
-                'satuanBerat:id,nama_satuan_berat'
+                'satuanBerat:id,nama_satuan_berat',
+                'kurir:id,nama_kurir',
+                'status:id,nama_status'
             ])->where('flag', '=', 1)
             ->get();
 
@@ -45,7 +47,6 @@ class PenerimaanDiPusatController extends Controller
                 'message' => 'Data Penerimaan Di Pusat retrieved successfully',
                 'data' => [
                     'penerimaanDiPusats' => PenerimaanDiPusatIndexResource::collection($penerimaanDiPusat),
-
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ]

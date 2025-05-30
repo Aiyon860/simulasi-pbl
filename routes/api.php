@@ -6,6 +6,7 @@ use App\Http\Controllers\TokoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\GudangController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CabangKeTokoController;
@@ -30,6 +31,8 @@ Route::middleware(['jwt'])->group(function () {
         Route::resource('dashboard', DashboardController::class);
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
         Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
+
+        Route::resource('profile', ProfileController::class);
     });
 
     Route::middleware(['role:SuperAdmin'])->group(function () {
@@ -53,9 +56,10 @@ Route::middleware(['jwt'])->group(function () {
     });
 
     Route::middleware(['role:SuperAdmin,Admin'])->group(function () {
-        Route::resource('barangs', BarangController::class);
-        Route::patch('barangs/{id}/activate', [BarangController::class, 'activate'])->name('barangs.activate');
-        Route::patch('barangs/{id}/deactivate', [BarangController::class, 'deactivate'])->name('barangs.deactivate');
+        // Route::resource('barangs', BarangController::class);
+        // Route::patch('barangs/{id}/activate', [BarangController::class, 'activate'])->name('barangs.activate');
+        // Route::patch('barangs/{id}/deactivate', [BarangController::class, 'deactivate'])->name('barangs.deactivate');
+        Route::resource('kategori-barangs', KategoriBarangController::class);
     
         Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);
     

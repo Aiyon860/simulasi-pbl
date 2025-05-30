@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\TimeHelpers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CabangKeTokoIndexResource extends JsonResource
@@ -14,18 +16,22 @@ class CabangKeTokoIndexResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $tanggal = Carbon::parse($this->tanggal);
+        $day = $tanggal->format('d');
+        $month = TimeHelpers::getIndonesianMonthShort($tanggal->format('n'));
+
         return [
             'id' => (int) $this->id,
             'kode' => $this->kode,
-            'id_cabang' => $this->cabang->nama_gudang_toko,
-            'id_toko' => $this->toko->nama_gudang_toko,
-            'id_barang' => $this->barang->nama_barang,
-            'id_kurir' => $this->kurir->nama_kurir,
-            'id_satuan_berat' => $this->satuanBerat->nama_satuan_berat,
-            'id_status' => $this->status->nama_status,
-            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
-            'jumlah_barang' => (int) $this->jumlah_barang,
-            'tanggal' => $this->tanggal, // Assuming tanggal is already formatted correctly
+            'nama_cabang' => $this->cabang->nama_gudang_toko,
+            'nama_toko' => $this->toko->nama_gudang_toko,
+            'nama_barang' => $this->barang->nama_barang,
+            'nama_kurir' => $this->kurir->nama_kurir,
+            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
+            'status' => $this->status->nama_status,
+            'berat_satuan_barang' => $this->berat_satuan_barang,
+            'jumlah_barang' => $this->jumlah_barang,
+            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}"
         ];
     }
 }

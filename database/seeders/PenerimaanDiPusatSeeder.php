@@ -14,6 +14,7 @@ class PenerimaanDiPusatSeeder extends Seeder
     public function run(): void
     {
         PenerimaanDiPusat::create([
+             'kode' => 'PDP-001',
              'id_jenis_penerimaan' => 1,
              'id_asal_barang' => 1,
              'id_barang' => 1,
@@ -21,6 +22,8 @@ class PenerimaanDiPusatSeeder extends Seeder
              'id_satuan_berat' => 1,
              'berat_satuan_barang' => 1000,
              'tanggal' => now(),
+             'id_kurir' => 1,
+             'id_status' => 1,
          ]);
     }
 }

@@ -29,8 +29,8 @@ class CabangKeTokoController extends Controller
                 'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ])->with([
-                'cabang:id,nama_gudang_toko,alamat,no_telepon',
-                'toko:id,nama_gudang_toko,alamat,no_telepon',
+                'cabang:id,nama_gudang_toko',
+                'toko:id,nama_gudang_toko',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',

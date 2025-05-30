@@ -14,6 +14,7 @@ class PenerimaanDiCabangSeeder extends Seeder
     public function run(): void
     {
         PenerimaanDiCabang::create([
+            'kode' => 'PDC-001',
             'id_cabang' => 2,
             'id_jenis_penerimaan' => 1,
             'id_asal_barang' => 1,
@@ -22,6 +23,8 @@ class PenerimaanDiCabangSeeder extends Seeder
             'berat_satuan_barang' => 10,
             'jumlah_barang' => 10,
             'tanggal' => now(),
+            'id_kurir' => 1,
+            'id_status' => 1,
         ]);
 
         // PenerimaanDiCabang::create([

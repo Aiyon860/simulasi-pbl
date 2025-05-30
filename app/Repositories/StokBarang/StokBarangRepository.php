@@ -31,6 +31,7 @@ class StokBarangRepository
                 ->map(function ($item) {
                     return [
                         'nama_barang' => $item->barang->nama_barang,
+                        'nama_gudang' => $item->gudang->nama_gudang_toko,
                         'jumlah_stok' => $item->jumlah_stok,
                     ];
                 });

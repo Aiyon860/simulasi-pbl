@@ -16,7 +16,7 @@ class SupplierController extends Controller
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
                 ->orderBy('id')
                 ->get([
-                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
 
             $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());

@@ -18,7 +18,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('role:id,nama_role')
+            $users = User::with('role:id,nama_role', 'lokasi:id,nama_gudang_toko')
                 ->orderBy('id')
                 ->get([
                     'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'

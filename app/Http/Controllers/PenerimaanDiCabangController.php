@@ -24,14 +24,16 @@ class PenerimaanDiCabangController extends Controller
     {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::select([
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
+                'id', 'kode', 'id_barang', 'id_jenis_penerimaan',
                 'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_kurir', 'id_status',
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
-                'satuanBerat:id,nama_satuan_berat'
+                'satuanBerat:id,nama_satuan_berat',
+                'kurir:id,nama_kurir',
+                'status:id,nama_status'
             ])
             ->where('flag', '=', 1)
             ->orderBy('tanggal', 'desc')

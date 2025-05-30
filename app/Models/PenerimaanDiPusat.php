@@ -16,6 +16,7 @@ class PenerimaanDiPusat extends Model
     * @var list<string>
     */
     protected $fillable = [
+        'kode',
         'id_jenis_penerimaan',
         'id_asal_barang',
         'id_barang',
@@ -23,6 +24,8 @@ class PenerimaanDiPusat extends Model
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
+        'id_kurir',
+        'id_status',
         'flag'
     ];
 
@@ -48,5 +51,15 @@ class PenerimaanDiPusat extends Model
     public function satuanBerat(): BelongsTo
     {
         return $this->belongsTo(SatuanBerat::class, 'id_satuan_berat');
+    }
+
+    public function kurir()
+    {
+        return $this->belongsTo(Kurir::class, 'id_kurir');
+    }
+    
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'id_status');
     }
 }

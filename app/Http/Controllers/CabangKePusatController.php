@@ -22,14 +22,14 @@ class CabangKePusatController extends Controller
     public function index()
     {
         try {
-            $CabangKePusat = CabangKePusat::select([
+            $cabangKePusat = CabangKePusat::select([
                 'id', 'kode', 'id_pusat',
                 'id_cabang', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ])->with(
-                'pusat:id,nama_gudang_toko,alamat,no_telepon',
-                'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                'pusat:id,nama_gudang_toko',
+                'cabang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
@@ -38,7 +38,7 @@ class CabangKePusatController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-            $headings = $CabangKePusat->isEmpty() ? [] : array_keys($CabangKePusat->first()->getAttributes());
+            $headings = $cabangKePusat->isEmpty() ? [] : array_keys($cabangKePusat->first()->getAttributes());
             $headings = array_map(function ($heading) {
                 return str_replace('_', ' ', ucfirst($heading));
             }, $headings);
@@ -47,7 +47,7 @@ class CabangKePusatController extends Controller
                 'status' => true,
                 'message' => 'Data Cabang Ke Pusat',
                 'data' => [
-                    'CabangKePusats' => CabangKePusatIndexResource::collection($CabangKePusat),
+                    'cabangKePusats' => CabangKePusatIndexResource::collection($cabangKePusat),
 
                     /** @var array<int, string> */
                     'headings' => $headings,

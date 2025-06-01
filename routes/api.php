@@ -56,9 +56,10 @@ Route::middleware(['jwt'])->group(function () {
     });
 
     Route::middleware(['role:SuperAdmin,Admin'])->group(function () {
-        // Route::resource('barangs', BarangController::class);
-        // Route::patch('barangs/{id}/activate', [BarangController::class, 'activate'])->name('barangs.activate');
-        // Route::patch('barangs/{id}/deactivate', [BarangController::class, 'deactivate'])->name('barangs.deactivate');
+        Route::resource('barangs', BarangController::class);
+        Route::patch('barangs/{id}/activate', [BarangController::class, 'activate'])->name('barangs.activate');
+        Route::patch('barangs/{id}/deactivate', [BarangController::class, 'deactivate'])->name('barangs.deactivate');
+        
         Route::resource('kategori-barangs', KategoriBarangController::class);
     
         Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);

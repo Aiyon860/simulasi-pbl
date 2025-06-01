@@ -80,6 +80,15 @@ class UserController extends Controller
                 'id_lokasi' => 'required|exists:gudang_dan_tokos,id',
             ]);
 
+            $lokasiDipakai = User::where('id_lokasi', $validated['id_lokasi'])->exists();
+            if ($lokasiDipakai) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lokasi tersebut sudah digunakan oleh pengguna lain.',
+                    'errors' => ['id_lokasi' => ['Lokasi sudah digunakan.']],
+                ], 422);
+            }
+
             return DB::transaction(function () use ($validated) {
                 $validated['password'] = Hash::make($validated['password']);
     

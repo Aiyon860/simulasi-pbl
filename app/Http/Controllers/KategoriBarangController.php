@@ -71,7 +71,7 @@ class KategoriBarangController extends Controller
                     'status' => true,
                     'message' => "Data Kategori Barang {$kategoriBarang->nama_kategori_barang} berhasil ditambahkan",
                     'data' => $kategoriBarang,
-                ]. 201);
+                ], 201);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
         } catch (ValidationException $e) {
             return response()->json([

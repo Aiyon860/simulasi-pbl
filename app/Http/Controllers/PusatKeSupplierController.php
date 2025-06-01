@@ -5,17 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
-use App\Http\Resources\BarangCreateResource;
-use App\Http\Resources\SupplierCreateResource;
-use App\Http\Resources\KurirCreateResource;
-use App\Http\Resources\SatuanBeratCreateResource;
+use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\PusatKeSupplier;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\SupplierCreateResource;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\PusatKeSupplierIndexResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PusatKeSupplierController extends Controller
 {
@@ -105,17 +106,31 @@ class PusatKeSupplierController extends Controller
                 'tanggal' => 'required|date',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                $pusatKeSupplier = PusatKeSupplier::create(array_merge($validated, [
-                    'id_pusat' => 1,
-                    'id_status' => 1,
-                ]));;
+            $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
+                ->where('id_barang', $request->id_barang)
+                ->firstOrFail(['jumlah_stok']);
+
+            if ($barang->jumlah_stok < $request->jumlah_barang) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                ], 400);
+            }
+
+            $pusatKeSupplier = array_merge($validated, [
+                'id_pusat' => 1, 
+                'id_status' => 1
+            ]); 
+
+            DB::transaction(function () use ($pusatKeSupplier) {
+                PusatKeSupplier::create($pusatKeSupplier);
             }, 3);
+    
             return response()->json([
-                    'status' => true,
-                    'message' => 'Data Pusat ke Supplier berhasil disimpan.',
-                    'data' => $pusatKeSupplier,
-            ], 201);
+                'status' => true,
+                'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
+                'data' => $pusatKeCabang,
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,

@@ -69,8 +69,8 @@ class GudangController extends Controller
         try {
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
-                'alamat' => 'nullable|string',
-                'no_telepon' => 'nullable|string|max:20',
+                'alamat' => 'required|string',
+                'no_telepon' => 'required|string|max:20',
             ]);
 
             DB::transaction(function () use ($validated) {

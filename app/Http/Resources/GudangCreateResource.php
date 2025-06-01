@@ -2,10 +2,12 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
+use App\Helpers\TimeHelpers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class KurirCreateResource extends JsonResource
+class GudangCreateResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,7 +18,7 @@ class KurirCreateResource extends JsonResource
     {
         return [
             'id' => (int) $this->id,
-            'nama_kurir' => $this->nama_kurir,
+            'nama_gudang_toko' => $this->nama_gudang_toko,
         ];
     }
 }

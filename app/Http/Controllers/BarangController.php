@@ -18,7 +18,7 @@ class BarangController extends Controller
         try {
             $barangs = Barang::with(['kategori:id,nama_kategori_barang'])
                 ->where('flag', 1)
-                ->orderBy('nama_barang')
+                ->orderBy('id')
                 ->get();
 
             return response()->json([
@@ -29,6 +29,7 @@ class BarangController extends Controller
 
                     /** @var array<int, 'Nama Barang' | 'Kategori Barang' | 'Status'> */
                     'headings' => [
+                        'ID',
                         'Nama Barang',
                         'Kategori Barang',
                         'Status'

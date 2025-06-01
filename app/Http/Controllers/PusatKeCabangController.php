@@ -107,31 +107,31 @@ class PusatKeCabangController extends Controller
                 'berat_satuan_barang' => 'required|numeric|min:1',
             ]);
 
-                $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
-                    ->where('id_barang', $request->id_barang)
-                    ->firstOrFail(['jumlah_stok']);
+            $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
+                ->where('id_barang', $request->id_barang)
+                ->firstOrFail(['jumlah_stok']);
 
-                if ($barang->jumlah_stok < $request->jumlah_barang) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
-                    ], 400);
-                }
-
-                $pusatKeCabang = array_merge($validated, [
-                    'id_pusat' => 1, 
-                    'id_status' => 1
-                ]); 
-
-                DB::transaction(function () use ($pusatKeCabang) {
-                PusatKeCabang::create($pusatKeCabang);
-                }, 3);
-        
+            if ($barang->jumlah_stok < $request->jumlah_barang) {
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
-                    'data' => $pusatKeCabang,
-                ]);
+                    'status' => false,
+                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                ], 400);
+            }
+
+            $pusatKeCabang = array_merge($validated, [
+                'id_pusat' => 1, 
+                'id_status' => 1
+            ]); 
+
+            DB::transaction(function () use ($pusatKeCabang) {
+            PusatKeCabang::create($pusatKeCabang);
+            }, 3);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
+                'data' => $pusatKeCabang,
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

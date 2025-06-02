@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LaporanDetailsResource;
 use App\Models\Barang;
 use App\Helpers\TimeHelpers;
 use App\Models\CabangKeToko;
@@ -15,7 +16,10 @@ use App\Models\KategoriBarang;
 use App\Models\PusatKeSupplier;
 use App\Models\PenerimaanDiPusat;
 use App\Models\PenerimaanDiCabang;
+use App\Http\Resources\BarangIndexResource;
 use App\Services\StokBarang\StokBarangService;
+use App\Http\Resources\DashboardLowStockAdminResource;
+use App\Http\Resources\DashboardLowStockSuperResource;
 use App\Services\Laporan\AdminCabang\LaporanCabangService;
 use App\Services\Laporan\SuperadminSupervisor\LaporanSuperService;
 
@@ -30,79 +34,49 @@ class DashboardController extends Controller
         $this->stokBarangService = $stokBarangService;
     }
 
-    public function index(Request $request)
+    public function dashboardSuper(Request $request)
     {
         try {
             $result = [];
 
-            if ($request->user()->hasRole('SuperAdmin', 'Supervisor')) {
-                $categoriesCount = KategoriBarang::count();
-                $barangCount = Barang::count();
-                $gudangCount = GudangDanToko::where('kategori_bangunan', 0)->count();
-                $supplierCount = GudangDanToko::where('kategori_bangunan', 1)->count();
-                $tokoCount = GudangDanToko::where('kategori_bangunan', 2)->count();
+            $categoriesCount = KategoriBarang::count();
+            $barangCount = Barang::count();
+            $gudangCount = GudangDanToko::where('kategori_bangunan', 0)->count();
+            $supplierCount = GudangDanToko::where('kategori_bangunan', 1)->count();
+            $tokoCount = GudangDanToko::where('kategori_bangunan', 2)->count();
 
-                $laporanMasukPengirimanCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->count();
-                $laporanMasukPengirimanCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->count();
+            $laporanMasukPengirimanCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'pengiriman');
+            })->count();
+            $laporanMasukPengirimanCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'pengiriman');
+            })->count();
 
-                $laporanMasukReturCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'retur');
-                })->count();
-                $laporanMasukReturCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'retur');
-                })->count();
+            $laporanMasukReturCount = PenerimaanDiPusat::whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'retur');
+            })->count();
+            $laporanMasukReturCount += PenerimaanDiCabang::whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'retur');
+            })->count();
 
-                $laporanKeluarCount = PusatKeCabang::count();
-                $laporanKeluarCount += CabangKeToko::count();
+            $laporanKeluarCount = PusatKeCabang::count();
+            $laporanKeluarCount += CabangKeToko::count();
 
-                $laporanReturCount = TokoKeCabang::count();
-                $laporanReturCount += CabangKePusat::count();
-                $laporanReturCount += PusatKeSupplier::count();
+            $laporanReturCount = TokoKeCabang::count();
+            $laporanReturCount += CabangKePusat::count();
+            $laporanReturCount += PusatKeSupplier::count();
 
-                $result = [
-                    'jumlah_kategori' => $categoriesCount,
-                    'jumlah_stok_seluruh_gudang' => (int) $barangCount,
-                    'jumlah_gudang' => $gudangCount,
-                    'jumlah_supplier' => $supplierCount,
-                    'jumlah_toko' => $tokoCount,
-                    'jumlah_laporan_masuk_pengiriman' => $laporanMasukPengirimanCount,
-                    'jumlah_laporan_masuk_retur' => $laporanMasukReturCount,
-                    'jumlah_laporan_keluar' => (int) $laporanKeluarCount,
-                    'jumlah_laporan_retur' => (int) $laporanReturCount,
-                ];
-            } else {    // admin cabang
-                $user = $request->user();
-                if (!$user->lokasi) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Pengguna ini tidak terhubung dengan informasi gudang atau toko.',
-                    ], 400); // Bad Request
-                }
-                $idGudangAdmin = $user->lokasi->id;
-
-                $stokSemuaBarang = DetailGudang::where('id_gudang', $idGudangAdmin)->sum('jumlah_stok');
-                $laporanMasukPengirimanCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'pengiriman');
-                })->count();
-                $laporanMasukReturCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
-                    $query->where('nama_jenis_penerimaan', 'retur');
-                })->count();
-                $laporanKeluarCount = CabangKeToko::where('id_cabang', $idGudangAdmin)->count();
-                $laporanReturCount = CabangKePusat::where('id_cabang', $idGudangAdmin)->count();
-
-                $result = [
-                    'id_lokasi' => $user->lokasi->id,
-                    'jumlah_barang' => $stokSemuaBarang,
-                    'jumlah_laporan_masuk_pengiriman' => $laporanMasukPengirimanCount,
-                    'jumlah_laporan_masuk_retur' => $laporanMasukReturCount,
-                    'jumlah_laporan_keluar' => $laporanKeluarCount,
-                    'jumlah_laporan_retur' => $laporanReturCount,
-                ];
-            }
+            $result = [
+                'jumlah_kategori' => (int) $categoriesCount,
+                'jumlah_stok_seluruh_gudang' => (int) $barangCount,
+                'jumlah_gudang' => (int) $gudangCount,
+                'jumlah_supplier' => (int) $supplierCount,
+                'jumlah_toko' => (int) $tokoCount,
+                'jumlah_laporan_masuk_pengiriman' => (int) $laporanMasukPengirimanCount,
+                'jumlah_laporan_masuk_retur' => (int) $laporanMasukReturCount,
+                'jumlah_laporan_keluar' => (int) $laporanKeluarCount,
+                'jumlah_laporan_retur' => (int) $laporanReturCount,
+            ];
 
             return response()->json([
                 'status' => true,
@@ -115,6 +89,52 @@ class DashboardController extends Controller
                 'message' => 'Terjadi kesalahan saat mengambil data dashboard.',
                 'error' => $e->getMessage(),
             ], 500); // Internal Server Error
+        }
+    }
+
+    public function dashboardAdminCabang(Request $request) {
+        try {
+            $result = [];
+
+            $user = $request->user();
+            if (!$user->lokasi) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Pengguna ini tidak terhubung dengan informasi gudang atau toko.',
+                ], 400); // Bad Request
+            }
+            $idGudangAdmin = $user->lokasi->id;
+
+            $stokSemuaBarang = DetailGudang::where('id_gudang', $idGudangAdmin)->sum('jumlah_stok');
+            $laporanMasukPengirimanCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'pengiriman');
+            })->count();
+            $laporanMasukReturCount = PenerimaanDiCabang::where('id_cabang', $idGudangAdmin)->whereHas('jenisPenerimaan', function ($query) {
+                $query->where('nama_jenis_penerimaan', 'retur');
+            })->count();
+            $laporanKeluarCount = CabangKeToko::where('id_cabang', $idGudangAdmin)->count();
+            $laporanReturCount = CabangKePusat::where('id_cabang', $idGudangAdmin)->count();
+
+            $result = [
+                'id_lokasi' => (int) $user->lokasi->id,
+                'jumlah_barang' => (int) $stokSemuaBarang,
+                'jumlah_laporan_masuk_pengiriman' => (int) $laporanMasukPengirimanCount,
+                'jumlah_laporan_masuk_retur' => (int) $laporanMasukReturCount,
+                'jumlah_laporan_keluar' => (int) $laporanKeluarCount,
+                'jumlah_laporan_retur' => (int) $laporanReturCount,
+            ];
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Dashboard untuk {$request->user()->nama_user}.",
+                'data' => $result,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data dashboard.',
+                'error' => $e->getMessage(),
+            ], 500); // Internal Server Error            
         }
     }
 
@@ -213,11 +233,12 @@ class DashboardController extends Controller
                 }
 
                 $result = [
+                    /** @var array<string> */
                     'description' => $description,
-                    'laporan_masuk_pengiriman' => $laporanMasukPengiriman,
-                    'laporan_masuk_retur' => $laporanMasukRetur,
-                    'laporan_keluar' => $laporanKeluar,
-                    'laporan_retur' => $laporanRetur,
+                    'laporan_masuk_pengiriman' => LaporanDetailsResource::collection($laporanMasukPengiriman),
+                    'laporan_masuk_retur' => LaporanDetailsResource::collection($laporanMasukRetur),
+                    'laporan_keluar' => LaporanDetailsResource::collection($laporanKeluar),
+                    'laporan_retur' => LaporanDetailsResource::collection($laporanRetur),
                 ];
             }
 
@@ -235,7 +256,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function dashboardLowStock(Request $request)
+    public function dashboardLowStockSuper(Request $request)
     {
         if (!$request->user()->lokasi) {
             return response()->json([
@@ -249,20 +270,46 @@ class DashboardController extends Controller
         try {
             $barangs = [];
 
-            if ($request->user()->hasRole('SuperAdmin', 'Supervisor')) {
-                // supervisor privilege === superadmin's
-                if ($request->user()->hasRole('Supervisor')) {
-                    $lokasi->id = 1;
-                }
-                $barangs = $this->stokBarangService->getTopTenLowestStockSuper();
-            } else { // admin cabang
-                $barangs = $this->stokBarangService->getTopTenLowestStockCabang($lokasi->id);
+            // supervisor privilege === superadmin's
+            if ($request->user()->hasRole('Supervisor')) {
+                $lokasi->id = 1;
             }
+            $barangs = $this->stokBarangService->getTopTenLowestStockSuper();
 
             return response()->json([
                 'status' => true,
                 'message' => "Data barang dengan stok rendah di seluruh gudang.",
-                'data' => $barangs,
+                'data' => DashboardLowStockSuperResource::collection($barangs),
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah {$lokasi->nama_gudang_toko}.",
+                'error' => $th->getMessage(),
+            ], 500); // Internal Server Error
+        }
+    }
+
+    public function dashboardLowStockAdminCabang(Request $request)
+    {
+        if (!$request->user()->lokasi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengguna ini tidak terhubung dengan gudang manapun.',
+            ], 400); // Bad Request
+        }
+
+        $lokasi = $request->user()->lokasi;
+
+        try {
+            $barangs = [];
+
+            $barangs = $this->stokBarangService->getTopTenLowestStockCabang($lokasi->id);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data barang dengan stok rendah di seluruh gudang.",
+                'data' => DashboardLowStockAdminResource::collection($barangs),
             ]);
         } catch (\Throwable $th) {
             return response()->json([

@@ -14,7 +14,7 @@ class TokoKeCabang extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
+     *u
      * @var list<string>
      */
     protected $fillable = [

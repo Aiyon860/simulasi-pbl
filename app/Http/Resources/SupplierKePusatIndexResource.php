@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
+use App\Helpers\TimeHelpers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,7 +16,7 @@ class SupplierKePusatIndexResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-         $tanggal = Carbon::parse($this->tanggal);
+        $tanggal = Carbon::parse($this->tanggal);
         $day = $tanggal->format('d');
         $month = TimeHelpers::getIndonesianMonthShort($tanggal->format('n'));
 

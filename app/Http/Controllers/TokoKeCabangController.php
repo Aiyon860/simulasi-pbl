@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
 use App\Http\Resources\KurirCreateResource;
@@ -50,6 +51,8 @@ class TokoKeCabangController extends Controller
                 'message' => 'Data Toko Ke Cabang',
                 'data' => [
                     'TokoKeCabangs' => TokoKeCabangIndexResource::collection($TokoKeCabang),
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -103,21 +106,21 @@ class TokoKeCabangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kode' => 'required|string|unique:toko_ke_cabangs,kode',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_toko' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'nullable|exists:kurirs,id',
-                'id_status' => 'required|exists:statuses,id',
                 'berat_satuan_barang' => 'required|numeric|min:0',
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
 
+            $currentTime = now();
+
             $tokoKeCabang = array_merge($validated, [
-                'id_toko' => 1, // Default flag value
-                'id_status' => 1, // Default status value
+                'kode' => ShippingAndReturnCodeHelpers::generateTokoKeCabangCode($currentTime),
+                'id_status' => 1,
+                'tanggal' => $currentTime,
             ]);
 
             DB::transaction(function () use ($tokoKeCabang) {
@@ -127,9 +130,7 @@ class TokoKeCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Retur berhasil dikirim dari Toko ke Cabang.',
-                'data' => $tokoKeCabang,
             ], 201); // 201 Created
-
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -165,7 +166,7 @@ class TokoKeCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Toko Ke Cabang dengan ID: {$id}.",
-                'data' => TokoKeCabangIndexResource::collection($tokoKeCabang),
+                'data' => new TokoKeCabangIndexResource($tokoKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -181,11 +182,6 @@ class TokoKeCabangController extends Controller
         }
     }
 
-    public function edit(string $id)
-    {
-        // This method is intentionally left empty as per your request.
-    }
-
     public function update(Request $request, string $id)
     {
         try {
@@ -198,10 +194,11 @@ class TokoKeCabangController extends Controller
             DB::transaction(function () use ($validated, $CabangKeToko) {
                 $CabangKeToko->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
             return response()->json([
                 'status' => true,
-                'message' => 'Data Toko ke Cabang berhasil diperbarui',
-                'data' => TokoKeCabangIndexResource::collection($CabangKeToko),
+                'message' => "Data Toko ke Cabang dengan {$id} berhasil diperbarui",
+                'data' => new TokoKeCabangIndexResource($CabangKeToko),
             ]);
         } catch (ValidationException $e) {
             return response()->json([

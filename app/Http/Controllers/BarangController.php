@@ -110,7 +110,7 @@ class BarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Barang dengan ID: {$id}",
-                'data' => BarangIndexResource::collection($barang),
+                'data' => new BarangIndexResource($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -144,7 +144,7 @@ class BarangController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Edit Barang',
                 'data' => [
-                    'barang' => BarangIndexResource::collection($barang),
+                    'barang' => new BarangIndexResource($barang),
                     'categories' => KategoriBarangResource::collection($categories),
                 ],
             ]);
@@ -186,7 +186,7 @@ class BarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
-                'data' => BarangIndexResource::collection($barang),
+                'data' => new BarangIndexResource($barang),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -228,7 +228,7 @@ class BarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Barang {$barang->nama_barang} berhasil dinonaktifkan!",
-                'data' => BarangIndexResource::collection($barang),
+                'data' => new BarangIndexResource($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -264,7 +264,7 @@ class BarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Barang {$barang->nama_barang} berhasil diaktifkan!",
-                'data' => BarangIndexResource::collection($barang),
+                'data' => new BarangIndexResource($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GudangDanToko;
+use App\Http\Resources\LokasiCreateResource;
+use App\Http\Resources\RoleCreateResource;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use App\Models\GudangDanToko;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\UserIndexResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -33,7 +36,7 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Data Pengguna',
                 'data' => [
-                    'users' => $users,
+                    'users' => UserIndexResource::collection($users),
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -58,8 +61,8 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Tambah Pengguna',
                 'data' => [
-                    'roles' => $roles,
-                    'lokasi' => $lokasi,
+                    'roles' => RoleCreateResource::collection($roles),
+                    'lokasi' => LokasiCreateResource::collection($lokasi),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -82,17 +85,16 @@ class UserController extends Controller
                 'id_lokasi' => 'required|exists:gudang_dan_tokos,id',
             ]);
 
-            return DB::transaction(function () use ($validated) {
-                $validated['password'] = Hash::make($validated['password']);
-    
-                $user = User::create($validated);
-    
-                return response()->json([
-                    'status' => true,
-                    'message' => "Pengguna {$user->nama_user} berhasil ditambahkan!",
-                    'data' => $user,
-                ], 201);
+            $validated['password'] = Hash::make($validated['password']);
+
+            DB::transaction(function () use ($validated) {
+                User::create($validated);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Pengguna baru berhasil ditambahkan!",
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -111,7 +113,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
+            if (auth()->user()->id != 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized Access',
@@ -128,7 +130,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Pengguna dengan ID: {$id}",
-                'data' => $user,
+                'data' => new UserIndexResource($user),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -147,7 +149,7 @@ class UserController extends Controller
     public function edit(string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
+            if (auth()->user()->id != 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized Access',
@@ -166,9 +168,9 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Edit Pengguna',
                 'data' => [
-                    'user' => $user,
-                    'roles' => $roles,
-                    'lokasis' => $lokasis,
+                    'user' => new UserIndexResource($user),
+                    'roles' => RoleCreateResource::collection($roles),
+                    'lokasis' => LokasiCreateResource::collection($lokasis),
                 ],
             ]);
         } catch (ModelNotFoundException $e) {
@@ -188,7 +190,7 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
+            if (auth()->user()->id != 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized Access',
@@ -214,29 +216,30 @@ class UserController extends Controller
 
             $validated = $request->validate($rules);
 
-            return DB::transaction(function () use ($user, $validated, $request) {
-                if ($request->filled('password')) {
-                    $validated['password'] = Hash::make($validated['password']);
-                }
+            if ($request->filled('password')) {
+                $validated['password'] = Hash::make($validated['password']);
+            }
 
+            DB::transaction(function () use ($user, $validated) {
                 $user->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data pengguna {$user->nama_user} berhasil diperbarui!",
-                    'data' => $user,
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data pengguna {$user->nama_user} berhasil diperbarui!",
+                'data' => new UserIndexResource($user),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -250,7 +253,7 @@ class UserController extends Controller
     public function deactivate(string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
+            if (auth()->user()->id != 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized Access',
@@ -270,23 +273,23 @@ class UserController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Pengguna dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($user) {
-                // Soft delete by setting flag to 0
+            DB::transaction(function () use ($user) {
                 $user->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Pengguna {$user->nama_user} berhasil dinonaktifkan!",
-                    'data' => $user,
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Pengguna {$user->nama_user} berhasil dinonaktifkan!",
+                'data' => new UserIndexResource($user),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -300,7 +303,7 @@ class UserController extends Controller
     public function activate(string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
+            if (auth()->user()->id != 1) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized Access',
@@ -313,23 +316,24 @@ class UserController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Pengguna {$user->nama_user} sudah diaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($user) {
+            DB::transaction(function () use ($user) {
                 // Set flag to 1 to activate the user
                 $user->update(['flag' => 1]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Pengguna {$user->nama_user} berhasil diaktifkan!",
-                    'data' => $user,
-                ]);
             }, 3);
+            
+            return response()->json([
+                'status' => true,
+                'message' => "Pengguna {$user->nama_user} berhasil diaktifkan!",
+                'data' => new UserIndexResource($user),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

@@ -24,7 +24,7 @@ class StokBarangRepository
         } else { // Admin Cabang
             return DetailGudang::with(['barang:id,nama_barang'])
                 ->where('jumlah_stok', '<=', 5)
-                ->where('id_gudang', $idCabang)
+                ->where('id_gudang', '=', $idCabang)
                 ->orderBy('jumlah_stok', 'asc')
                 ->take(10)
                 ->get()

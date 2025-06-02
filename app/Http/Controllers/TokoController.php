@@ -69,9 +69,10 @@ class TokoController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 2]));
+            $toko = array_merge($validated, ['kategori_bangunan' => 2]);
 
+            DB::transaction(function () use ($toko) {
+                GudangDanToko::create($toko);
             }, 3);
 
             return response()->json([
@@ -103,7 +104,7 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Toko dengan ID: {$id}",
-                'data' => TokoIndexResource::collection($toko),
+                'data' => new TokoIndexResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -130,7 +131,7 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Toko',
-                'data' => TokoIndexResource::collection($toko),
+                'data' => new TokoIndexResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -165,7 +166,7 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Toko {$toko->nama_gudang_toko} berhasil diperbarui!",
-                'data' => TokoIndexResource::collection($toko),
+                'data' => new TokoIndexResource($toko),
             ]);
         } catch (ValidationException $e) {
             return response()->json([

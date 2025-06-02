@@ -29,6 +29,8 @@ class KategoriBarangController extends Controller
                 'message' => 'Data Kategori Barang',
                 'data' => [
                     'kategoriBarangs' => $categories,
+                    
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -64,15 +66,14 @@ class KategoriBarangController extends Controller
                 'nama_kategori_barang' => 'required|string|max:255|unique:kategori_barangs',
             ]);
 
-            return DB::transaction(function () use ($validated) {
-                $kategoriBarang = KategoriBarang::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Kategori Barang {$kategoriBarang->nama_kategori_barang} berhasil ditambahkan",
-                    'data' => $kategoriBarang,
-                ]. 201);
+            DB::transaction(function () use ($validated) {
+                KategoriBarang::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil menambahkan Data Kategori Barang baru.",
+            ]. 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,

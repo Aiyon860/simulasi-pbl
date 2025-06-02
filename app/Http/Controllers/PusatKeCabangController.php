@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
@@ -97,41 +98,42 @@ class PusatKeCabangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kode' => 'required|string',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
             ]);
 
-                $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
-                    ->where('id_barang', $request->id_barang)
-                    ->firstOrFail(['jumlah_stok']);
+            $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
+                ->where('id_barang', $request->id_barang)
+                ->firstOrFail(['jumlah_stok']);
 
-                if ($barang->jumlah_stok < $request->jumlah_barang) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
-                    ], 400);
-                }
-
-                $pusatKeCabang = array_merge($validated, [
-                    'id_pusat' => 1, 
-                    'id_status' => 1
-                ]); 
-
-                DB::transaction(function () use ($pusatKeCabang) {
-                PusatKeCabang::create($pusatKeCabang);
-                }, 3);
-        
+            if ($barang->jumlah_stok < $request->jumlah_barang) {
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
-                    'data' => $pusatKeCabang,
-                ]);
+                    'status' => false,
+                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                ], 409);
+            }
+
+            $currentTime = now();
+
+            $pusatKeCabang = array_merge($validated, [
+                'kode' => ShippingAndReturnCodeHelpers::generatePusatKeCabangCode($currentTime),
+                'id_pusat' => 1, 
+                'id_status' => 1,
+                'tanggal' => $currentTime,
+            ]); 
+
+            DB::transaction(function () use ($pusatKeCabang) {
+                PusatKeCabang::create($pusatKeCabang);
+            }, 3);
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -174,7 +176,7 @@ class PusatKeCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
-                'data' => PusatKeCabangIndexResource::collection($pusatKeCabang),
+                'data' => new PusatKeCabangIndexResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -206,8 +208,8 @@ class PusatKeCabangController extends Controller
 
             DB::transaction(function () use ($id, $pusatKeCabang) {
                 $pusatKeCabang->update(['flag' => 0]);
-
             }, 3);
+            
             return response()->json([
                 'status' => true,
                 'message' => "Berhasil menghapus Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}",

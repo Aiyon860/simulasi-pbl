@@ -9,7 +9,6 @@ use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiCabang;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\BarangIndexResource;
 use App\Http\Resources\BarangCreateResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\AsalBarangCreateResource;
@@ -109,11 +108,16 @@ class PenerimaanDiCabangController extends Controller
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'berat_satuan_barang' => 'required|numeric|min:1', // Mengubah ke numeric untuk desimal
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                PenerimaanDiCabang::create($validated);
+            $currentTime = now();
+
+            $penerimaanDiCabang = array_merge($validated, [
+                'tanggal' => $currentTime,
+            ]);
+
+            DB::transaction(function () use ($penerimaanDiCabang) {
+                PenerimaanDiCabang::create($penerimaanDiCabang);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
@@ -152,7 +156,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Penerimaan Di Cabang dengan ID: {$id}",
-                'data' => PenerimaanDiCabangIndexResource::make($penerimaanDiCabang),
+                'data' => new PenerimaanDiCabangIndexResource($penerimaanDiCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

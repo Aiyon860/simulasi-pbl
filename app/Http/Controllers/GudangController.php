@@ -26,6 +26,9 @@ class GudangController extends Controller
 
             $headings = $GudangDanToko->isEmpty() ? [] : array_keys($GudangDanToko->first()->getAttributes());
             $headings = array_map(function ($heading) {
+                if ($heading === 'flag') {
+                    $heading = 'Status';
+                }
                 return str_replace('_', ' ', ucfirst($heading));
             }, $headings);
 
@@ -73,14 +76,15 @@ class GudangController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            DB::transaction(function () use ($validated) {
-                $gudang = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 0]));
+            $gudang = array_merge($validated, ['kategori_bangunan' => 0]);
 
+            DB::transaction(function () use ($gudang) {
+                GudangDanToko::create($gudang);
             }, 3);
+
             return response()->json([
                 'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil ditambahkan.",
-                'data' => $gudang,
+                'message' => "Berhasil menambahkan data gudang.",
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -111,7 +115,7 @@ class GudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Gudang dengan ID: {$id}",
-                'data' => GudangIndexResource::collection($gudang),
+                'data' => new GudangIndexResource($gudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -141,7 +145,7 @@ class GudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data untuk Form Edit Gudang",
-                'data' => GudangIndexResource::collection($gudang),
+                'data' => new GudangIndexResource($gudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -168,16 +172,17 @@ class GudangController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
             
-            return DB::transaction(function () use ($id, $validated) {
-                $gudang = GudangDanToko::findOrFail($id);
-                $gudang->update($validated);
+            $gudang = GudangDanToko::findOrFail($id);
 
-                return response()->json([
-                    'status' => true,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diperbarui.",
-                    'data' => GudangIndexResource::collection($gudang)
-                ]);
+            DB::transaction(function () use ($gudang, $validated) {
+                $gudang->update($validated);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diperbarui.",
+                'data' => new GudangIndexResource($gudang)
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -208,18 +213,18 @@ class GudangController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Gudang {$gudang->nama_gudang_toko} sudah dinonaktifkan.",
-                ], 400);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($gudang) {
+            DB::transaction(function () use ($gudang) {
                 $gudang->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
-                    'data' => GudangIndexResource::collection($gudang),
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
+                'data' => new GudangIndexResource($gudang),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
@@ -247,15 +252,15 @@ class GudangController extends Controller
                 ], 400);
             }
 
-            return DB::transaction(function () use ($gudang) {
+            DB::transaction(function () use ($gudang) {
                 $gudang->update(['flag' => 1]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diaktifkan.",
-                    'data' => GudangIndexResource::collection($gudang),
-                ], 201);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diaktifkan.",
+                'data' => new GudangIndexResource($gudang),
+            ], 201);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

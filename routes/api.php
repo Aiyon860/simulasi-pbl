@@ -23,13 +23,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::middleware(['jwt'])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/authenticated-user', [AuthController::class, 'getUser']);
-
-    Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
+  Route::post('/logout', [AuthController::class, 'logout']);
+  Route::get('/authenticated-user', [AuthController::class, 'getUser']);
+  
+  Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::resource('dashboard', DashboardController::class);
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
-        Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
+        Route::get('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
+
+        Route::get('profile/{id}', [UserController::class, 'show'])->name('profile.show');
+        Route::patch('profile/{id}', [UserController::class, 'update'])->name('profile.update');
     });
 
     Route::middleware(['role:SuperAdmin'])->group(function () {

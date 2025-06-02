@@ -28,7 +28,6 @@ class CabangKePusat extends Model
         'jumlah_barang',
         'tanggal',
         'flag',
-        
     ];
 
     public function pusat() : BelongsTo

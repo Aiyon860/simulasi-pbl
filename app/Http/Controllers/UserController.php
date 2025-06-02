@@ -34,6 +34,8 @@ class UserController extends Controller
                 'message' => 'Data Pengguna',
                 'data' => [
                     'users' => $users,
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -109,6 +111,13 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized Access',
+                ], 403);
+            }
+
             $user = User::with([
                 'role:id,nama_role', 
                 'lokasi:id,nama_gudang_toko'
@@ -138,6 +147,13 @@ class UserController extends Controller
     public function edit(string $id)
     {
         try {
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized Access',
+                ], 403);
+            }
+
             $user = User::with([
                 'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
             ])->findOrFail($id, [
@@ -172,6 +188,13 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized Access',
+                ], 403);
+            }
+
             $user = User::with([
                 'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
             ])->findOrFail($id, [
@@ -227,6 +250,13 @@ class UserController extends Controller
     public function deactivate(string $id)
     {
         try {
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized Access',
+                ], 403);
+            }
+
             $user = User::findOrFail($id);
 
             if ($user->id === Auth::id()) {
@@ -270,6 +300,13 @@ class UserController extends Controller
     public function activate(string $id)
     {
         try {
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized Access',
+                ], 403);
+            }
+            
             $user = User::findOrFail($id);
 
             if ($user->flag == 1) {

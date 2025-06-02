@@ -96,19 +96,24 @@ class PenerimaanDiPusatController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'id_barang' => 'required|exists:barangs,id',
-            'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
-            'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
-            'id_satuan_berat' => 'required|exists:satuan_berats,id',
-            'berat_satuan_barang' => 'required|integer|min:1',
-            'jumlah_barang' => 'required|integer|min:1',
-            'tanggal' => 'required|date',
-        ]);
-
         try {
-            DB::transaction(function () use ($validated) {
-                PenerimaanDiPusat::create($validated);
+            $validated = $request->validate([
+                'id_barang' => 'required|exists:barangs,id',
+                'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
+                'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
+                'id_satuan_berat' => 'required|exists:satuan_berats,id',
+                'berat_satuan_barang' => 'required|integer|min:1',
+                'jumlah_barang' => 'required|integer|min:1',
+            ]);
+
+            $currentTime = now();
+
+            $penerimaanDiPusat = array_merge($validated, [
+                'tanggal' => $currentTime,
+            ]);
+            
+            DB::transaction(function () use ($penerimaanDiPusat) {
+                PenerimaanDiPusat::create($penerimaanDiPusat);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
@@ -142,7 +147,7 @@ class PenerimaanDiPusatController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Data Penerimaan Di Pusat {$id}",
-                'data' => PenerimaanDiPusatIndexResource::make($penerimaanDiPusat)
+                'data' => new PenerimaanDiPusatIndexResource($penerimaanDiPusat)
             ]);
         } catch (\Throwable $th) {
             return response()->json([

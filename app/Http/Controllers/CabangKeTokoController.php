@@ -1,22 +1,23 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\Resources\BarangCreateResource;
-use App\Http\Resources\CabangCreateResource;
+use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\SatuanBerat;
 use App\Models\CabangKeToko;
 use App\Models\DetailGudang;
-use App\Models\GudangDanToko;
-use App\Models\Kurir;
-use App\Models\SatuanBerat;
 use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Resources\CabangKeTokoIndexResource;
-use App\Http\Resources\KurirCreateResource;
-use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\TokoCreateResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\CabangCreateResource;
+use App\Helpers\ShippingAndReturnCodeHelpers;
+use Illuminate\Validation\ValidationException;
+use App\Http\Resources\CabangKeTokoIndexResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CabangKeTokoController extends Controller
 {
@@ -50,6 +51,8 @@ class CabangKeTokoController extends Controller
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ],
             ]);
@@ -103,7 +106,6 @@ class CabangKeTokoController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kode' => 'required|string',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_toko' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
@@ -111,31 +113,35 @@ class CabangKeTokoController extends Controller
                 'id_kurir' => 'required|exists:kurirs,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
 
-            DB::transaction(function () use ($validated, $request) {
-                $barang = DetailGudang::where('id_gudang', $request->id_cabang)
-                    ->where('id_barang', $request->id_barang)
-                    ->first();
+            $barang = DetailGudang::where('id_gudang', $request->id_cabang)
+                ->where('id_barang', $request->id_barang)
+                ->first();
 
-                if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
-                    ], 400); // Bad Request
-                }
-
-                $cabangKeToko = CabangKeToko::create(array_merge(
-                    $validated, ['id_status' => 1])
-                );
-
+            if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Barang berhasil terkirim ke Toko',
-                    'data' => $cabangKeToko,
-                ], 201); // Created
+                    'status' => false,
+                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                ], 409);
+            }
+
+            $currentTime = now();
+
+            $cabangKeToko = array_merge($validated, [
+                'kode' => ShippingAndReturnCodeHelpers::generateCabangKeTokoCode($currentTime),
+                'id_status' => 1,
+                'tanggal' => $currentTime,
+            ]);
+
+            DB::transaction(function () use ($cabangKeToko) {
+                CabangKeToko::create($cabangKeToko);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Barang berhasil terkirim ke Toko',
+            ], 201); // Created
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -171,7 +177,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id}",
-                'data' => CabangKeTokoIndexResource::make($CabangKeToko),
+                'data' => new CabangKeTokoIndexResource($CabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -204,13 +210,13 @@ class CabangKeTokoController extends Controller
 
             DB::transaction(function () use ($validated, $CabangKeToko) {
                 $CabangKeToko->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Cabang Ke Toko berhasil diperbarui',
-                    'data' => CabangKeTokoIndexResource::make($CabangKeToko),
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Cabang Ke Toko berhasil diperbarui',
+                'data' => new CabangKeTokoIndexResource($CabangKeToko),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -243,14 +249,14 @@ class CabangKeTokoController extends Controller
                 ], 400); // Bad Request
             }
 
-            DB::transaction(function () use ($id, $CabangKeToko) {
+            DB::transaction(function () use ($CabangKeToko) {
                 $CabangKeToko->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Berhasil menghapus Data Cabang Ke Toko dengan ID: {$id}",
-                ]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil menghapus Data Cabang Ke Toko dengan ID: {$id}",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

@@ -108,6 +108,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -135,6 +136,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -176,6 +178,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -212,6 +215,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -248,6 +252,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

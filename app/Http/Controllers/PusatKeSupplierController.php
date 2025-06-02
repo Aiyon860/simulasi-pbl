@@ -158,6 +158,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Pusat ke Supplier dengan ID {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -197,6 +198,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Pusat ke Supplier dengan ID {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -216,6 +218,7 @@ class PusatKeSupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Pusat ke Supplier ID {$id} sudah dihapus sebelumnya.",
+                    'error' => $e->getMessage(),
                 ], 409);
             }
 
@@ -231,6 +234,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Pusat ke Supplier dengan ID {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

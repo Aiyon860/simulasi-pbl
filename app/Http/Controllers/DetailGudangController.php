@@ -150,7 +150,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
-                'data' => CabangKePusatIndexResource::collection($detailGudang),
+                'data' => DetailGudangIndexResource::collection($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

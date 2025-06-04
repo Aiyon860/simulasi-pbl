@@ -26,14 +26,12 @@ class PenerimaanDiPusatController extends Controller
                 'id', 'kode', 'id_barang',
                 'id_jenis_penerimaan', 'id_asal_barang',
                 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal', 'id_kurir', 'id_status',
+                'jumlah_barang', 'tanggal'
             ])->with([
                 'barang:id,nama_barang',
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
-                'satuanBerat:id,nama_satuan_berat',
-                'kurir:id,nama_kurir',
-                'status:id,nama_status'
+                'satuanBerat:id,nama_satuan_berat'
             ])->where('flag', '=', 1)
             ->get();
 
@@ -98,6 +96,7 @@ class PenerimaanDiPusatController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'kode' => 'required|string|max:255|unique:penerimaan_di_pusats,kode',
             'id_barang' => 'required|exists:barangs,id',
             'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
             'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
@@ -134,7 +133,7 @@ class PenerimaanDiPusatController extends Controller
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             )->findOrFail($id, [
-                'id', 'id_barang',
+                'id', 'kode', 'id_barang',
                 'id_jenis_penerimaan', 'id_asal_barang',
                 'id_satuan_berat', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'

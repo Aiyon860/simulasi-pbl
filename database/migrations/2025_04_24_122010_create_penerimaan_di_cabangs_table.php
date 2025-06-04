@@ -50,12 +50,6 @@ return new class extends Migration
             $table->dateTime('tanggal');
             $table->integer('flag')->default(1);
 
-            $table->unsignedBigInteger('id_kurir');
-            $table->foreign('id_kurir')->references('id')->on('kurirs')->cascadeOnUpdate();
-
-            $table->unsignedBigInteger('id_status');
-            $table->foreign('id_status')->references('id')->on('statuses')->cascadeOnUpdate();
-
             $table->softDeletes();
             $table->timestamps();
         });

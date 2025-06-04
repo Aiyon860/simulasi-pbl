@@ -26,14 +26,12 @@ class PenerimaanDiCabangController extends Controller
             $penerimaanDiCabang = PenerimaanDiCabang::select([
                 'id', 'kode', 'id_barang', 'id_jenis_penerimaan',
                 'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal', 'id_kurir', 'id_status',
+                'jumlah_barang', 'tanggal'
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
-                'satuanBerat:id,nama_satuan_berat',
-                'kurir:id,nama_kurir',
-                'status:id,nama_status'
+                'satuanBerat:id,nama_satuan_berat'
             ])
             ->where('flag', '=', 1)
             ->orderBy('tanggal', 'desc')
@@ -104,6 +102,7 @@ class PenerimaanDiCabangController extends Controller
             // Jika Anda menggunakan StorePenerimaanDiCabangRequest, Anda bisa langsung menggunakan $request->validated();
             // Jika tidak, validasi manual seperti di bawah ini:
             $validated = $request->validate([
+                'kode' => 'required|string|max:255|unique:penerimaan_di_cabangs,kode',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
@@ -146,7 +145,7 @@ class PenerimaanDiCabangController extends Controller
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
+                'id', 'kode', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
                 'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ]);

@@ -30,8 +30,6 @@ class PenerimaanDiPusatIndexResource extends JsonResource
             'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
-            'kurir' => $this->kurir->nama_kurir,
-            'status' => $this->status->nama_status,
         ];
     }
 }

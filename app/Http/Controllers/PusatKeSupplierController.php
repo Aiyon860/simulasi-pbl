@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
@@ -96,15 +97,15 @@ class PusatKeSupplierController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kode'=> 'required|string|max:255',
                 'id_supplier' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
+
+            $currentTime = now();
 
             $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
                 ->where('id_barang', $request->id_barang)
@@ -118,14 +119,16 @@ class PusatKeSupplierController extends Controller
             }
 
             $pusatKeSupplier = array_merge($validated, [
-                'id_pusat' => 1, 
-                'id_status' => 1
-            ]); 
+                'kode' => ShippingAndReturnCodeHelpers::generatePusatKeSupplierCode($currentTime),
+                'id_pusat' => 1,
+                'id_status' => 1,
+                'tanggal' => $currentTime,
+            ]);
 
             DB::transaction(function () use ($pusatKeSupplier) {
                 PusatKeSupplier::create($pusatKeSupplier);
             }, 3);
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
@@ -167,7 +170,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Pusat ke Supplier ID: {$id}",
-                'data' => PusatKeSupplierIndexResource::collection($data)
+                'data' => new PusatKeSupplierIndexResource($data)
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -192,16 +195,15 @@ class PusatKeSupplierController extends Controller
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            return DB::transaction(function () use ($id, $validated, $pusatKeSupplier) {
+            DB::transaction(function () use ($validated, $pusatKeSupplier) {
                 $pusatKeSupplier->update($validated);
-
             });
+
             return response()->json([
-                    'status' => true,
-                    'message' => "Data Pusat ke Supplier dengan ID: {$id} berhasil diperbarui.",
-                    'data' => PusatKeSupplierIndexResource::collection($pusatKeSupplier),
+                'status' => true,
+                'message' => "Data Pusat ke Supplier dengan ID: {$id} berhasil diperbarui.",
+                'data' => new PusatKeSupplierIndexResource($pusatKeSupplier),
             ]);
-            
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -234,7 +236,7 @@ class PusatKeSupplierController extends Controller
                 ], 409);
             }
 
-            return DB::transaction(function () use ($id, $pusatKeSupplier) {
+            DB::transaction(function () use ($pusatKeSupplier) {
                 $pusatKeSupplier->update(['flag' => 0]);
             }, 3);
 

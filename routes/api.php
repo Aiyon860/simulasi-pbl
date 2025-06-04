@@ -26,17 +26,21 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::middleware(['jwt'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/authenticated-user', [AuthController::class, 'getUser']);
-
+    
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
-        Route::resource('dashboard', DashboardController::class);
+        Route::get('dashboard-super', [DashboardController::class, 'dashboardSuper'])->name('dashboard.super');
+        Route::get('dashboard-admin-cabang', [DashboardController::class, 'dashboardAdminCabang'])->name('dashboard.admin-cabang');
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
-        Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
+        Route::get('dashboard-low-stock-super', [DashboardController::class, 'dashboardLowStockSuper'])->name('dashboard.low-stock-super');
+        Route::get('dashboard-low-stock-admin-cabang', [DashboardController::class, 'dashboardLowStockAdminCabang'])->name('dashboard.low-stock-admin-cabang');
 
         Route::resource('profile', ProfileController::class);
     });
-
+    
     Route::middleware(['role:SuperAdmin'])->group(function () {
         Route::resource('users', UserController::class);
+        Route::patch('users/{id}/activate', [UserController::class, 'activate'])->name('users.activate');
+        Route::patch('users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
 
         Route::resource('kategori-barangs', KategoriBarangController::class);
         Route::patch('kategori-barangs/{id}/activate', [KategoriBarangController::class, 'activate'])->name('kategori-barangs.activate');

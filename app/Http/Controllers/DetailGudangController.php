@@ -150,7 +150,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
-                'data' => DetailGudangIndexResource::collection($detailGudang),
+                'data' => new CabangKePusatIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -189,7 +189,7 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Form Edit Barang Gudang',
                 'data' => [
-                    'detailGudang' => DetailGudangIndexResource::collection($detailGudang),
+                    'detailGudang' => new DetailGudangIndexResource($detailGudang),
                     'barangs' => BarangCreateResource::collection($barangs),
                     'gudang' => GudangCreateResource::collection($gudang),
                     'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
@@ -230,7 +230,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
-                'data' => DetailGudangIndexResource::collection($detailGudang),
+                'data' => new DetailGudangIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -258,9 +258,10 @@ class DetailGudangController extends Controller
         try {
             $barangGudang = DetailGudang::findOrFail($id);
 
-            DB::transaction(function () use ($id, $barangGudang) {
+            DB::transaction(function () use ($barangGudang) {
                 $barangGudang->update(['flag' => 0]);
             });
+
             return response()->json([
                 'status' => true,
                 'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",

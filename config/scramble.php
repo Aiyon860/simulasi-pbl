@@ -29,7 +29,7 @@ return [
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => '',
+        'description' => 'API ini merupakan bagian dari sistem Aplikasi Manajemen Gudang Berbasis Website yang dikembangkan menggunakan Laravel 12. API ini menyediakan endpoint untuk mengelola data inventaris, stok barang, pemasukan dan pengeluaran barang, kategori produk, serta pengguna sistem. API ini menggunakan autentikasi berbasis token (JWT) untuk menjaga keamanan akses data.',
     ],
 
     /*
@@ -39,7 +39,7 @@ return [
         /*
          * Define the title of the documentation's website. App name is used when this config is `null`.
          */
-        'title' => null,
+        'title' => 'Sistem Manajemen Gudang',
 
         /*
          * Define the theme of the documentation. Available options are `light` and `dark`.

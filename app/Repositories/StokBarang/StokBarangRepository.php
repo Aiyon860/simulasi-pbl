@@ -13,18 +13,11 @@ class StokBarangRepository
                 ->where('jumlah_stok', '<=', 5)
                 ->orderBy('jumlah_stok', 'asc')
                 ->take(10)
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'nama_barang' => $item->barang->nama_barang,
-                        'nama_gudang' => $item->gudang->nama_gudang_toko,
-                        'jumlah_stok' => $item->jumlah_stok,
-                    ];
-                });
+                ->get();
         } else { // Admin Cabang
             return DetailGudang::with(['barang:id,nama_barang'])
                 ->where('jumlah_stok', '<=', 5)
-                ->where('id_gudang', $idCabang)
+                ->where('id_gudang', '=', $idCabang)
                 ->orderBy('jumlah_stok', 'asc')
                 ->take(10)
                 ->get()

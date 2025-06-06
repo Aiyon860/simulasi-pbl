@@ -24,13 +24,13 @@ class GudangController extends Controller
                     'flag'
                 ]);
 
-            $headings = $GudangDanToko->isEmpty() ? [] : array_keys($GudangDanToko->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                if ($heading === 'flag') {
-                    $heading = 'Status';
-                }
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                'ID',
+                'Nama Gudang',
+                'Alamat',
+                'No Telepon',
+                'Status',
+            ];
 
             return response()->json([
                 'status' => true,

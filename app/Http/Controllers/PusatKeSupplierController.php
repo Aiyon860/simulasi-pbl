@@ -41,10 +41,14 @@ class PusatKeSupplierController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-            $headings = $pusatKeSuppliers->isEmpty() ? [] : array_keys($pusatKeSuppliers->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Tujuan',
+                'Jumlah Barang',
+                'Tanggal',
+                'Status',
+            ];
 
             return response()->json([
                 'status' => true,

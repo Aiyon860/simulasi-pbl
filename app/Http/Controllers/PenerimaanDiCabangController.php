@@ -37,10 +37,14 @@ class PenerimaanDiCabangController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-            $headings = $penerimaanDiCabang->isEmpty() ? [] : array_keys($penerimaanDiCabang->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Asal Barang',
+                'Jumlah Barang',
+                'Tanggal',
+                'Jenis Penerimaan',
+            ];
 
             return response()->json([
                 'status' => true,

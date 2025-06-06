@@ -16,7 +16,7 @@ class KategoriBarangController extends Controller
     {
         try {
             $categories = KategoriBarang::select([
-                'id', 'nama_kategori_barang', 'flag'
+                'id', 'nama_kategori_barang'
             ])->orderBy('id')
             ->get();
 

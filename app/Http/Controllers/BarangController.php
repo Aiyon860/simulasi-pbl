@@ -32,7 +32,6 @@ class BarangController extends Controller
                         'ID',
                         'Nama Barang',
                         'Kategori Barang',
-                        'Status'
                     ],
                 ],
             ]);

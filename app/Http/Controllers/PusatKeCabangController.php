@@ -39,10 +39,14 @@ class PusatKeCabangController extends Controller
             ])->where('flag', '=', 1)
             ->get();
 
-            $headings = $pusatKeCabang->isEmpty() ? [] : array_keys($pusatKeCabang->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Tujuan',
+                'Jumlah Barang',
+                'Tanggal',
+                'Status',
+            ];
 
             return response()->json([
                 'status'=> true,

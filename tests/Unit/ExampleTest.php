@@ -15,3 +15,7 @@ test('that 1 + 1 is 2', function () {
 test('that 2 + 2 is 4', function () {
     expect(2 + 2)->toBe(4);
 });
+
+test('that 2 + 1 is 3', function () {
+    expect(2 + 1)->toBe(3);
+});

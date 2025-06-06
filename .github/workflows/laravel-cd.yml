@@ -18,11 +18,13 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
           cd /var/www/gudangku.web.id/html
           git pull origin main
           git status
-          composer install
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          chmod -R 777 storage bootstrap/cache
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
           php artisan optimize

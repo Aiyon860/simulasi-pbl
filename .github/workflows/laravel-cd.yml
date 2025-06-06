@@ -22,12 +22,15 @@ jobs:
         port: 22
         script: |
           cd /var/www/gudangku.web.id/html
+          chmod -R 775 .git
           git config --global --add safe.directory /var/www/gudangku.web.id/html
           git pull origin main
           sudo chown -R $USER:$USER /var/www/gudangku.web.id/html
           chmod -R 775 storage
           chmod -R 775 bootstrap/cache
           composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan optimize
           php artisan config:cache
           php artisan route:cache
+          php artisan event:cache
           php artisan view:cache

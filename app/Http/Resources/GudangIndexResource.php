@@ -21,6 +21,7 @@ class GudangIndexResource extends JsonResource
             'nama_gudang' => $this->nama_gudang_toko,
             'alamat' => $this->alamat,
             'no_telepon' => $this->no_telepon,
+            'flag' => $this->flag,
             'status' => $this->flag ? 'Aktif' : 'Nonaktif',
         ];
     }

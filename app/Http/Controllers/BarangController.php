@@ -170,8 +170,8 @@ class BarangController extends Controller
             $barang = Barang::findOrFail($id);
 
             $rules = [
-                'nama_barang' => 'required|string|max:255',
-                'id_kategori_barang' => 'nullable|exists:kategori_barangs,id',
+                'nama_barang' => ['required', 'string', 'max:255'],
+                'id_kategori_barang' => ['nullable', 'exists:kategori_barangs,id'],
             ];
 
             if ($request->input('nama_barang') !== $barang->nama_barang) {

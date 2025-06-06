@@ -69,6 +69,7 @@ class PusatKeCabangController extends Controller
             $barangs = Barang::select(['id', 'nama_barang'])->get();
             $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('id', '!=', 1)
+                ->where('flag', '=', 1)
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
             $kurir = Kurir::select(['id', 'nama_kurir'])->get();

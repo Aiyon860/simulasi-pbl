@@ -17,6 +17,7 @@ class BarangIndexResource extends JsonResource
         return [
             'id' => $this->id,
             'nama_barang' => $this->nama_barang,
+            'id_kategori_barang' => $this->kategori->id,
             'kategori_barang' => $this->kategori->nama_kategori_barang,
             'status' => $this->flag ? 'Aktif' : 'Nonaktif',
         ];

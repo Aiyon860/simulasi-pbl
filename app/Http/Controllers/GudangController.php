@@ -218,6 +218,7 @@ class GudangController extends Controller
 
             DB::transaction(function () use ($gudang) {
                 $gudang->update(['flag' => 0]);
+                $gudang->detailGudangs()->update(['stok_opname' => 1]);
             }, 3);
 
             return response()->json([
@@ -254,6 +255,7 @@ class GudangController extends Controller
 
             DB::transaction(function () use ($gudang) {
                 $gudang->update(['flag' => 1]);
+                $gudang->detailGudangs()->update(['stok_opname' => 0]);
             }, 3);
 
             return response()->json([

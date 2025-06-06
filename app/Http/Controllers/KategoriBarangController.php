@@ -150,7 +150,7 @@ class KategoriBarangController extends Controller
             $category = KategoriBarang::findOrFail($id);
 
             $rules = [
-                'nama_kategori_barang' => 'required|string|max:255',
+                'nama_kategori_barang' => ['required', 'string', 'max:255'],
             ];
 
             if ($request->input('nama_kategori_barang') !== $category->nama_kategori_barang) {
@@ -158,6 +158,7 @@ class KategoriBarangController extends Controller
             }
 
             $validated = $request->validate($rules);
+
 
             DB::transaction(function () use ($validated, $category) {
                 $category->update($validated);

@@ -136,7 +136,7 @@ class UserController extends Controller
                 'role:id,nama_role', 
                 'lokasi:id,nama_gudang_toko'
             ])->findOrFail($id, [
-                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+                'id', 'nama_user', 'email', 'password', 'id_role', 'id_lokasi', 'flag'
             ]);
 
             return response()->json([
@@ -171,7 +171,7 @@ class UserController extends Controller
             $user = User::with([
                 'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
             ])->findOrFail($id, [
-                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+                'id', 'nama_user', 'email', 'password', 'id_role', 'id_lokasi', 'flag'
             ]);
             $roles = Role::select(['id', 'nama_role'])->get();
             $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
@@ -223,7 +223,11 @@ class UserController extends Controller
             ];
 
             if ($request->filled('password')) {
-                $rules['password'] = 'string|min:8|confirmed';
+                if ($request->has('reset_password')) {
+                    $rules['password'] = 'string|min:8';
+                } else {
+                    $rules['password'] = 'string|min:8|confirmed';
+                }
             }
 
             $validated = $request->validate($rules);

@@ -10,6 +10,7 @@ use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiCabang;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\BarangCreateResource;
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\AsalBarangCreateResource;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -67,7 +68,7 @@ class PenerimaanDiCabangController extends Controller
                 ->where('flag', 1)
                 ->get();
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where(function ($query) {
                     $query->where('id', '=', 1)
                         ->orWhere('kategori_bangunan', '=', 2);
@@ -101,7 +102,6 @@ class PenerimaanDiCabangController extends Controller
             // Jika Anda menggunakan StorePenerimaanDiCabangRequest, Anda bisa langsung menggunakan $request->validated();
             // Jika tidak, validasi manual seperti di bawah ini:
             $validated = $request->validate([
-                'kode' => 'required|string|max:255|unique:penerimaan_di_cabangs,kode',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
@@ -114,6 +114,7 @@ class PenerimaanDiCabangController extends Controller
             $currentTime = now();
 
             $penerimaanDiCabang = array_merge($validated, [
+                'kode' => ShippingAndReturnCodeHelpers::generatePenerimaanDiCabangCode($currentTime),
                 'tanggal' => $currentTime,
             ]);
 
@@ -124,6 +125,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
+                'data' => $penerimaanDiCabang,
             ], 201); // 201 Created
         } catch (ValidationException $e) {
             return response()->json([

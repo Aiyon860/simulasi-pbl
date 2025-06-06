@@ -9,8 +9,9 @@ use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiPusat;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\BarangCreateResource;
+use App\Helpers\ShippingAndReturnCodeHelpers;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\AsalBarangCreateResource;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\JenisPenerimaanCreateResource;
@@ -66,7 +67,7 @@ class PenerimaanDiPusatController extends Controller
                 ->orderBy('id')
                 ->get();
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where('id', '!=', 1)
                 ->whereIn('kategori_bangunan', [0, 1])
                 ->where('flag', '=', 1)
@@ -108,6 +109,7 @@ class PenerimaanDiPusatController extends Controller
             $currentTime = now();
 
             $penerimaanDiPusat = array_merge($validated, [
+                'kode' => ShippingAndReturnCodeHelpers::generatePenerimaanDiPusatCode($currentTime),
                 'tanggal' => $currentTime,
             ]);
             
@@ -118,6 +120,7 @@ class PenerimaanDiPusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Penerimaan Di Pusat berhasil ditambahkan',
+                'data' => $penerimaanDiPusat,
             ]);
         } catch (ValidationException $th) {
             return response()->json([

@@ -20,7 +20,7 @@ class UserIndexResource extends JsonResource
             'email' => $this->email,
             'role' => $this->role->nama_role,
             'lokasi' => $this->lokasi->nama_gudang_toko,
-            'status' => $this->status ? 'Aktif' : 'Nonaktif',
+            'status' => $this->flag ? 'Aktif' : 'Nonaktif',
         ];
     }
 }

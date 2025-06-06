@@ -54,6 +54,16 @@ class ShippingAndReturnCodeHelpers
         return 'SKP-' . self::getFormattedDateTime($datetime);
     }
 
+    public static function generatePenerimaanDiPusatCode($datetime): string
+    {
+        return 'PDP-' . self::getFormattedDateTime($datetime);
+    }
+
+    public static function generatePenerimaanDiCabangCode($datetime): string
+    {
+        return 'PDC-' . self::getFormattedDateTime($datetime);
+    }
+
     /**
      * Helper function untuk mendapatkan format datetime yang sesuai
      */

@@ -62,11 +62,9 @@ class AuthController extends Controller
                 ], 404);
             }
 
-            return response()->json([
-                'status' => true,
-                'message' => 'User data retrieved successfully',
-                'data' => new UserIndexResource($user),
-            ]);
+            $user->load('role');
+
+            return response()->json(compact('user'));
         } catch (JWTException $e) {
             return response()->json([
                 'status' => false,
@@ -74,10 +72,6 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
             ], 401);
         }
-
-        $user->load('role');
-
-        return response()->json(compact('user'));
     }
 
     public function logout(Request $request)

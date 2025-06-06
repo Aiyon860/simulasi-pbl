@@ -132,7 +132,7 @@ class PusatKeSupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil mengirimkan barang dari Pusat Ke Cabang.',
-                'data' => $pusatKeCabang,
+                'data' => $pusatKeSupplier,
             ]);
         } catch (ValidationException $e) {
             return response()->json([

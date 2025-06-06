@@ -28,12 +28,9 @@ Route::middleware(['jwt'])->group(function () {
     Route::get('/authenticated-user', [AuthController::class, 'getUser']);
     
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
-        Route::get('dashboard-super', [DashboardController::class, 'dashboardSuper'])->name('dashboard.super');
-        Route::get('dashboard-admin-cabang', [DashboardController::class, 'dashboardAdminCabang'])->name('dashboard.admin-cabang');
+        Route::resource('dashboard', DashboardController::class);
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
-        Route::get('dashboard-low-stock-super', [DashboardController::class, 'dashboardLowStockSuper'])->name('dashboard.low-stock-super');
-        Route::get('dashboard-low-stock-admin-cabang', [DashboardController::class, 'dashboardLowStockAdminCabang'])->name('dashboard.low-stock-admin-cabang');
-
+        Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
         Route::resource('profile', ProfileController::class);
     });
     

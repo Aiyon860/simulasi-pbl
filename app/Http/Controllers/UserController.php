@@ -55,7 +55,9 @@ class UserController extends Controller
     {
         try {
             $roles = Role::select(['id', 'nama_role'])->get();
-            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+            $lokasi = GudangDanToko::where('kategori_bangunan', 0)
+                ->select(['id', 'nama_gudang_toko'])
+                ->get();
 
             return response()->json([
                 'status' => true,

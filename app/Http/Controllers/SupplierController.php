@@ -14,7 +14,7 @@ class SupplierController extends Controller
     {
         try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
-                ->orderBy('id')
+                ->orderBy('id')->where('flag', 1)
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
@@ -207,7 +207,7 @@ class SupplierController extends Controller
 
             return response()->json([
                     'status' => true,
-                    'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dinonaktifkan!",
+                    'message' => "Supplier {$supplier->nama_gudang_toko} berhasil dihapus!",
                     'data' => new SupplierIndexResource($supplier),
             ]);
 

@@ -17,7 +17,7 @@ class KategoriBarangController extends Controller
         try {
             $categories = KategoriBarang::select([
                 'id', 'nama_kategori_barang'
-            ])->orderBy('id')
+            ])->orderBy('id')->where('flag', 1)
             ->get();
 
             $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
@@ -207,7 +207,7 @@ class KategoriBarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Kategori barang dengan ID: {$id} berhasil dinonaktifkan",
+                'message' => "Data Kategori barang dengan ID: {$id} berhasil dihapus",
                 'data' => new KategoriBarangIndexResource($category),
             ]);
         } catch (ModelNotFoundException $e) {

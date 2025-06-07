@@ -300,7 +300,7 @@ class UserController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Pengguna {$user->nama_user} berhasil dinonaktifkan!",
+                'message' => "Pengguna {$user->nama_user} berhasil dihapus!",
                 'data' => new UserIndexResource($user),
             ]);
         } catch (ModelNotFoundException $e) {

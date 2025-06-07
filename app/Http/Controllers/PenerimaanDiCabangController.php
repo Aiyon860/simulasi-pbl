@@ -182,24 +182,28 @@ class PenerimaanDiCabangController extends Controller
 
     public function destroy(string $id)
     {
+        //
+    }
+
+    public function deactivate(string $id)
+    {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::findOrFail($id);
 
-            // Opsional: Cek jika flag sudah 0, untuk menghindari penghapusan berulang
             if ($penerimaanDiCabang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Penerimaan Di Cabang dengan ID: {$id} sudah tidak aktif.",
-                ], 409); // 409 Conflict
+                    'message' => "Data Penerimaan Di Cabang dengan ID: {$id} sudah dihapus sebelumnya.",
+                ], 409); // Conflict
             }
 
             DB::transaction(function () use ($penerimaanDiCabang) {
-                $penerimaanDiCabang->update(['flag' => 0]); // Soft delete dengan mengubah flag
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+                $penerimaanDiCabang->update(['flag' => 0]);
+            }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
+                'message' => "Berhasil menonaktifkan Data Penerimaan Di Cabang dengan ID: {$id}",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

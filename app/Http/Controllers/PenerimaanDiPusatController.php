@@ -166,6 +166,11 @@ class PenerimaanDiPusatController extends Controller
 
     public function destroy(string $id)
     {
+        //
+    }
+
+    public function deactivate(string $id)
+    {
         try {
             $penerimaanDiPusat = PenerimaanDiPusat::findOrFail($id);
 
@@ -182,7 +187,7 @@ class PenerimaanDiPusatController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} berhasil dihapus",
+                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} berhasil dinonaktifkan",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

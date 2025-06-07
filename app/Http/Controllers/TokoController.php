@@ -15,7 +15,7 @@ class TokoController extends Controller
     {
         try {
             $tokos = GudangDanToko::where('kategori_bangunan', 2)
-                ->orderBy('id')
+                ->orderBy('id')->where('flag', 1)
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
@@ -209,7 +209,7 @@ class TokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Toko {$toko->nama_gudang_toko} berhasil dinonaktifkan!",
+                'message' => "Toko {$toko->nama_gudang_toko} berhasil dihapus!",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

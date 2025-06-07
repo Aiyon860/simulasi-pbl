@@ -31,6 +31,7 @@ class DetailGudangController extends Controller
                 'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
             ])->where('id_gudang', $request->user()->lokasi->id)
+            ->where('flag', 1)
             ->orderBy('stok_opname', 'asc')
             ->get();
 
@@ -258,16 +259,29 @@ class DetailGudangController extends Controller
 
     public function destroy(string $id)
     {
-        try {
-            $barangGudang = DetailGudang::findOrFail($id);
+        //
+    }
 
-            DB::transaction(function () use ($barangGudang) {
-                $barangGudang->update(['flag' => 0]);
-            });
+    public function deactivate(string $id)
+    {
+        try {
+            $detailGudang = DetailGudang::findOrFail($id);
+
+            if ($detailGudang->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Barang Gudang dengan ID: {$id} sudah dinonaktifkan",
+                ]);
+            }
+
+            DB::transaction(function () use ($detailGudang) {
+                $detailGudang->update(['flag' => 0]);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dinonaktifkan",
+                'data' => new DetailGudangIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -275,11 +289,11 @@ class DetailGudangController extends Controller
                 'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan ID: {$id}",
-                'error' => $e->getMessage(),
+                'message' => "Terjadi kesalahan saat menonaktifkan data barang gudang dengan ID: {$id}",
+                'error' => $th->getMessage(),
             ], 500);
         }
     }

@@ -28,6 +28,7 @@ class CabangKeTokoIndexResource extends JsonResource
             'nama_barang' => $this->barang->nama_barang,
             'nama_kurir' => $this->kurir->nama_kurir,
             'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
+            'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
             'berat_satuan_barang' => $this->berat_satuan_barang,
             'jumlah_barang' => $this->jumlah_barang,

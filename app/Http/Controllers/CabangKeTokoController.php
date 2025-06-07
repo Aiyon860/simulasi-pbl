@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
 use App\Models\CabangKeToko;
 use App\Models\DetailGudang;
@@ -41,6 +42,8 @@ class CabangKeTokoController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $statuses = Status::select(['id', 'nama_status'])->get();
+
             $headings = [
                 'ID',
                 'Nama Barang',
@@ -55,6 +58,7 @@ class CabangKeTokoController extends Controller
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
+                    'statuses' => $statuses,
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -243,14 +247,19 @@ class CabangKeTokoController extends Controller
 
     public function destroy(string $id)
     {
+        //
+    }
+
+    public function deactivate(string $id)
+    {
         try {
             $CabangKeToko = CabangKeToko::findOrFail($id);
 
             if ($CabangKeToko->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya",
-                ], 400); // Bad Request
+                    'message' => "Data Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya.",
+                ], 409); // Conflict
             }
 
             DB::transaction(function () use ($CabangKeToko) {
@@ -259,19 +268,64 @@ class CabangKeTokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menghapus Data Cabang Ke Toko dengan ID: {$id}",
+                'message' => "Berhasil menonaktifkan Data Cabang Ke Toko dengan ID: {$id}",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menghapus Data Cabang Ke Toko dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan Data Cabang Ke Toko dengan ID: {$id}.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
+        }
+    }
+
+    public function updateStatus(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'id_status' => 'required|exists:statuses,id',
+            ]);
+
+            $cabangKeToko = CabangKeToko::findOrFail($id);
+
+            if ($cabangKeToko->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya.",
+                ], 409); // Conflict
+            }
+
+            $cabangKeToko->update($validated);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}",
+                'data' => new CabangKeTokoIndexResource($cabangKeToko),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang diberikan tidak valid.',
+                'error' => $e->getMessage()
+            ], 422); // Unprocessable Entity
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}.",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -31,6 +31,7 @@ class PusatKeCabangIndexResource extends JsonResource
             'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
+            'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
         ];
     }

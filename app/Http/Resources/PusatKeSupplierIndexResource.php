@@ -27,6 +27,7 @@ class PusatKeSupplierIndexResource extends JsonResource
             'nama_supplier' => $this->supplier->nama_gudang_toko,
             'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
             'nama_kurir' => $this->kurir->nama_kurir,
+            'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
             'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,

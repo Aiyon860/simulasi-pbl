@@ -72,7 +72,7 @@ class PenerimaanDiCabangController extends Controller
                 ->where('flag', 1)
                 ->get();
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where(function ($query) {
                     $query->where('id', '=', 1)
                         ->orWhere('kategori_bangunan', '=', 2);

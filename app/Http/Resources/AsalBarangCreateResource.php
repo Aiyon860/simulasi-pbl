@@ -18,8 +18,8 @@ class AsalBarangCreateResource extends JsonResource
             'id' => $this->id,
             'nama_gudang' => $this->nama_gudang_toko,
             'kategori_bangunan' => $this->kategori_bangunan,
-            'tipe_asal' => $this->kategori_bangunan === 0 ? 'cabang' : 'supplier',
-            'tipe_asal_cabang' => $this->kategori_bangunan === 2 ? 'toko' : 'pusat',
+            'tipe_asal' => $this->kategori_bangunan == 0 ? 'cabang' : 'supplier',
+            'tipe_asal_cabang' => $this->kategori_bangunan == 2 ? 'toko' : 'pusat',
         ];
     }
 }

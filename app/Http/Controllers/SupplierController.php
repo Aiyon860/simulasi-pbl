@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GudangDanToko;
 use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\SupplierShowResource;
+use App\Http\Resources\SupplierIndexResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Resources\SupplierIndexResource;
+
 class SupplierController extends Controller
 {
     public function index()
@@ -16,7 +18,7 @@ class SupplierController extends Controller
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
                 ->orderBy('id')
                 ->get([
-                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
 
             $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());
@@ -102,7 +104,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Supplier dengan ID: {$id}",
-                'data' => new SupplierIndexResource($supplier),
+                'data' => new SupplierShowResource($supplier),
             ]);
             
         } catch (ModelNotFoundException $e) {

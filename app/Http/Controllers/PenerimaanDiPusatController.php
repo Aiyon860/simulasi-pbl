@@ -30,6 +30,7 @@ class PenerimaanDiPusatController extends Controller
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
+                'pusat:id,nama_gudang_toko',
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             ])->where('flag', '=', 1)

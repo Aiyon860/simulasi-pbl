@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
-use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\GudangCreateResource;
+use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\CabangKePusatIndexResource;
@@ -139,7 +140,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
-                'data' => new CabangKePusatIndexResource($detailGudang),
+                'data' => new DetailGudangShowResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

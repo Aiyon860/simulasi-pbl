@@ -67,7 +67,7 @@ class PenerimaanDiPusatController extends Controller
                 ->orderBy('id')
                 ->get();
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where('id', '!=', 1)
                 ->whereIn('kategori_bangunan', [0, 1])
                 ->where('flag', '=', 1)

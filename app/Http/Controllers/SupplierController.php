@@ -199,7 +199,7 @@ class SupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Supplier dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
             DB::transaction(function ($supplier) {
@@ -235,7 +235,7 @@ class SupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Supplier dengan ID: {$id} sudah diaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
             DB::transaction(function () use ($supplier) {

@@ -90,7 +90,7 @@ class DetailGudangController extends Controller
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
             'id_satuan_berat' => 'required|exists:satuan_berats,id',
-            'jumlah_stok' => 'required|integer|min:1',
+            'jumlah_stok' => 'required|integer|min:0',
         ]);
 
         try {

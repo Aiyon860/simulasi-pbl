@@ -16,7 +16,7 @@ class AsalBarangCreateResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nama_gudang' => $this->nama_gudang,
+            'nama_gudang' => $this->nama_gudang_toko,
             'tipe_asal' => $this->kategori_bangunan === 0 ? 'cabang' : 'supplier',
             'tipe_asal_cabang' => $this->kategori_bangunan === 2 ? 'toko' : 'pusat',
         ];

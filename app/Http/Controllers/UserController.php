@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\UserEditResource;
 use App\Http\Resources\UserShowResource;
 use App\Http\Resources\UserIndexResource;
 use App\Http\Resources\RoleCreateResource;
@@ -59,7 +60,9 @@ class UserController extends Controller
     {
         try {
             $roles = Role::select(['id', 'nama_role'])->get();
-            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -166,13 +169,15 @@ class UserController extends Controller
                 'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
             ]);
             $roles = Role::select(['id', 'nama_role'])->get();
-            $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+            $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Pengguna',
                 'data' => [
-                    'user' => new UserIndexResource($user),
+                    'user' => new UserEditResource($user),
                     'roles' => RoleCreateResource::collection($roles),
                     'lokasis' => LokasiCreateResource::collection($lokasis),
                 ],

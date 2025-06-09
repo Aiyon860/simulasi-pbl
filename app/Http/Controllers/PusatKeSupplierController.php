@@ -65,7 +65,9 @@ class PusatKeSupplierController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->get();
             $supplier = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('flag', 1)
                 ->where('kategori_bangunan', 1)

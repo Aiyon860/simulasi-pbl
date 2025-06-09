@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class KategoriBarangIndexResource extends JsonResource
+class BarangEditResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,7 +16,9 @@ class KategoriBarangIndexResource extends JsonResource
     {
         return [
             'id' => (int) $this->id,
-            'nama_kategori_barang' => $this->nama_kategori_barang,           
+            'nama_barang' => $this->nama_barang,
+            'id_kategori_barang' => $this->kategori->id,
+            'kategori_barang' => $this->kategori->nama_kategori_barang,
         ];
     }
 }

@@ -18,7 +18,8 @@ class KategoriBarangController extends Controller
         try {
             $categories = KategoriBarang::select([
                 'id', 'nama_kategori_barang'
-            ])->orderBy('id')
+            ])->where('flag', '=', 1)
+            ->orderBy('id')
             ->get();
 
             $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
@@ -150,7 +151,7 @@ class KategoriBarangController extends Controller
             $category = KategoriBarang::findOrFail($id);
 
             $rules = [
-                'nama_kategori_barang' => 'required|string|max:255',
+                'nama_kategori_barang' => ['required', 'string', 'max:255'],
             ];
 
             if ($request->input('nama_kategori_barang') !== $category->nama_kategori_barang) {

@@ -54,7 +54,7 @@ Route::middleware(['jwt'])->group(function () {
     
         Route::resource('suppliers', SupplierController::class);
         Route::patch('suppliers/{id}/activate', [SupplierController::class, 'activate'])->name('supplier.activate');
-        Route::patch('suppliers/{id}/deactivate', [SupplierController::class, 'activate'])->name('supplier.deactivate');
+        Route::patch('suppliers/{id}/deactivate', [SupplierController::class, 'deactivate'])->name('supplier.deactivate');
 
         Route::resource('gudangs', GudangController::class);
         Route::patch('gudangs/{id}/activate', [GudangController::class, 'activate'])->name('gudangs.activate');

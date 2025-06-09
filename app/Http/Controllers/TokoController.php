@@ -16,6 +16,7 @@ class TokoController extends Controller
     {
         try {
             $tokos = GudangDanToko::where('kategori_bangunan', 2)
+                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'

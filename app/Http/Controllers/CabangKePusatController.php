@@ -66,7 +66,9 @@ class CabangKePusatController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->get();
             $kurir = Kurir::select(['id', 'nama_kurir'])->get();
             $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('id', '!=', 1)

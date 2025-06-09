@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\KategoriBarangIndexResource;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\KategoriBarangShowResource;
+use App\Http\Resources\KategoriBarangIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller
@@ -16,7 +17,7 @@ class KategoriBarangController extends Controller
     {
         try {
             $categories = KategoriBarang::select([
-                'id', 'nama_kategori_barang', 'flag'
+                'id', 'nama_kategori_barang'
             ])->orderBy('id')
             ->get();
 
@@ -99,7 +100,7 @@ class KategoriBarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Kategori Barang {$id}",
-                'data' => new KategoriBarangIndexResource($category),
+                'data' => new KategoriBarangShowResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

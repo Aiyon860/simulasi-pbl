@@ -16,6 +16,7 @@ class SupplierController extends Controller
     {
         try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
+                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'

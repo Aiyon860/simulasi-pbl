@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers;
-use App\Http\Resources\BarangStoreResource;
 use App\Models\Barang;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\BarangEditResource;
 use App\Http\Resources\BarangIndexResource;
+use App\Http\Resources\BarangStoreResource;
 use App\Http\Resources\KategoriBarangResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -104,7 +105,7 @@ class BarangController extends Controller
         try {
             $barang = Barang::with('kategori:id,nama_kategori_barang')
                 ->findOrFail($id, [
-                    'id', 'nama_barang', 'flag', 'id_kategori_barang'
+                    'id', 'nama_barang', 'id_kategori_barang'
             ]);
 
             return response()->json([
@@ -144,7 +145,7 @@ class BarangController extends Controller
                 'status' => true,
                 'message' => 'Data untuk Form Edit Barang',
                 'data' => [
-                    'barang' => new BarangIndexResource($barang),
+                    'barang' => new BarangEditResource($barang),
                     'categories' => KategoriBarangResource::collection($categories),
                 ],
             ]);

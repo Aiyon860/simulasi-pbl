@@ -24,7 +24,7 @@ class PenerimaanDiPusatIndexResource extends JsonResource
             'id' => (int) $this->id,
             'kode' => $this->kode,
             'nama_pusat' => $this->pusat->nama_gudang_toko,
-            'nama_cabang' => $this->cabang->nama_gudang_toko,
+            'asal_barang' => $this->asalBarang->nama_gudang_toko,
             'nama_barang' => $this->barang->nama_barang,
             'nama_kurir' => $this->kurir->nama_kurir,
             'satuan_berat' => $this->satuanBerat->nama_satuan_berat,

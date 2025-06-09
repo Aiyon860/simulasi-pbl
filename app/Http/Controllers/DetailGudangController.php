@@ -24,14 +24,13 @@ class DetailGudangController extends Controller
         try{
             $detailGudang = DetailGudang::select([
                 'id', 'id_barang', 'id_gudang',
-                'id_satuan_berat', 'jumlah_stok',
-                'stok_opname', 'flag'
+                'jumlah_stok', 'stok_opname'
             ])
             ->with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
-            ])->where('id_gudang', $request->user()->gudang->id)
+            ])->where('id_gudang', $request->user()->lokasi->id)
             ->orderBy('stok_opname', 'asc')
             ->get();
 
@@ -61,7 +60,9 @@ class DetailGudangController extends Controller
     public function create()
     {
         try{
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->get();
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
                 ->get();

@@ -202,7 +202,7 @@ class SupplierController extends Controller
                 ], 409);
             }
 
-            DB::transaction(function ($supplier) {
+            DB::transaction(function () use ($supplier) {
                 $supplier->update(['flag' => 0]);
             }, 3);
 

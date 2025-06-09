@@ -27,12 +27,15 @@ Route::middleware(['jwt'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/authenticated-user', [AuthController::class, 'getUser']);
     
+    
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
-        Route::resource('dashboard', DashboardController::class);
+        Route::get('dashboard-super', [DashboardController::class, 'dashboardSuper'])->name('dashboard.super');
+        Route::get('dashboard-admin-cabang', [DashboardController::class, 'dashboardAdminCabang'])->name('dashboard.admin-cabang');
         Route::post('dashboard-graph', [DashboardController::class, 'dashboardGraph'])->name('dashboard.graph');
         Route::post('dashboard-low-stock', [DashboardController::class, 'dashboardLowStock'])->name('dashboard.low-stock');
         Route::resource('profile', ProfileController::class);
     });
+    
     
     Route::middleware(['role:SuperAdmin'])->group(function () {
         Route::resource('users', UserController::class);

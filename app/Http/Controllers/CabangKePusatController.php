@@ -1,5 +1,11 @@
 <?php
 namespace App\Http\Controllers;
+use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\CabangCreateResource;
+use App\Http\Resources\CabangKePusatIndexResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\SatuanBeratCreateResource;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\Status;
@@ -10,13 +16,7 @@ use App\Models\CabangKePusat;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\KurirCreateResource;
-use App\Http\Resources\BarangCreateResource;
-use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
-use App\Http\Resources\SatuanBeratCreateResource;
-use App\Http\Resources\CabangKePusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CabangKePusatController extends Controller

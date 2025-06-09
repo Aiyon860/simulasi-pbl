@@ -268,7 +268,7 @@ class CabangKeTokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menonaktifkan Data Cabang Ke Toko dengan ID: {$id}",
+                'message' => "Berhasil menghapus Data Cabang Ke Toko dengan ID: {$id}",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

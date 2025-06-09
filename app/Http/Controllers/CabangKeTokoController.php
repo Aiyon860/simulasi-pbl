@@ -3,18 +3,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
 use App\Models\CabangKeToko;
 use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\StatusResource;
 use App\Http\Resources\TokoCreateResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
 use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\CabangKeTokoShowResource;
 use App\Http\Resources\CabangKeTokoIndexResource;
 use App\Http\Resources\SatuanBeratCreateResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -41,17 +44,24 @@ class CabangKeTokoController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-            $headings = $cabangKeToko->isEmpty() ? [] : array_keys($cabangKeToko->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
-
+            $statuses = Status::select(['id', 'nama_status'])->get();
+            
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Tujuan',
+                'Jumlah Barang',
+                'Tanggal',
+                'Status',
+            ];
+            
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
-
+                    'statuses' => StatusResource::collection($statuses),
+                    
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ],
@@ -177,7 +187,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Toko dengan ID: {$id}",
-                'data' => new CabangKeTokoIndexResource($CabangKeToko),
+                'data' => new CabangKeTokoShowResource($CabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -194,46 +204,47 @@ class CabangKeTokoController extends Controller
         }
     }
 
-    // public function edit(string $id)
-    // {
-
-    // }
-
     public function update(Request $request, string $id)
     {
         try {
-            $CabangKeToko = CabangKeToko::findOrFail($id);
-
             $validated = $request->validate([
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            DB::transaction(function () use ($validated, $CabangKeToko) {
-                $CabangKeToko->update($validated);
-            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            $cabangKeToko = CabangKeToko::findOrFail($id);
+
+            if ($cabangKeToko->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya.",
+                ], 409); // Conflict
+            }
+
+            $cabangKeToko->update($validated);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data Cabang Ke Toko berhasil diperbarui',
-                'data' => new CabangKeTokoIndexResource($CabangKeToko),
+                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}",
+                'data' => new CabangKeTokoIndexResource($cabangKeToko),
             ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 422); // Unprocessable Entity
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
-            ], 404); // Not Found
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Gagal memperbarui data Cabang Ke Toko. Silakan coba lagi.',
-                'error' => $th->getMessage(),
-            ], 500); // Internal Server Error
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}.",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 

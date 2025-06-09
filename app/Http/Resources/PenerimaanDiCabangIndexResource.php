@@ -22,12 +22,9 @@ class PenerimaanDiCabangIndexResource extends JsonResource
 
         return [
             'id' => (int) $this->id,
-            'nama_cabang' => $this->cabang->nama_gudang_toko,
             'nama_barang' => $this->barang->nama_barang,
             'jenis_penerimaan' => $this->jenisPenerimaan->nama_jenis_penerimaan,
             'asal_barang' => $this->asalBarang->nama_gudang_toko,
-            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
-            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
         ];

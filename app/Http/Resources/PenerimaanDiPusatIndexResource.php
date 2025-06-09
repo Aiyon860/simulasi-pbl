@@ -22,16 +22,11 @@ class PenerimaanDiPusatIndexResource extends JsonResource
 
         return[
             'id' => (int) $this->id,
-            'kode' => $this->kode,
-            'nama_pusat' => $this->pusat->nama_gudang_toko,
+            'jenis_penerimaan' => $this->jenisPenerimaan->nama_jenis_penerimaan,
             'asal_barang' => $this->asalBarang->nama_gudang_toko,
             'nama_barang' => $this->barang->nama_barang,
-            'nama_kurir' => $this->kurir->nama_kurir,
-            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
-            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
-            'status' => $this->flag ? 'Aktif' : 'Nonaktif',
         ];
     }
 }

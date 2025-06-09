@@ -2,12 +2,11 @@
 
 namespace App\Http\Resources;
 
-use App\Helpers\TimeHelpers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
-
-class CabangKeTokoIndexResource extends JsonResource
+use Carbon\Carbon;
+use App\Helpers\TimeHelpers;
+class PusatKeSupplierShowResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,14 +19,19 @@ class CabangKeTokoIndexResource extends JsonResource
         $day = $tanggal->format('d');
         $month = TimeHelpers::getIndonesianMonthShort($tanggal->format('n'));
 
-        return [
+        return[
             'id' => (int) $this->id,
-            'tujuan' => $this->toko->nama_gudang_toko,
+            'kode' => $this->kode,
             'nama_barang' => $this->barang->nama_barang,
+            'nama_pusat' => $this->pusat->nama_gudang_toko,
+            'nama_supplier' => $this->supplier->nama_gudang_toko,
+            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
+            'nama_kurir' => $this->kurir->nama_kurir,
             'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
-            'jumlah_barang' => $this->jumlah_barang,
-            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}"
+            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
+            'jumlah_barang' => (int) $this->jumlah_barang,
+            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
         ];
     }
 }

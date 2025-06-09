@@ -45,7 +45,7 @@ class PusatKeCabang extends Model
     }
     public function satuanBerat(): BelongsTo
     {
-        return $this->belongsTo(satuanBerat::class, 'id_satuan_berat');
+        return $this->belongsTo(SatuanBerat::class, 'id_satuan_berat');
     }
     public function kurir()
     {

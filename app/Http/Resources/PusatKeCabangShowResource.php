@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CabangKeTokoIndexResource extends JsonResource
+class PusatKeCabangShowResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,12 +22,17 @@ class CabangKeTokoIndexResource extends JsonResource
 
         return [
             'id' => (int) $this->id,
-            'tujuan' => $this->toko->nama_gudang_toko,
+            'kode' => $this->kode,
+            'nama_pusat' => $this->pusat->nama_gudang_toko,
+            'nama_cabang' => $this->cabang->nama_gudang_toko,
             'nama_barang' => $this->barang->nama_barang,
+            'nama_kurir' => $this->kurir->nama_kurir,
+            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
+            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
+            'jumlah_barang' => (int) $this->jumlah_barang,
+            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
             'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
-            'jumlah_barang' => $this->jumlah_barang,
-            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}"
         ];
     }
 }

@@ -21,14 +21,10 @@ class PusatKeSupplierIndexResource extends JsonResource
 
         return[
             'id' => (int) $this->id,
-            'kode' => $this->kode,
-            'id_barang' => $this->id_barang,
-            'id_pusat' => $this->id_pusat,
-            'id_supplier' => $this->id_supplier,
-            'id_satuan_berat' => $this->id_satuan_berat,
-            'id_kurir' => $this->id_kurir,
-            'id_status' => $this->id_status,
-            'berat_satuan_barang' => (int) $this->berat_satuan_barang,
+            'nama_barang' => $this->barang->nama_barang,
+            'tujuan' => $this->supplier->nama_gudang_toko,
+            'id_status' => (int) $this->id_status,
+            'status' => $this->status->nama_status,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
         ];

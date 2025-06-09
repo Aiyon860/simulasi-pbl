@@ -27,11 +27,11 @@ class BarangController extends Controller
                 'data' => [
                     'barangs' => BarangIndexResource::collection($barangs),
 
-                    /** @var array<int, 'Nama Barang' | 'Kategori Barang' | 'Status'> */
+                    /** @var array<int, 'ID' | 'Nama Barang' | 'Kategori Barang' | 'Status'> */
                     'headings' => [
+                        'ID',
                         'Nama Barang',
                         'Kategori Barang',
-                        'Status'
                     ],
                 ],
             ]);

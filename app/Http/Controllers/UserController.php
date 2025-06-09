@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\LokasiCreateResource;
-use App\Http\Resources\RoleCreateResource;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,8 +10,12 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\UserShowResource;
 use App\Http\Resources\UserIndexResource;
+use App\Http\Resources\RoleCreateResource;
+use App\Http\Resources\LokasiCreateResource;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\UserIndexDashboardResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
@@ -21,11 +23,13 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('role:id,nama_role')
-                ->orderBy('id')
-                ->get([
-                    'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
-                ]);
+            $users = User::with([
+                'role:id,nama_role', 
+            ])
+            ->orderBy('id')
+            ->get([
+                'id', 'nama_user', 'email', 'id_role'
+            ]);
 
             $headings = $users->isEmpty() ? [] : array_keys($users->first()->getAttributes());
             $headings = array_map(function ($heading) {
@@ -36,7 +40,7 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Data Pengguna',
                 'data' => [
-                    'users' => UserIndexResource::collection($users),
+                    'users' => UserIndexDashboardResource::collection($users),
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -130,7 +134,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Pengguna dengan ID: {$id}",
-                'data' => new UserIndexResource($user),
+                'data' => new UserShowResource($user),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -211,7 +215,11 @@ class UserController extends Controller
             ];
 
             if ($request->filled('password')) {
-                $rules['password'] = 'string|min:8|confirmed';
+                if ($request->has('reset_password')) {
+                    $rules['password'] = 'string|min:8';
+                } else {
+                    $rules['password'] = 'string|min:8|confirmed';
+                }
             }
 
             $validated = $request->validate($rules);

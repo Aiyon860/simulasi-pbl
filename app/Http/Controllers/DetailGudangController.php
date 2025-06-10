@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\GudangCreateResource;
+use App\Http\Resources\DetailGudangEditResource;
 use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -180,7 +181,7 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Form Edit Barang Gudang',
                 'data' => [
-                    'detailGudang' => new DetailGudangIndexResource($detailGudang),
+                    'detailGudang' => new DetailGudangEditResource($detailGudang),
                     'barangs' => BarangCreateResource::collection($barangs),
                     'gudang' => GudangCreateResource::collection($gudang),
                     'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),

@@ -76,7 +76,7 @@ class KategoriBarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Berhasil menambahkan Data Kategori Barang baru.",
-            ]. 201);
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,

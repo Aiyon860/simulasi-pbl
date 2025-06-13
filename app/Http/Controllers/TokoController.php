@@ -21,7 +21,7 @@ class TokoController extends Controller
                 ->get([
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
-            
+
             $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
             $headings = array_map(function ($heading) {
                 return str_replace('_', ' ', ucfirst($heading));

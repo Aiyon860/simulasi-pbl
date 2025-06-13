@@ -17,10 +17,10 @@ class GudangController extends Controller
             $GudangDanToko = GudangDanToko::where('kategori_bangunan', 0)
                 ->orderBy('id')
                 ->get([
-                    'id', 
-                    'nama_gudang_toko', 
-                    'alamat', 
-                    'no_telepon', 
+                    'id',
+                    'nama_gudang_toko',
+                    'alamat',
+                    'no_telepon',
                     'flag'
                 ]);
 
@@ -165,13 +165,13 @@ class GudangController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            
+
             $validated = $request->validate([
                 'nama_gudang_toko' => 'required|string|max:255',
                 'alamat' => 'nullable|string',
                 'no_telepon' => 'nullable|string|max:20',
             ]);
-            
+
             $gudang = GudangDanToko::findOrFail($id);
 
             DB::transaction(function () use ($gudang, $validated) {

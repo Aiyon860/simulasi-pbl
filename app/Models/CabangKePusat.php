@@ -33,7 +33,7 @@ class CabangKePusat extends Model
     public function pusat() : BelongsTo
     {
         return $this->belongsTo(GudangDanToko::class,
-         'id_pusat');
+        'id_pusat');
     }
 
     public function kurir()

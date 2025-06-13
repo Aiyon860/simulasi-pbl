@@ -65,23 +65,25 @@ Route::middleware(['jwt'])->group(function () {
         Route::resource('kategori-barangs', KategoriBarangController::class);
         Route::patch('kategori-barangs/{id}/activate', [KategoriBarangController::class, 'activate'])->name('kategori-barangs.activate');
         Route::patch('kategori-barangs/{id}/deactivate', [KategoriBarangController::class, 'deactivate'])->name('kategori-barangs.deactivate');
-    
-        Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);
-    
-        Route::resource('cabang-ke-pusats', CabangKePusatController::class);
-    
-        Route::resource('cabang-ke-tokos', CabangKeTokoController::class);
-    
-        Route::resource('supplier-ke-pusats', SupplierKePusatController::class);
-    
-        Route::resource('penerimaan-di-pusats', PenerimaanDiPusatController::class);
-    
-        Route::resource('detail-gudangs', DetailGudangController::class);
-    
-        Route::resource('pusat-ke-cabangs', PusatKeCabangController::class);
-    
-        Route::resource('penerimaan-di-cabangs', PenerimaanDiCabangController::class);
-    
-        Route::resource('toko-ke-cabangs', TokoKeCabangController::class);
+
+        Route::middleware(['opname'])->group(function () {
+            Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);
+        
+            Route::resource('cabang-ke-pusats', CabangKePusatController::class);
+        
+            Route::resource('cabang-ke-tokos', CabangKeTokoController::class);
+        
+            Route::resource('supplier-ke-pusats', SupplierKePusatController::class);
+        
+            Route::resource('penerimaan-di-pusats', PenerimaanDiPusatController::class);
+        
+            Route::resource('detail-gudangs', DetailGudangController::class);
+        
+            Route::resource('pusat-ke-cabangs', PusatKeCabangController::class);
+        
+            Route::resource('penerimaan-di-cabangs', PenerimaanDiCabangController::class);
+        
+            Route::resource('toko-ke-cabangs', TokoKeCabangController::class);
+        });
     });
 });

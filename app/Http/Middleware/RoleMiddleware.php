@@ -35,7 +35,7 @@ class RoleMiddleware
 
         return response()->json([
             'status' => 'false',
-            'message' => 'Forbidden: Anda tidak memiliki akses ke halaman ini.',
+            'message' => 'Anda tidak memiliki akses ke halaman ini.',
         ], 403);
     }
 }

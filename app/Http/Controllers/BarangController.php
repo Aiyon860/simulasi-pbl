@@ -24,7 +24,7 @@ class BarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data Barang',
+                'message' => 'Data Semua Barang',
                 'data' => [
                     'barangs' => BarangIndexResource::collection($barangs),
 
@@ -39,7 +39,7 @@ class BarangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data Barang.',
+                'message' => 'Terjadi kesalahan saat mengambil data Semua Barang.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -55,7 +55,7 @@ class BarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data untuk Form Tambah Barang',
+                'message' => 'Data Kategori Barang untuk Form Tambah Barang',
                 'data' => [
                     'categories' => KategoriBarangResource::collection($categories),
                 ],
@@ -63,7 +63,7 @@ class BarangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data untuk form tambah Barang.',
+                'message' => 'Terjadi kesalahan saat mengambil data kategori barang untuk form tambah Barang.',
                 'error' => $e->getMessage(), 
             ], 500);
         }
@@ -88,13 +88,13 @@ class BarangController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data nama barang maupun kategori barang yang diberikan tidak valid.',
                 'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan barang.',
+                'message' => 'Terjadi kesalahan saat menyimpan data barang.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -110,19 +110,19 @@ class BarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Barang dengan ID: {$id}",
+                'message' => "Detail Data Barang {$barang->nama_barang}",
                 'data' => new BarangIndexResource($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Detail Barang yang dicari tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data Barang dengan ID: {$id}",
+                'message' => "Terjadi kesalahan saat mengambil data detail data Barang",
                 'error' => $e->getMessage(), // Hanya tampilkan detail error saat development
             ], 500);
         }
@@ -143,7 +143,7 @@ class BarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data untuk Form Edit Barang',
+                'message' => 'Data Detail Barang dan Kategori Barang untuk Form Edit Barang',
                 'data' => [
                     'barang' => new BarangEditResource($barang),
                     'categories' => KategoriBarangResource::collection($categories),
@@ -152,13 +152,13 @@ class BarangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Detail Barang yang dicari tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data untuk form edit Barang.',
+                'message' => 'Terjadi kesalahan saat mengambil data detail barang dan kategori barang untuk form edit Barang.',
                 'error' => $e->getMessage(),
             ], 500); 
         }
@@ -192,19 +192,19 @@ class BarangController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data nama barang dan kategori barang yang diberikan tidak valid.',
                 'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui barang dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui data barang.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -218,7 +218,7 @@ class BarangController extends Controller
             if ($barang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Barang {$barang->nama_barang} sudah dinonaktifkan!",
+                    'message' => "Barang {$barang->nama_barang} sudah dinonaktifkan sebelumnya!",
                 ], 409);
             }
 
@@ -234,13 +234,13 @@ class BarangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan barang dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan data barang.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -254,7 +254,7 @@ class BarangController extends Controller
             if ($barang->flag == 1) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Barang {$barang->nama_barang} sudah diaktifkan!",
+                    'message' => "Barang {$barang->nama_barang} sudah diaktifkan sebelumnya!",
                 ], 409);
             }
 
@@ -270,13 +270,13 @@ class BarangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan barang dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan data barang",
                 'error' => $e->getMessage(),
             ], 500);
         }

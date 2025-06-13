@@ -83,10 +83,11 @@ class KategoriBarangController extends Controller
                 'message' => "Gagal menambahkan kategori barang. Silakan coba lagi.",
                 'error' => $e->getMessage(),
             ], 422);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menambahkan kategori barang. Silakan coba lagi. Error: {$th->getMessage()}",
+                'message' => "Gagal menambahkan kategori barang. Silakan coba lagi.",
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -100,19 +101,19 @@ class KategoriBarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Kategori Barang {$id}",
+                'message' => "Data Kategori Barang {$category->nama_kategori_barang}",
                 'data' => new KategoriBarangShowResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Kategori Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data kategori barang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil data kategori barang.",
                 'error' => $th->getMessage(),
             ], 500);
         }
@@ -127,20 +128,20 @@ class KategoriBarangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Form Edit Kategori Barang {$id}",
+                'message' => "Form Edit Kategori Barang {$category->nama_kategori_barang}",
                 'data' => new KategoriBarangIndexResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Kategori Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menyiapkan form edit kategori barang dengan ID: {$id}.",
-                'error' => $th->getMessage(),
+                'message' => "Terjadi kesalahan saat menyiapkan form edit kategori barang.",
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -178,13 +179,14 @@ class KategoriBarangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Kategori Barang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Kategori Barang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal memperbarui kategori barang. Silakan coba lagi. Error: {$th->getMessage()}",
+                'message' => "Gagal memperbarui kategori barang. Silakan coba lagi.",
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -197,29 +199,30 @@ class KategoriBarangController extends Controller
             if ($category->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Kategori barang dengan ID: {$id} sudah dinonaktifkan"
+                    'message' => "Kategori barang {$category->nama_kategori_barang} sudah dinonaktifkan sebelumnya."
                 ]);
             }
 
-            DB::transaction(function () use ($id, $category) {
+            DB::transaction(function () use ($category) {
                 $category->update(['flag' => 0]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Kategori barang dengan ID: {$id} berhasil dinonaktifkan",
+                'message' => "Data Kategori barang {$category->nama_kategori_barang} berhasil dinonaktifkan",
                 'data' => new KategoriBarangIndexResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Kategori barang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Kategori barang yang dicari tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menonaktifkan Kategori barang dengan ID: {$id}"
+                'message' => "Gagal menonaktifkan data Kategori barang",
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -232,29 +235,29 @@ class KategoriBarangController extends Controller
             if($category->flag == 1) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Kategori barang dengan ID: {$id} sudah diaktifkan"
+                    'message' => "Kategori barang {$category->nama_kategori_barang} sudah diaktifkan"
                 ]);
             }
             
-            DB::transaction(function () use ($id, $category) {
+            DB::transaction(function () use ($category) {
                 $category->update(['flag' => 1]);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
-                'message' => "Kategori barang dengan ID: {$id} berhasil diaktifkan",
+                'message' => "Kategori barang {$category->nama_kategori_barang} berhasil diaktifkan",
                 'data' => new KategoriBarangIndexResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Kategori barang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Kategori barang yang dicari tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal mengaktifkan Kategori barang dengan ID: {$id}"
+                'message' => "Gagal mengaktifkan data kategori barang"
             ], 500);
         }
     }

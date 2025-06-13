@@ -80,7 +80,7 @@ class DashboardController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Dashboard untuk {$request->user()->nama_user}.",
+                'message' => "Data Dashboard untuk {$request->user()->nama_user}.",                                                                                                                                                                                                                   
                 'data' => $result,
             ]);
         } catch (\Exception $e) {
@@ -284,7 +284,7 @@ class DashboardController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah {$lokasi->nama_gudang_toko}.",
+                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah di {$lokasi->nama_gudang_toko}.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }
@@ -308,13 +308,13 @@ class DashboardController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data barang dengan stok rendah di seluruh gudang.",
+                'message' => "Data barang dengan stok rendah di gudang {$request->user()->lokasi->nama_gudang_toko}",
                 'data' => DashboardLowStockAdminResource::collection($barangs),
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah {$lokasi->nama_gudang_toko}.",
+                'message' => "Terjadi kesalahan saat mengambil data barang dengan stok rendah di {$lokasi->nama_gudang_toko}.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }

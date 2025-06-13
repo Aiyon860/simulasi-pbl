@@ -23,7 +23,7 @@ class ProfileController extends Controller
             if (auth()->user()->id != $id) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Unauthorized Access',
+                    'message' => 'Akses tidak sah',
                 ], 403);
             }
 
@@ -36,18 +36,18 @@ class ProfileController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Pengguna dengan ID: {$id}",
+                'message' => "Detail Data Pengguna dengan {$user->nama_user}",
                 'data' => new UserIndexResource($user),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data pengguna dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data pengguna.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -59,7 +59,7 @@ class ProfileController extends Controller
             if (auth()->user()->id != $id) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Unauthorized Access',
+                    'message' => 'Akses tidak sah',
                 ], 403);
             }
 
@@ -73,7 +73,7 @@ class ProfileController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data untuk Form Edit Pengguna',
+                'message' => 'Data user, role, dan lokasi untuk Form Edit Pengguna',
                 'data' => [
                     'user' => new UserIndexResource($user),
                     'roles' => RoleCreateResource::collection($roles),
@@ -83,12 +83,12 @@ class ProfileController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data untuk form edit pengguna.',
+                'message' => 'Terjadi kesalahan saat mengambil data user, role, dan lokasi untuk form edit pengguna.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -100,7 +100,7 @@ class ProfileController extends Controller
             if (auth()->user()->id != $id) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Unauthorized Access',
+                    'message' => 'Akses tidak sah',
                 ], 403);
             }
 
@@ -139,13 +139,13 @@ class ProfileController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data yang dibutuhkan untuk mengupdate user tidak valid.',
                 'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {

@@ -51,7 +51,7 @@ class SupplierController extends Controller
         try {
             return response()->json([
                 'status' => true,
-                'message' => 'Form Tambah Suppliers',
+                'message' => 'Form Tambah Supplier',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -77,13 +77,13 @@ class SupplierController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menambahkan data toko!",
+                'message' => "Berhasil menambahkan data supplier!",
             ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data yang diberikan untuk form store supplier tidak valid.',
                 'errors' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
@@ -104,19 +104,19 @@ class SupplierController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Supplier dengan ID: {$id}",
+                'message' => "Detail Data Supplier {$supplier->nama_gudang_toko}",
                 'data' => new SupplierShowResource($supplier),
             ]);
             
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data Supplier dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data Supplier.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -138,7 +138,7 @@ class SupplierController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -173,18 +173,18 @@ class SupplierController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data yang diberikan untuk mengupdate data supplier tidak valid.',
                 'errors' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui supplier dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui supplier.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -198,7 +198,7 @@ class SupplierController extends Controller
             if ($supplier->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Supplier dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
+                    'message' => "Data Supplier {$supplier->nama_gudang_toko} sudah dinonaktifkan sebelumnya.",
                 ], 409);
             }
 
@@ -215,12 +215,12 @@ class SupplierController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier {$supplier->nama_gudang_toko} tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan supplier dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan supplier.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -234,7 +234,7 @@ class SupplierController extends Controller
             if ($supplier->flag == 1) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Supplier dengan ID: {$id} sudah diaktifkan sebelumnya.",
+                    'message' => "Data Supplier {$supplier->nama_gudang_toko} sudah diaktifkan sebelumnya.",
                 ], 409);
             }
 
@@ -251,12 +251,12 @@ class SupplierController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan supplier dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan supplier.",
                 'error' => $e->getMessage(),
             ], 500);
         }

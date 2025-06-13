@@ -147,13 +147,13 @@ class DetailGudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan nama barang: {$detailGudang->barang->nama_barang} tidak ditemukan",
+                'message' => "Data Barang Gudang tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data barang gudang dengan nama barang: {$detailGudang->barang->nama_barang}",
+                'message' => "Terjadi kesalahan saat mengambil data barang gudang",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -190,7 +190,7 @@ class DetailGudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan nama barang: {$detailGudang->barang->nama_barang} tidak ditemukan",
+                'message' => "Data Barang Gudang tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -221,13 +221,13 @@ class DetailGudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Barang Gudang dengan nama barang {$detailGudang->barang->nama_barang} berhasil diperbarui",
+                'message' => "Data Barang Gudang berhasil diperbarui",
                 'data' => new DetailGudangIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan nama barang {$detailGudang->barang->nama_barang} tidak ditemukan",
+                'message' => "Data Barang Gudang tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (ValidationException $e) {
@@ -239,7 +239,7 @@ class DetailGudangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui data barang gudang dengan nama barang {$detailGudang->barang->nama_barang}",
+                'message' => "Terjadi kesalahan saat memperbarui data barang gudang",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -261,13 +261,13 @@ class DetailGudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan nama barang: {$barangGudang->barang->nama_barang} tidak ditemukan",
+                'message' => "Data Barang Gudang tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan nama barang: {$barangGudang->barang->nama_barang}",
+                'message' => "Terjadi kesalahan saat menghapus data barang gudang",
                 'error' => $e->getMessage(),
             ], 500);
         }

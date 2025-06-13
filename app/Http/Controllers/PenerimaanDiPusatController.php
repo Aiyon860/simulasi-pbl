@@ -159,7 +159,7 @@ class PenerimaanDiPusatController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Pusat dengan dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Pusat tidak ditemukan.",
                 'error' => $th->getMessage(),
             ], 404);
         }
@@ -188,13 +188,13 @@ class PenerimaanDiPusatController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Pusat tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Pusat.",
                 'error' => $th->getMessage(),
             ], 500);
         }

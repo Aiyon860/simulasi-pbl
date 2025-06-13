@@ -226,7 +226,7 @@ class CabangKeTokoController extends Controller
             if ($cabangKeToko->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya.",
+                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan Kode: {$identifier} sudah dihapus sebelumnya.",
                 ], 409); // Conflict
             }
 

@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SupplierCreateResource extends JsonResource
+class UserIndexResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,7 +16,11 @@ class SupplierCreateResource extends JsonResource
     {
         return [
             'id' => (int) $this->id,
-            'nama_supplier' => $this->nama_gudang_toko,
+            'nama_user' => $this->nama_user,
+            'email' => $this->email,
+            'role' => $this->role->nama_role,
+            'lokasi' => $this->lokasi->nama_gudang_toko,
+            'status' => $this->status ? 'Aktif' : 'Nonaktif',
         ];
     }
 }

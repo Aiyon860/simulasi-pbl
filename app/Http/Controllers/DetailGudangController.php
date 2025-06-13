@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
+use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\BarangCreateResource;
+use App\Http\Resources\GudangCreateResource;
+use App\Http\Resources\DetailGudangIndexResource;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\CabangKePusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DetailGudangController extends Controller
@@ -16,13 +22,13 @@ class DetailGudangController extends Controller
     {
         try{
             $detailGudang = DetailGudang::select([
-                'id', 'id_barang', 'id_gudang', 
-                'id_satuan_berat', 'jumlah_stok', 
+                'id', 'id_barang', 'id_gudang',
+                'id_satuan_berat', 'jumlah_stok',
                 'stok_opname', 'flag'
             ])
             ->with([
-                'barang:id,nama_barang', 
-                'gudang:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
             ])->where('id_gudang', $request->user()->gudang->id)
             ->orderBy('stok_opname', 'asc')
@@ -37,7 +43,8 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Data Barang Gudang',
                 'data' => [
-                    'detailGudangs' => $detailGudang,
+                    'detailGudangs' => DetailGudangIndexResource::collection($detailGudang),
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -63,9 +70,9 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Form Tambah Barang Gudang',
                 'data' => [
-                    'barangs' => $barangs,
-                    'gudang' => $gudang,
-                    'satuanBerat' => $satuanBerat,
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'gudang' => GudangCreateResource::collection($gudang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -87,21 +94,26 @@ class DetailGudangController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
-                $detailGudang = DetailGudang::create($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data Barang Gudang berhasil ditambahkan',
-                    'data' => $detailGudang,
-                ], 201);
+            DB::transaction(function () use ($validated) {
+                DetailGudang::create($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Barang Gudang berhasil ditambahkan',
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data Barang Gudang tidak ditemukan',
                 'error' => $e->getMessage(),
             ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang anda masukkan tidak valid',
+                'error' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -115,24 +127,25 @@ class DetailGudangController extends Controller
     {
         try {
             $detailGudang = DetailGudang::with([
-                'barang:id,nama_barang', 
-                'gudang:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
-                'id', 'id_barang', 'id_gudang', 
-                'id_satuan_berat', 'jumlah_stok', 
+                'id', 'id_barang', 'id_gudang',
+                'id_satuan_berat', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
-                'data' => $detailGudang,
+                'data' => new CabangKePusatIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -147,12 +160,12 @@ class DetailGudangController extends Controller
     {
         try {
             $detailGudang = DetailGudang::with([
-                'barang:id,nama_barang', 
-                'gudang:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
-                'id', 'id_barang', 'id_gudang', 
-                'id_satuan_berat', 'jumlah_stok', 
+                'id', 'id_barang', 'id_gudang',
+                'id_satuan_berat', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
             $barangs = Barang::select(['id', 'nama_barang'])->get();
@@ -165,16 +178,17 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Form Edit Barang Gudang',
                 'data' => [
-                    'detailGudang' => $detailGudang,
-                    'barangs' => $barangs,
-                    'gudang' => $gudang,
-                    'satuanBerat' => $satuanBerat,
+                    'detailGudang' => new DetailGudangIndexResource($detailGudang),
+                    'barangs' => BarangCreateResource::collection($barangs),
+                    'gudang' => GudangCreateResource::collection($gudang),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -198,21 +212,27 @@ class DetailGudangController extends Controller
         try {
             $detailGudang = DetailGudang::findOrFail($id);
 
-            return DB::transaction(function () use ($id, $validated, $detailGudang) {
-                $detailGudang = $detailGudang->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
-                    'data' => $detailGudang
-                ]);
+            DB::transaction(function () use ($id, $validated, $detailGudang) {
+                $detailGudang->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
+                'data' => new DetailGudangIndexResource($detailGudang),
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'error' => $e->getMessage(),
             ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data yang anda masukkan tidak valid",
+                'error' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -227,19 +247,19 @@ class DetailGudangController extends Controller
         try {
             $barangGudang = DetailGudang::findOrFail($id);
 
-            return DB::transaction(function () use ($id, $barangGudang) {
-                $detailGudang = $barangGudang->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
-                    'data' => $detailGudang
-                ]);
+            DB::transaction(function () use ($barangGudang) {
+                $barangGudang->update(['flag' => 0]);
             });
+
+            return response()->json([
+                'status' => true,
+                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Throwable $e) {
             return response()->json([

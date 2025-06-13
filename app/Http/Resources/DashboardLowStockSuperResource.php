@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SupplierCreateResource extends JsonResource
+class DashboardLowStockSuperResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +15,9 @@ class SupplierCreateResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => (int) $this->id,
-            'nama_supplier' => $this->nama_gudang_toko,
+            'nama_barang' => $this->barang->nama_barang,
+            'nama_gudang' => $this->gudang->nama_gudang_toko,
+            'jumlah_stok' => (int) $this->jumlah_stok,
         ];
     }
 }

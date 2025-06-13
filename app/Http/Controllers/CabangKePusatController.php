@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
 use App\Http\Resources\CabangKePusatIndexResource;
@@ -23,9 +24,9 @@ class CabangKePusatController extends Controller
     {
         try {
             $CabangKePusat = CabangKePusat::select([
-                'id', 'kode', 'id_pusat', 
-                'id_cabang', 'id_barang', 'id_satuan_berat', 
-                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'id', 'kode', 'id_pusat',
+                'id_cabang', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ])->with(
                 'pusat:id,nama_gudang_toko,alamat,no_telepon',
@@ -96,30 +97,32 @@ class CabangKePusatController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kode' => 'required|string',
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
-                'tanggal' => 'required|date',
             ]);
-            
-            $barang = DetailGudang::where('id_cabang', $request->id_cabang)
+
+            $barang = DetailGudang::where('id_gudang', $request->id_cabang)
                 ->where('id_barang', $request->id_barang)
                 ->first('jumlah_stok');
 
             if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
-                return response()->json([
+                return response()->json([ 
                     'status' => false,
                     'message' => 'Jumlah stok tidak mencukupi untuk diretur.',
-                ], 400);
+                ], 409);
             }
 
+            $currentTime = now();
+
             $cabangKePusat = array_merge($validated, [
+                'kode' => ShippingAndReturnCodeHelpers::generateCabangKePusatCode($currentTime),
                 'id_pusat' => 1,
-                'id_status' => 1
+                'id_status' => 1,
+                'tanggal' => $currentTime,
             ]);
 
             DB::transaction(function () use ($cabangKePusat) {
@@ -129,7 +132,6 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Barang Berhasil Dikirim Dari Cabang Ke Pusat.',
-                'data' => $cabangKePusat,
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -157,16 +159,16 @@ class CabangKePusatController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
             ])->findOrFail($id, [
-                'id', 'kode', 'id_pusat', 
-                'id_cabang', 'id_barang', 'id_satuan_berat', 
-                'id_kurir', 'id_status', 'berat_satuan_barang', 
+                'id', 'kode', 'id_pusat',
+                'id_cabang', 'id_barang', 'id_satuan_berat',
+                'id_kurir', 'id_status', 'berat_satuan_barang',
                 'jumlah_barang', 'tanggal'
             ]);
 
             return response()->json([
                 'status' => true,
                 'message' => "Data Cabang Ke Pusat dengan ID: {$id}",
-                'data' => CabangKePusatIndexResource::collection($cabangKePusat),
+                'data' => new CabangKePusatIndexResource($cabangKePusat),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -186,20 +188,20 @@ class CabangKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $CabangKeToko = CabangKePusat::findOrFail($id);
+            $cabangKePusat = CabangKePusat::findOrFail($id);
 
             $validated = $request->validate([
                 'id_status' => 'required|exists:statuses,id',
             ]);
 
-            DB::transaction(function () use ($validated, $CabangKeToko) {
-                $CabangKeToko->update($validated);
+            DB::transaction(function () use ($validated, $cabangKePusat) {
+                $cabangKePusat->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data Toko ke Cabang berhasil diperbarui',
-                'data' => CabangKePusatIndexResource::collection($CabangKeToko),
+                'data' => new CabangKePusatIndexResource($cabangKePusat),
             ]);
         } catch (ValidationException $e) {
             return response()->json([

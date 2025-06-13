@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Resources\UserIndexResource;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -17,7 +17,10 @@ class AuthController extends Controller
 
         try {
             if (! $accessToken = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Invalid credentials'], 401);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid credentials'
+                ], 401);
             }
 
             $user = auth()->user();
@@ -32,11 +35,17 @@ class AuthController extends Controller
             $refreshToken = auth()->setTTL(60 * 24 * 7)->fromUser($user);
 
             return response()->json([
+                'status' => true,
+                'message' => 'Access Token and Refresh Token',
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
             ]);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not create token'], 500);
+            return response()->json([
+                'status' => false,
+                'message' => 'Could not create token',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -44,49 +53,97 @@ class AuthController extends Controller
     public function getUser()
     {
         try {
-            if (! $user = JWTAuth::parseToken()->authenticate()) {
-                return response()->json(['error' => 'User not found'], 404);
-            }
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Invalid token'], 401);
-        }
+            $user = JWTAuth::parseToken()->authenticate();
 
-        return response()->json(compact('user'));
+            if (! $user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User data retrieved successfully',
+                'data' => new UserIndexResource($user),
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid token',
+                'error' => $e->getMessage(),
+            ], 401);
+        }
     }
 
     public function logout(Request $request)
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
-        return response()->json(['message' => 'Successfully logged out']);
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Successfully logged out',
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Logout failed',
+                'error' => $e->getMessage(),
+            ], 401);
+        }
     }
 
     public function refresh(Request $request)
     {
         try {
-            // Ambil refresh_token dari body
             $token = $request->input('refresh_token');
 
             if (empty($token)) {
-                return response()->json(['error' => 'Refresh token is required'], 400);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Refresh token is required'
+                ], 400);
             }
-            
-            // Set token secara manual (karena tidak lewat header)
-            JWTAuth::setToken($token);
+
+            // Set refresh token saat ini
+            auth()->setToken($token);
 
             // Refresh token
-            $newToken = JWTAuth::refresh();
+            $newToken = auth()->refresh();
+            $user = auth()->user();
+
+            // Custom claims untuk kedua token
+            $claims = ['role' => $user->role->nama_role];
+
+            // Access Token (15 menit)
+            $newToken = JWTAuth::claims($claims)->fromUser($user);
 
             return response()->json([
+                'status' => true,
+                'message' => 'Access Token Information',
                 'access_token' => $newToken,
                 'token_type' => 'bearer',
-                'expires_in_minutes' => config('jwt.ttl') // default 60 menit
+                'expires_in_minutes' => config('jwt.ttl'),
             ]);
         } catch (TokenInvalidException $e) {
-            return response()->json(['error' => 'Token is invalid: ' . $e], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Token is invalid',
+                'error' => $e->getMessage(),
+            ], 401);
         } catch (TokenExpiredException $e) {
-            return response()->json(['error' => 'Token is expired'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Token is expired',
+                'error' => $e->getMessage()
+            ], 401);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not refresh token'], 500);
+            return response()->json([
+                'status' => false,
+                'message' => 'Could not refresh token',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\TokoIndexResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -28,7 +29,9 @@ class TokoController extends Controller
                 'status' => true,
                 'message' => 'Data Toko',
                 'data' => [
-                    'tokos' => $tokos,
+                    'tokos' => TokoIndexResource::collection($tokos),
+
+                    /** @var array<int, string> */
                     'headings' => $headings,
                 ]
             ]);
@@ -66,20 +69,21 @@ class TokoController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            return DB::transaction(function () use ($validated) {
-                $toko = GudangDanToko::create(array_merge($validated, ['kategori_bangunan' => 2]));
+            $toko = array_merge($validated, ['kategori_bangunan' => 2]);
 
-                return response()->json([
-                    'status' => true,
-                    'message' => "Toko {$toko->nama_gudang_toko} berhasil ditambahkan!",
-                    'data' => $toko,
-                ], 201);
+            DB::transaction(function () use ($toko) {
+                GudangDanToko::create($toko);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil menambahkan data toko!",
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -100,12 +104,13 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Toko dengan ID: {$id}",
-                'data' => $toko,
+                'data' => new TokoIndexResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -126,12 +131,13 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Toko',
-                'data' => $toko,
+                'data' => new TokoIndexResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -153,25 +159,26 @@ class TokoController extends Controller
                 'no_telepon' => 'nullable|string|max:20',
             ]);
 
-            return DB::transaction(function () use ($toko, $validated) {
+            DB::transaction(function () use ($toko, $validated) {
                 $toko->update($validated);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Toko {$toko->nama_gudang_toko} berhasil diperbarui!",
-                    'data' => $toko,
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Toko {$toko->nama_gudang_toko} berhasil diperbarui!",
+                'data' => new TokoIndexResource($toko),
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->errors(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -191,21 +198,22 @@ class TokoController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Toko {$toko->nama_gudang_toko} sudah dinonaktifkan sebelumnya!",
-                ]);
+                ], 409);
             }
 
-            return DB::transaction(function () use ($toko) {
+            DB::transaction(function () use ($toko) {
                 $toko->update(['flag' => 0]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Toko {$toko->nama_gudang_toko} berhasil dinonaktifkan!",
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Toko {$toko->nama_gudang_toko} berhasil dinonaktifkan!",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -228,18 +236,19 @@ class TokoController extends Controller
                 ]);
             }
 
-            return DB::transaction(function () use ($toko) {
+            DB::transaction(function () use ($toko) {
                 $toko->update(['flag' => 1]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => "Toko {$toko->nama_gudang_toko} berhasil diaktifkan!",
-                ]);
             }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Toko {$toko->nama_gudang_toko} berhasil diaktifkan!",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([

@@ -105,19 +105,19 @@ class TokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Toko dengan ID: {$id}",
+                'message' => "Detail Data Toko dengan nama toko {$toko->nama_gudang_toko}",
                 'data' => new TokoShowResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Toko yang anda cari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data Toko dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data Toko yang anda cari.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -138,7 +138,7 @@ class TokoController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Toko yang anda cari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -179,13 +179,13 @@ class TokoController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Toko yang akana anda perbarui tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui toko dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui data toko.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -214,13 +214,13 @@ class TokoController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Toko yang anda maksud tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan toko dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan toko yang anda masukkan.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -249,13 +249,13 @@ class TokoController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Toko yang anda masukkan tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan toko dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan toko yang anda maksudkan.",
                 'error' => $e->getMessage(),
             ], 500);
         }

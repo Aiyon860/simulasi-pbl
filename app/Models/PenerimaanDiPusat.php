@@ -35,6 +35,11 @@ class PenerimaanDiPusat extends Model
         return $this->belongsTo(JenisPenerimaan::class, 'id_jenis_penerimaan');
     }
 
+    public function pusat(): BelongsTo
+    {
+        return $this->belongsTo(GudangDanToko::class, 'id_asal_barang');
+    }
+
     public function asalBarang(): BelongsTo
     {
         return $this->belongsTo(GudangDanToko::class, 'id_asal_barang');

@@ -14,6 +14,7 @@ use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\AsalBarangCreateResource;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\JenisPenerimaanCreateResource;
+use App\Http\Resources\PenerimaanDiPusatShowResource;
 use App\Http\Resources\PenerimaanDiPusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -30,15 +31,20 @@ class PenerimaanDiPusatController extends Controller
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
+                'pusat:id,nama_gudang_toko',
                 'barang:id,nama_barang',
                 'satuanBerat:id,nama_satuan_berat'
             ])->where('flag', '=', 1)
             ->get();
 
-            $headings = $penerimaanDiPusat->isEmpty() ? [] : array_keys($penerimaanDiPusat->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Asal Barang',
+                'Jumlah Barang',
+                'Tanggal',
+                'Jenis Penerimaan',
+            ];
 
             return response()->json([
                 'success' => true,
@@ -67,7 +73,7 @@ class PenerimaanDiPusatController extends Controller
                 ->orderBy('id')
                 ->get();
             $jenisPenerimaan = JenisPenerimaan::select(['id', 'nama_jenis_penerimaan'])->get();
-            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko'])
+            $asalBarang = GudangDanToko::select(['id', 'nama_gudang_toko', 'kategori_bangunan'])
                 ->where('id', '!=', 1)
                 ->whereIn('kategori_bangunan', [0, 1])
                 ->where('flag', '=', 1)
@@ -136,6 +142,7 @@ class PenerimaanDiPusatController extends Controller
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
+                'pusat:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
             )->findOrFail($id, [
                 'id', 'id_barang',
@@ -147,7 +154,7 @@ class PenerimaanDiPusatController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Data Penerimaan Di Pusat {$id}",
-                'data' => new PenerimaanDiPusatIndexResource($penerimaanDiPusat)
+                'data' => new PenerimaanDiPusatShowResource($penerimaanDiPusat)
             ]);
         } catch (\Throwable $th) {
             return response()->json([

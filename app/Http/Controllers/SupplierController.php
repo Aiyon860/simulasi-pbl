@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GudangDanToko;
 use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\SupplierShowResource;
+use App\Http\Resources\SupplierIndexResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Http\Resources\SupplierIndexResource;
+
 class SupplierController extends Controller
 {
     public function index()
     {
         try {
             $suppliers = GudangDanToko::where('kategori_bangunan', 1)
+                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
-                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
 
             $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());
@@ -102,7 +105,7 @@ class SupplierController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Supplier dengan ID: {$id}",
-                'data' => new SupplierIndexResource($supplier),
+                'data' => new SupplierShowResource($supplier),
             ]);
             
         } catch (ModelNotFoundException $e) {
@@ -199,10 +202,10 @@ class SupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Supplier dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
-            DB::transaction(function ($supplier) {
+            DB::transaction(function () use ($supplier) {
                 $supplier->update(['flag' => 0]);
             }, 3);
 
@@ -236,7 +239,7 @@ class SupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Supplier dengan ID: {$id} sudah diaktifkan sebelumnya.",
-                ]);
+                ], 409);
             }
 
             DB::transaction(function () use ($supplier) {

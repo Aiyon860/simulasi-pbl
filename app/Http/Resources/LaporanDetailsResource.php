@@ -15,8 +15,8 @@ class LaporanDetailsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'label' => $this->label,
-            'total' => (int) $this->total,
+            'label' => $this['label'],
+            'total' => (int) $this['total'],
         ];
     }
 }

@@ -112,17 +112,6 @@ class TimeHelpers
         return $months[$month] ?? '';
     }
 
-    public static function MingguInterval($tanggal)
-    {
-        $start = Carbon::parse($tanggal);
-        $end = $start->copy()->addDay();
-
-        $startFormatted = $start->format('d') . ' ' . self::getIndonesianMonthShort($start->format('n'));
-        $endFormatted = $end->format('d') . ' ' . self::getIndonesianMonthShort($end->format('n'));
-
-        return "{$startFormatted} - {$endFormatted}";
-    }
-
     public static function hariInterval($tanggal)
     {
         $date = Carbon::parse($tanggal);

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\LokasiCreateResource;
-use App\Http\Resources\RoleCreateResource;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,8 +10,13 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\UserEditResource;
+use App\Http\Resources\UserShowResource;
 use App\Http\Resources\UserIndexResource;
+use App\Http\Resources\RoleCreateResource;
+use App\Http\Resources\LokasiCreateResource;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\UserIndexDashboardResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
@@ -21,11 +24,13 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('role:id,nama_role')
-                ->orderBy('id')
-                ->get([
-                    'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
-                ]);
+            $users = User::with([
+                'role:id,nama_role', 
+            ])
+            ->orderBy('id')
+            ->get([
+                'id', 'nama_user', 'email', 'id_role'
+            ]);
 
             $headings = $users->isEmpty() ? [] : array_keys($users->first()->getAttributes());
             $headings = array_map(function ($heading) {
@@ -36,7 +41,7 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'Data Pengguna',
                 'data' => [
-                    'users' => UserIndexResource::collection($users),
+                    'users' => UserIndexDashboardResource::collection($users),
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -55,7 +60,9 @@ class UserController extends Controller
     {
         try {
             $roles = Role::select(['id', 'nama_role'])->get();
-            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+            $lokasi = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -84,6 +91,15 @@ class UserController extends Controller
                 'id_role' => 'required|exists:roles,id',
                 'id_lokasi' => 'required|exists:gudang_dan_tokos,id',
             ]);
+
+            $lokasiDipakai = User::where('id_lokasi', $validated['id_lokasi'])->exists();
+            if ($lokasiDipakai) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lokasi tersebut sudah digunakan oleh pengguna lain.',
+                    'errors' => ['id_lokasi' => ['Lokasi sudah digunakan.']],
+                ], 422);
+            }
 
             $validated['password'] = Hash::make($validated['password']);
 
@@ -129,18 +145,18 @@ class UserController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Pengguna dengan ID: {$id}",
-                'data' => new UserIndexResource($user),
+                'message' => "Detail Data Pengguna : {$user->nama_user}",
+                'data' => new UserShowResource($user),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna dengan ID yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data pengguna dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -162,13 +178,15 @@ class UserController extends Controller
                 'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
             ]);
             $roles = Role::select(['id', 'nama_role'])->get();
-            $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
+            $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])
+                ->where('kategori_bangunan', '=', 0)
+                ->get();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Data untuk Form Edit Pengguna',
                 'data' => [
-                    'user' => new UserIndexResource($user),
+                    'user' => new UserEditResource($user),
                     'roles' => RoleCreateResource::collection($roles),
                     'lokasis' => LokasiCreateResource::collection($lokasis),
                 ],
@@ -176,7 +194,7 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -211,7 +229,11 @@ class UserController extends Controller
             ];
 
             if ($request->filled('password')) {
-                $rules['password'] = 'string|min:8|confirmed';
+                if ($request->has('reset_password')) {
+                    $rules['password'] = 'string|min:8';
+                } else {
+                    $rules['password'] = 'string|min:8|confirmed';
+                }
             }
 
             $validated = $request->validate($rules);
@@ -238,7 +260,7 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -260,7 +282,9 @@ class UserController extends Controller
                 ], 403);
             }
 
-            $user = User::findOrFail($id);
+            $user = User::findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
 
             if ($user->id === Auth::id()) {
                 return response()->json([
@@ -272,7 +296,7 @@ class UserController extends Controller
             if ($user->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengguna dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
+                    'message' => "Data Pengguna : {$user->nama_user} sudah dinonaktifkan sebelumnya.",
                 ], 409);
             }
 
@@ -288,13 +312,13 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan pengguna dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -332,13 +356,13 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan pengguna dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }

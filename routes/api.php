@@ -44,17 +44,13 @@ Route::middleware(['jwt'])->group(function () {
         Route::patch('users/{id}/activate', [UserController::class, 'activate'])->name('users.activate');
         Route::patch('users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
 
-        Route::resource('kategori-barangs', KategoriBarangController::class);
-        Route::patch('kategori-barangs/{id}/activate', [KategoriBarangController::class, 'activate'])->name('kategori-barangs.activate');
-        Route::patch('kategori-barangs/{id}/deactivate', [KategoriBarangController::class, 'deactivate'])->name('kategori-barangs.deactivate');
-
         Route::resource('tokos', TokoController::class);
         Route::patch('tokos/{id}/activate', [TokoController::class, 'activate'])->name('tokos.activate');
         Route::patch('tokos/{id}/deactivate', [TokoController::class, 'deactivate'])->name('tokos.deactivate');
     
         Route::resource('suppliers', SupplierController::class);
         Route::patch('suppliers/{id}/activate', [SupplierController::class, 'activate'])->name('supplier.activate');
-        Route::patch('suppliers/{id}/deactivate', [SupplierController::class, 'activate'])->name('supplier.deactivate');
+        Route::patch('suppliers/{id}/deactivate', [SupplierController::class, 'deactivate'])->name('supplier.deactivate');
 
         Route::resource('gudangs', GudangController::class);
         Route::patch('gudangs/{id}/activate', [GudangController::class, 'activate'])->name('gudangs.activate');
@@ -65,6 +61,10 @@ Route::middleware(['jwt'])->group(function () {
         Route::resource('barangs', BarangController::class);
         Route::patch('barangs/{id}/activate', [BarangController::class, 'activate'])->name('barangs.activate');
         Route::patch('barangs/{id}/deactivate', [BarangController::class, 'deactivate'])->name('barangs.deactivate');
+
+        Route::resource('kategori-barangs', KategoriBarangController::class);
+        Route::patch('kategori-barangs/{id}/activate', [KategoriBarangController::class, 'activate'])->name('kategori-barangs.activate');
+        Route::patch('kategori-barangs/{id}/deactivate', [KategoriBarangController::class, 'deactivate'])->name('kategori-barangs.deactivate');
     
         Route::resource('pusat-ke-suppliers', PusatKeSupplierController::class);
     

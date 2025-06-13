@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\TokoShowResource;
 use App\Http\Resources\TokoIndexResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,9 +16,10 @@ class TokoController extends Controller
     {
         try {
             $tokos = GudangDanToko::where('kategori_bangunan', 2)
+                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
-                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon', 'flag'
+                    'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
             
             $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
@@ -104,7 +106,7 @@ class TokoController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Toko dengan ID: {$id}",
-                'data' => new TokoIndexResource($toko),
+                'data' => new TokoShowResource($toko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

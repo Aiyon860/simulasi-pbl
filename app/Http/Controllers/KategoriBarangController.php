@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\KategoriBarangIndexResource;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\KategoriBarangShowResource;
+use App\Http\Resources\KategoriBarangIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KategoriBarangController extends Controller
@@ -16,8 +17,9 @@ class KategoriBarangController extends Controller
     {
         try {
             $categories = KategoriBarang::select([
-                'id', 'nama_kategori_barang', 'flag'
-            ])->orderBy('id')
+                'id', 'nama_kategori_barang'
+            ])->where('flag', '=', 1)
+            ->orderBy('id')
             ->get();
 
             $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
@@ -74,7 +76,7 @@ class KategoriBarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Berhasil menambahkan Data Kategori Barang baru.",
-            ]. 201);
+            ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -99,7 +101,7 @@ class KategoriBarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Data Kategori Barang {$id}",
-                'data' => new KategoriBarangIndexResource($category),
+                'data' => new KategoriBarangShowResource($category),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -149,7 +151,7 @@ class KategoriBarangController extends Controller
             $category = KategoriBarang::findOrFail($id);
 
             $rules = [
-                'nama_kategori_barang' => 'required|string|max:255',
+                'nama_kategori_barang' => ['required', 'string', 'max:255'],
             ];
 
             if ($request->input('nama_kategori_barang') !== $category->nama_kategori_barang) {

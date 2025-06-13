@@ -32,8 +32,7 @@ class CabangKePusat extends Model
 
     public function pusat() : BelongsTo
     {
-        return $this->belongsTo(GudangDanToko::class,
-         'id_pusat');
+        return $this->belongsTo(GudangDanToko::class, 'id_pusat');
     }
 
     public function kurir()
@@ -47,14 +46,12 @@ class CabangKePusat extends Model
 
     public function cabang() : BelongsTo
     {
-        return $this->belongsTo(GudangDanToko::class,
-         'id_cabang');
+        return $this->belongsTo(GudangDanToko::class, 'id_cabang');
     }
 
     public function barang() : BelongsTo
     {
-        return $this->belongsTo(Barang::class,
-         'id_barang');
+        return $this->belongsTo(Barang::class, 'id_barang');
     }
     public function satuanBerat(): BelongsTo
     {

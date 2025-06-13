@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
-use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\GudangCreateResource;
+use App\Http\Resources\DetailGudangEditResource;
+use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\CabangKePusatIndexResource;
@@ -23,14 +25,13 @@ class DetailGudangController extends Controller
         try{
             $detailGudang = DetailGudang::select([
                 'id', 'id_barang', 'id_gudang',
-                'id_satuan_berat', 'jumlah_stok',
-                'stok_opname', 'flag'
+                'jumlah_stok', 'stok_opname'
             ])
             ->with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
                 'satuanBerat:id,nama_satuan_berat'
-            ])->where('id_gudang', $request->user()->gudang->id)
+            ])->where('id_gudang', $request->user()->lokasi->id)
             ->orderBy('stok_opname', 'asc')
             ->get();
 
@@ -60,7 +61,9 @@ class DetailGudangController extends Controller
     public function create()
     {
         try{
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->get();
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
@@ -90,7 +93,7 @@ class DetailGudangController extends Controller
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
             'id_satuan_berat' => 'required|exists:satuan_berats,id',
-            'jumlah_stok' => 'required|integer|min:1',
+            'jumlah_stok' => 'required|integer|min:0',
         ]);
 
         try {
@@ -139,7 +142,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Detail Barang Gudang',
-                'data' => new CabangKePusatIndexResource($detailGudang),
+                'data' => new DetailGudangShowResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -178,7 +181,7 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Form Edit Barang Gudang',
                 'data' => [
-                    'detailGudang' => new DetailGudangIndexResource($detailGudang),
+                    'detailGudang' => new DetailGudangEditResource($detailGudang),
                     'barangs' => BarangCreateResource::collection($barangs),
                     'gudang' => GudangCreateResource::collection($gudang),
                     'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),

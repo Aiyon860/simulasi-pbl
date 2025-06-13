@@ -45,7 +45,7 @@ class CabangKeTokoController extends Controller
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
-            
+
             $headings = [
                 'ID',
                 'Nama Barang',
@@ -54,14 +54,14 @@ class CabangKeTokoController extends Controller
                 'Tanggal',
                 'Status',
             ];
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
                     'statuses' => StatusResource::collection($statuses),
-                    
+
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ],
@@ -184,21 +184,24 @@ class CabangKeTokoController extends Controller
                 'jumlah_barang', 'tanggal'
             ]);
 
+            // Gunakan 'kode' atau atribut lain yang lebih deskriptif
+            $identifier = $CabangKeToko->kode ?? $id; // Fallback ke ID jika kode tidak ada
+
             return response()->json([
                 'status' => true,
-                'message' => "Data Cabang Ke Toko dengan ID: {$id}",
+                'message' => "Data Cabang Ke Toko dengan kode: {$identifier} berhasil ditemukan.",
                 'data' => new CabangKeTokoShowResource($CabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Cabang Ke Toko tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data Cabang Ke Toko dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil data Cabang Ke Toko.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }
@@ -213,10 +216,17 @@ class CabangKeTokoController extends Controller
 
             $cabangKeToko = CabangKeToko::findOrFail($id);
 
+            $identifier = $cabangKeToko->kode ?? null; // Coba ambil kode jika ada
+            if (!$identifier && $cabangKeToko->relationLoaded('barang') && $cabangKeToko->relationLoaded('toko')) {
+                $identifier = "pengiriman barang '{$cabangKeToko->barang->nama_barang}' dari cabang '{$cabangKeToko->cabang->nama_gudang_toko}' ke toko '{$cabangKeToko->toko->nama_gudang_toko}'";
+            } elseif (!$identifier) {
+                $identifier = "transaksi ini"; // Fallback jika tidak ada info spesifik
+            }
+
             if ($cabangKeToko->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya.",
+                    'message' => "Data Pengiriman dari Cabang Ke Toko dengan Kode: {$identifier} sudah dihapus sebelumnya.",
                 ], 409); // Conflict
             }
 
@@ -230,19 +240,19 @@ class CabangKeTokoController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengiriman dari Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data pengiriman yang Anda cari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data yang diberikan tidak valid. Mohon periksa kembali input Anda.',
                 'error' => $e->getMessage()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman. Silakan coba lagi.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -253,10 +263,25 @@ class CabangKeTokoController extends Controller
         try {
             $CabangKeToko = CabangKeToko::findOrFail($id);
 
+            // Asumsi model CabangKeToko memiliki kolom 'kode' atau relasi untuk 'barang' dan 'toko'
+            $identifier = $CabangKeToko->kode ?? null; // Coba ambil kode jika ada
+
+            // Memuat relasi yang diperlukan jika belum dimuat, untuk pembentukan identifier yang lebih baik
+            if (!$identifier) {
+                $CabangKeToko->loadMissing(['barang:id,nama_barang', 'cabang:id,nama_gudang_toko', 'toko:id,nama_gudang_toko']);
+                if ($CabangKeToko->relationLoaded('barang') && $CabangKeToko->relationLoaded('cabang') && $CabangKeToko->relationLoaded('toko')) {
+                    $identifier = "pengiriman barang '{$CabangKeToko->barang->nama_barang}' dari cabang '{$CabangKeToko->cabang->nama_gudang_toko}' ke toko '{$CabangKeToko->toko->nama_gudang_toko}'";
+                }
+            }
+
+            if (!$identifier) {
+                $identifier = "data pengiriman ini"; // Fallback jika tidak ada info spesifik
+            }
+
             if ($CabangKeToko->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Cabang Ke Toko dengan ID: {$id} sudah dihapus sebelumnya",
+                    'message' => "{$identifier} sudah tidak aktif atau dibatalkan sebelumnya.",
                 ], 400); // Bad Request
             }
 
@@ -266,17 +291,17 @@ class CabangKeTokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menghapus Data Cabang Ke Toko dengan ID: {$id}",
+                'message' => "{$identifier} berhasil dibatalkan.",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Cabang Ke Toko dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data pengiriman yang Anda coba hapus tidak ditemukan.",
             ], 404); // Not Found
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menghapus Data Cabang Ke Toko dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat membatalkan data pengiriman. Silakan coba lagi nanti.",
                 'error' => $th->getMessage(),
             ], 500); // Internal Server Error
         }

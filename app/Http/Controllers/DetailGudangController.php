@@ -147,13 +147,13 @@ class DetailGudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Barang Gudang dengan nama barang: {$detailGudang->barang->nama_barang} tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data barang gudang dengan ID: {$id}",
+                'message' => "Terjadi kesalahan saat mengambil data barang gudang dengan nama barang: {$detailGudang->barang->nama_barang}",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -190,7 +190,7 @@ class DetailGudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Barang Gudang dengan nama barang: {$detailGudang->barang->nama_barang} tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -213,7 +213,7 @@ class DetailGudangController extends Controller
         ]);
 
         try {
-            $detailGudang = DetailGudang::findOrFail($id);
+            $detailGudang = DetailGudang::with(['barang:id,nama_barang'])->findOrFail($id);
 
             DB::transaction(function () use ($id, $validated, $detailGudang) {
                 $detailGudang->update($validated);
@@ -221,13 +221,13 @@ class DetailGudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Barang Gudang dengan ID: {$id} berhasil diperbarui",
+                'message' => "Data Barang Gudang dengan nama barang {$detailGudang->barang->nama_barang} berhasil diperbarui",
                 'data' => new DetailGudangIndexResource($detailGudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Barang Gudang dengan nama barang {$detailGudang->barang->nama_barang} tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (ValidationException $e) {
@@ -239,7 +239,7 @@ class DetailGudangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui data barang gudang dengan ID: {$id}",
+                'message' => "Terjadi kesalahan saat memperbarui data barang gudang dengan nama barang {$detailGudang->barang->nama_barang}",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -248,7 +248,7 @@ class DetailGudangController extends Controller
     public function destroy(string $id)
     {
         try {
-            $barangGudang = DetailGudang::findOrFail($id);
+            $barangGudang = DetailGudang::with(['barang:id,nama_barang'])->findOrFail($id);
 
             DB::transaction(function () use ($barangGudang) {
                 $barangGudang->update(['flag' => 0]);
@@ -256,18 +256,18 @@ class DetailGudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Barang Gudang dengan ID: {$id} berhasil dihapus",
+                'message' => "Data Barang Gudang dengan nama barang: {$barangGudang->barang->nama_barang} berhasil dihapus",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Barang Gudang dengan ID: {$id} tidak ditemukan",
+                'message' => "Data Barang Gudang dengan nama barang: {$barangGudang->barang->nama_barang} tidak ditemukan",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan ID: {$id}",
+                'message' => "Terjadi kesalahan saat menghapus data barang gudang dengan nama barang: {$barangGudang->barang->nama_barang}",
                 'error' => $e->getMessage(),
             ], 500);
         }

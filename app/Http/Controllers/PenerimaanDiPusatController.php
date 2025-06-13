@@ -117,7 +117,7 @@ class PenerimaanDiPusatController extends Controller
             $penerimaanDiPusat = array_merge($validated, [
                 'tanggal' => $currentTime,
             ]);
-            
+
             DB::transaction(function () use ($penerimaanDiPusat) {
                 PenerimaanDiPusat::create($penerimaanDiPusat);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
@@ -153,13 +153,13 @@ class PenerimaanDiPusatController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Data Penerimaan Di Pusat {$id}",
+                'message' => "Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko}",
                 'data' => new PenerimaanDiPusatShowResource($penerimaanDiPusat)
             ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Pusat dengan dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} tidak ditemukan.",
                 'error' => $th->getMessage(),
             ], 404);
         }
@@ -168,12 +168,12 @@ class PenerimaanDiPusatController extends Controller
     public function destroy(string $id)
     {
         try {
-            $penerimaanDiPusat = PenerimaanDiPusat::findOrFail($id);
+            $penerimaanDiPusat = PenerimaanDiPusat::with(['asalBarang:id,nama_gudang_toko'])->findOrFail($id);
 
             if ($penerimaanDiPusat->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Penerimaan Di Pusat dengan ID: {$id} sudah dihapus sebelumnya",
+                    'message' => "Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} sudah dihapus sebelumnya",
                 ], 409);
             }
 
@@ -183,18 +183,18 @@ class PenerimaanDiPusatController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} berhasil dihapus",
+                'message' => "Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} berhasil dihapus",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Pusat dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko} tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Pusat dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Pusat dari {$penerimaanDiPusat->asalBarang->nama_gudang_toko}.",
                 'error' => $th->getMessage(),
             ], 500);
         }

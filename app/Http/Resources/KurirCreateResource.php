@@ -16,7 +16,7 @@ class KurirCreateResource extends JsonResource
     {
         return [
             'id' => (int) $this->id,
-            'nama_kurir' => $this->nama_barang,
+            'nama_kurir' => $this->nama_kurir,
         ];
     }
 }

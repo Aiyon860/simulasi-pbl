@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ShippingAndReturnCodeHelpers;
-use Illuminate\Http\Request;
-use App\Models\SupplierKePusat;
-use Illuminate\Support\Facades\DB;
 use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
-use App\Http\Resources\KurirCreateResource;
-use App\Http\Resources\SatuanBeratCreateResource;
-use App\Http\Resources\BarangCreateResource;
-use App\Http\Resources\SupplierCreateResource;
-use App\Http\Resources\SupplierKePusatIndexResource;
+use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\SupplierKePusat;
+use Illuminate\Support\Facades\DB;
+use App\Http\Resources\StatusResource;
+use App\Http\Resources\KurirCreateResource;
+use App\Http\Resources\BarangCreateResource;
+use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Http\Resources\SupplierCreateResource;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\SupplierKePusatIndexResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SupplierKePusatController extends Controller
 {
@@ -40,6 +42,8 @@ class SupplierKePusatController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $statuses = Status::select(['id', 'nama_status'])->get();
+
             $headings = $SupplierKePusats->isEmpty() ? [] : array_keys($SupplierKePusats->first()->getAttributes());
             $headings = array_map(function ($heading) {
                 return str_replace('_', ' ', ucfirst($heading));
@@ -50,6 +54,7 @@ class SupplierKePusatController extends Controller
                 'message' => 'Data Supllier Ke Pusat',
                 'data' => [
                     'SupplierKePusats' => SupplierKePusatIndexResource::collection($SupplierKePusats),
+                    'statuses' => StatusResource::collection($statuses),
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -67,7 +72,9 @@ class SupplierKePusatController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])
+                ->where('flag', '=', 1)
+                ->get();
             $supplier = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('flag', 1)
                 ->where('kategori_bangunan', 1)

@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Models\Kurir;
+use App\Models\Barang;
+use App\Models\Status;
+use App\Models\SatuanBerat;
+use App\Models\TokoKeCabang;
+use Illuminate\Http\Request;
+use App\Models\GudangDanToko;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\StatusResource;
+use App\Http\Resources\TokoCreateResource;
+use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Http\Resources\KurirCreateResource;
-use App\Http\Resources\SatuanBeratCreateResource;
-use App\Http\Resources\TokoCreateResource;
-use App\Http\Resources\TokoKeCabangIndexResource;
-use Illuminate\Http\Request;
-use App\Models\TokoKeCabang;
-use Illuminate\Support\Facades\DB;
-use App\Models\Barang;
-use App\Models\Kurir;
-use App\Models\GudangDanToko;
-use App\Models\SatuanBerat;
-use App\Http\Controllers\Controller;
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\TokoKeCabangIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;;
 
 class TokoKeCabangController extends Controller
@@ -41,6 +43,8 @@ class TokoKeCabangController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+            $statuses = Status::select(['id', 'nama_status'])->get();
+
             $headings = $TokoKeCabang->isEmpty() ? [] : array_keys($TokoKeCabang->first()->getAttributes());
             $headings = array_map(function ($heading) {
                 return str_replace('_', ' ', ucfirst($heading));
@@ -51,6 +55,7 @@ class TokoKeCabangController extends Controller
                 'message' => 'Data Toko Ke Cabang',
                 'data' => [
                     'TokoKeCabangs' => TokoKeCabangIndexResource::collection($TokoKeCabang),
+                    'statuses' => StatusResource::collection($statuses),
 
                     /** @var array<int, string> */
                     'headings' => $headings,

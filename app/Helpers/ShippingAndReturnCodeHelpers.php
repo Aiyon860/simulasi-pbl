@@ -62,5 +62,3 @@ class ShippingAndReturnCodeHelpers
         return $datetime->format('dmYHis');
     }
 }
-
-https:// 

@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DetailGudangIndexResource extends JsonResource
+class KategoriBarangShowResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,10 +16,8 @@ class DetailGudangIndexResource extends JsonResource
     {
         return [
             'id' => (int) $this->id,
-            'nama_barang' => $this->barang->nama_barang,
-            'nama_gudang' => $this->gudang->nama_gudang_toko,
-            'jumlah_stok' => (int) $this->jumlah_stok,
-            'stok_opname' => $this->stok_opname == 1 ? "Aktif" : "Nonaktif",
+            'nama_kategori_barang' => $this->nama_kategori_barang,
+            'status' => $this->flag ? 'Aktif' : 'Nonaktif',            
         ];
     }
 }

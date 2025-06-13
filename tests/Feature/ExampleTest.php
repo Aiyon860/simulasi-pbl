@@ -1,6 +1,6 @@
 <?php
 
-it('returns a 404 not found response', function () {
+test('/ endpoint returns a 404 not found response', function () {
     $response = $this->get('/');
     
     $response->assertStatus(404);

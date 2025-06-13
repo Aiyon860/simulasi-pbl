@@ -1,8 +1,8 @@
 <?php
 namespace App\Http\Controllers;
-use App\Helpers\ShippingAndReturnCodeHelpers;
 use App\Models\Kurir;
 use App\Models\Barang;
+use App\Models\Status;
 use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
 use Illuminate\Http\Request;
@@ -10,12 +10,15 @@ use App\Models\GudangDanToko;
 use App\Models\PusatKeCabang;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Http\Resources\PusatKeCabangIndexResource;
+use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\PusatKeCabangShowResource;
 use App\Http\Resources\SatuanBeratCreateResource;
+use App\Http\Resources\PusatKeCabangIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PusatKeCabangController extends Controller
@@ -39,16 +42,23 @@ class PusatKeCabangController extends Controller
             ])->where('flag', '=', 1)
             ->get();
 
-            $headings = $pusatKeCabang->isEmpty() ? [] : array_keys($pusatKeCabang->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $statuses = Status::select(['id', 'nama_status'])->get();
+
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Tujuan',
+                'Jumlah Barang',
+                'Tanggal',
+                'Status',
+            ];
 
             return response()->json([
                 'status'=> true,
                 'message'=> 'Data Pusat Ke Cabang',
                 'data'=> [
                     'pusatKeCabangs' => PusatKeCabangIndexResource::collection($pusatKeCabang),
+                    'statuses' => StatusResource::collection($statuses),
                     
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -176,7 +186,7 @@ class PusatKeCabangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
-                'data' => new PusatKeCabangIndexResource($pusatKeCabang),
+                'data' => new PusatKeCabangShowResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -224,6 +234,50 @@ class PusatKeCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Gagal menghapus Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}.",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'id_status' => 'required|exists:statuses,id',
+            ]);
+
+            $pusatKeCabang = PusatKeCabang::findOrFail($id);
+
+            if ($pusatKeCabang->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} sudah dihapus sebelumnya.",
+                ], 409); // Conflict
+            }
+
+            $pusatKeCabang->update($validated);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Berhasil memperbarui status pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
+                'data' => new PusatKeCabangIndexResource($pusatKeCabang),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang diberikan tidak valid.',
+                'error' => $e->getMessage()
+            ], 422); // Unprocessable Entity
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Pusat Ke Cabang dengan ID: {$id}.",
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -114,19 +114,19 @@ class GudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Gudang dengan ID: {$id}",
+                'message' => "Detail Data {$gudang->nama_gudang_toko}",
                 'data' => new GudangIndexResource($gudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Gudang dengan ID: {$id} tidak ditemukan.",
-                'error' => $e->getMessage(),
+                'message' => "Data gudang tidak ditemukan.",
+                'error' => $e->getMessage(), 
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data Gudang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data gudang.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -150,7 +150,7 @@ class GudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Gudang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data gudang tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -180,7 +180,7 @@ class GudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diperbarui.",
+                'message' => "{$gudang->nama_gudang_toko} berhasil diperbarui.",
                 'data' => new GudangIndexResource($gudang)
             ]);
         } catch (ValidationException $e) {
@@ -192,13 +192,13 @@ class GudangController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Gudang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data gudang tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui data Gudang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui data gudang.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -212,7 +212,7 @@ class GudangController extends Controller
             if ($gudang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah dinonaktifkan.",
+                    'message' => "{$gudang->nama_gudang_toko} sudah dinonaktifkan.",
                 ], 409);
             }
 
@@ -222,19 +222,19 @@ class GudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
+                'message' => "{$gudang->nama_gudang_toko} berhasil dinonaktifkan.",
                 'data' => new GudangIndexResource($gudang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Gudang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data gudang tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan Gudang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan data gudang.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -248,7 +248,7 @@ class GudangController extends Controller
             if ($gudang->flag == 1) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Gudang {$gudang->nama_gudang_toko} sudah diaktifkan.",
+                    'message' => " {$gudang->nama_gudang_toko} sudah diaktifkan.",
                 ], 400);
             }
 
@@ -258,19 +258,19 @@ class GudangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Gudang {$gudang->nama_gudang_toko} berhasil diaktifkan.",
+                'message' => "{$gudang->nama_gudang_toko} berhasil diaktifkan.",
                 'data' => new GudangIndexResource($gudang),
             ], 201);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Gudang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data gudang tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan Gudang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan data gudang.",
                 'error' => $e->getMessage(),
             ], 500);
         }

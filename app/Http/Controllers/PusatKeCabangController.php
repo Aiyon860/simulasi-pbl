@@ -55,7 +55,7 @@ class PusatKeCabangController extends Controller
 
             return response()->json([
                 'status'=> true,
-                'message'=> 'Data Pusat Ke Cabang',
+                'message'=> 'Data transaksi pengiriman barang dari pusat ke cabang',
                 'data'=> [
                     'pusatKeCabangs' => PusatKeCabangIndexResource::collection($pusatKeCabang),
                     'statuses' => StatusResource::collection($statuses),
@@ -67,7 +67,7 @@ class PusatKeCabangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data pengiriman ke cabang.',
+                'message' => 'Terjadi kesalahan saat mengambil data pengiriman dari pusat ke cabang.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -82,7 +82,6 @@ class PusatKeCabangController extends Controller
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
             $kurir = Kurir::select(['id', 'nama_kurir'])->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -90,7 +89,6 @@ class PusatKeCabangController extends Controller
                 'data' => [
                     'barangs' => BarangCreateResource::collection($barangs),
                     'cabang' => CabangCreateResource::collection($cabang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                     'kurir' => KurirCreateResource::collection($kurir),
                 ]
             ]);

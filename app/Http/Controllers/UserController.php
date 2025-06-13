@@ -145,18 +145,18 @@ class UserController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Pengguna dengan ID: {$id}",
+                'message' => "Detail Data Pengguna : {$user->nama_user}",
                 'data' => new UserShowResource($user),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna dengan ID yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data pengguna dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -194,7 +194,7 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -260,7 +260,7 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
@@ -282,7 +282,9 @@ class UserController extends Controller
                 ], 403);
             }
 
-            $user = User::findOrFail($id);
+            $user = User::findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
 
             if ($user->id === Auth::id()) {
                 return response()->json([
@@ -294,7 +296,7 @@ class UserController extends Controller
             if ($user->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengguna dengan ID: {$id} sudah dinonaktifkan sebelumnya.",
+                    'message' => "Data Pengguna : {$user->nama_user} sudah dinonaktifkan sebelumnya.",
                 ], 409);
             }
 
@@ -310,13 +312,13 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan pengguna dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -354,13 +356,13 @@ class UserController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengguna dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Pengguna yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengaktifkan pengguna dengan ID {$id}.",
+                'message' => "Terjadi kesalahan saat mengaktifkan pengguna",
                 'error' => $e->getMessage(),
             ], 500);
         }

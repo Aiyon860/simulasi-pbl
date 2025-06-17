@@ -16,11 +16,6 @@ class BarangSeeder extends Seeder
      */
     public function run(): void
     {
-        Barang::create([
-            'nama_barang' => 'Barang A',
-            'id_kategori_barang' => 1,
-        ]);
-
         $this->command->info('Importing barang from Excel...');
 
         $disk = 'local';

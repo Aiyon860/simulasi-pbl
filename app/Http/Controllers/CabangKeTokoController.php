@@ -234,7 +234,7 @@ class CabangKeTokoController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}",
+                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan kode: {$identifier}",
                 'data' => new CabangKeTokoIndexResource($cabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {

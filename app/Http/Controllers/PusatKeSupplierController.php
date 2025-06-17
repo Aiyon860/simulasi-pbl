@@ -245,7 +245,7 @@ class PusatKeSupplierController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Pusat Ke Supplier dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Pusat Ke Supplier.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -268,7 +268,6 @@ class PusatKeSupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Data Pusat ke Supplier Kode {$pusatKeSupplier->kode} sudah dihapus sebelumnya.",
-                    'error' => $e->getMessage(),
                 ], 409);
             }
 

@@ -1,105 +1,71 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Enums\TrackLogEnum;
+use Exception;
 use App\Models\TrackLog;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use App\Http\Resources\TrackLogIndexResource;
 
 class TrackLogController extends Controller
 {
     public function index()
     {
-        $logs = TrackLog::with('user')->latest()->get();
-        return response()->json([
-            'success' => true,
-            'data' => $logs,
-        ]);
-    }
+        $logs = TrackLog::select(
+            'id', 'id_user', 
+            'ip_address', 'aktivitas', 
+            'tanggal_aktivitas'
+        )->with('user:id,nama_user')
+        ->get();
 
-    public function create()
-    {
-        $users = User::all();
+        $headings = [
+            'ID', 'Nama User', 'IP Address', 'Aktivitas', 'Tanggal Aktivitas',
+        ];
 
         return response()->json([
-            'success' => true,
-            'users' => $users,
-            'aktivitas_options' => [
-                'pengiriman',
-                'penerimaan',
-                'retur',
-                'perubahan status opname',
-            ],
+            'status' => true,
+            'message' => 'Data Track Log Semua Aktivitas Gudang',
+            'data' => TrackLogIndexResource::collection($logs),
+
+            /** @var array<int, string> */
+            'headings' => $headings,
         ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'ip_address' => 'required|ip',
-            'aktivitas' => 'required|in:pengiriman,penerimaan,retur,perubahan status opname',
-            'tanggal_aksi' => 'required|date',
-        ]);
+        try {
+            $validated = $request->validate([
+                'id_user' => 'required|exists:users,id',
+                'ip_address' => 'required|ip|max:45',
+                'aktivitas' => ['required', Rule::enum(TrackLogEnum::class)],
+                'tanggal_aktivitas' => 'required|date',
+            ]);
 
-        $log = TrackLog::create($request->all());
+            DB::transaction(function () use ($validated) {
+                TrackLog::create($validated);
+            }, 3);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Log berhasil ditambahkan.',
-            'data' => $log,
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => "Track log aktivitas {$request->aktivitas} berhasil dibuat!",
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal membuat track log',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function show(TrackLog $trackLog)
-    {
-        return response()->json([
-            'success' => true,
-            'data' => $trackLog->load('user'),
-        ]);
-    }
-
-    public function edit(TrackLog $trackLog)
-    {
-        $users = User::all();
-
-        return response()->json([
-            'success' => true,
-            'track_log' => $trackLog,
-            'users' => $users,
-            'aktivitas_options' => [
-                'pengiriman',
-                'penerimaan',
-                'retur',
-                'perubahan status opname',
-            ],
-        ]);
-    }
-
-    public function update(Request $request, TrackLog $trackLog)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'ip_address' => 'required|ip',
-            'aktivitas' => 'required|in:pengiriman,penerimaan,retur,perubahan status opname',
-            'tanggal_aksi' => 'required|date',
-        ]);
-
-        $trackLog->update($request->all());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Log berhasil diperbarui.',
-            'data' => $trackLog,
-        ]);
-    }
-
-    public function destroy(TrackLog $trackLog)
-    {
-        $trackLog->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Log berhasil dihapus.',
-        ]);
-    }
+    // public function show(TrackLog $trackLog)
+    // {
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $trackLog->load('user'),
+    //     ]);
+    // }
 }

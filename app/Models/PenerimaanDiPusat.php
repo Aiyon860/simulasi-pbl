@@ -20,6 +20,7 @@ class PenerimaanDiPusat extends Model
         'id_asal_barang',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -53,5 +54,10 @@ class PenerimaanDiPusat extends Model
     public function satuanBerat(): BelongsTo
     {
         return $this->belongsTo(SatuanBerat::class, 'id_satuan_berat');
+    }
+
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
     }
 }

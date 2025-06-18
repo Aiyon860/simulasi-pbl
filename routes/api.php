@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TrackLogController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TokoController;
@@ -26,6 +27,7 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::middleware(['jwt'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/authenticated-user', [AuthController::class, 'getUser']);
+    Route::post('/track-logs', [TrackLogController::class, 'store']);
     
     Route::middleware(['role:SuperAdmin,Supervisor,Admin'])->group(function () {
         Route::get('dashboard-super', [DashboardController::class, 'dashboardSuper'])->name('dashboard.super');
@@ -40,6 +42,8 @@ Route::middleware(['jwt'])->group(function () {
     });
     
     Route::middleware(['role:SuperAdmin'])->group(function () {
+        Route::get('/track-logs', [TrackLogController::class, 'index']);
+
         Route::resource('users', UserController::class);
         Route::patch('users/{id}/activate', [UserController::class, 'activate'])->name('users.activate');
         Route::patch('users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');

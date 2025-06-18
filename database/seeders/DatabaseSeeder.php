@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             JenisPenerimaanSeeder::class,
             DetailGudangSeeder::class,
+            VerifikasiSeeder::class,
             // CabangKePusatSeeder::class,
             // TokoKeCabangSeeder::class,
             // CabangKeTokoSeeder::class,

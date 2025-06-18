@@ -25,6 +25,7 @@ class TokoKeCabang extends Model
         'id_cabang',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -67,4 +68,8 @@ class TokoKeCabang extends Model
         'id_kurir');
     }
 
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
 }

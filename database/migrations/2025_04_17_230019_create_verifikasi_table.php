@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('verifikasi', function (Blueprint $table) {
             $table->id();
-            $table->string('jenis_verifikasi')->nullable();
+            $table->string('jenis_verifikasi');
             $table->timestamps();
         });
     }

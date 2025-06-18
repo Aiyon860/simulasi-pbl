@@ -4,8 +4,9 @@ namespace App\Imports;
 
 use App\Models\Verifikasi;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class VerifikasiImport implements ToModel
+class VerifikasiImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -15,7 +16,7 @@ class VerifikasiImport implements ToModel
     public function model(array $row)
     {
         return new Verifikasi([
-            'jenis_verifikasi' => $row['jenis verifikasi'],
+            'jenis_verifikasi' => $row['jenis_verifikasi'],
         ]);
     }
 }

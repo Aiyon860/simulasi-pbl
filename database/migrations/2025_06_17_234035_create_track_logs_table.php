@@ -12,11 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('track_logs', function (Blueprint $table) {
-            $table->id(); // ID track log (primary key)
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->id();
+
+            $table->unsignedBigInteger('id_user');
+            $table->foreign('id_user')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnUpdate();
+
             $table->string('ip_address', 45); // untuk IPv6 juga
-            $table->enum('aktivitas', ['pengiriman', 'penerimaan', 'retur', 'perubahan status opname']);
-            $table->timestamp('tanggal_aksi');
+            $table->enum('aktivitas', [
+                'Pengiriman - Pusat Ke Cabang', 
+                'Pengiriman - Cabang Ke Toko', 
+                'Penerimaan Di Pusat - Dari Supplier', 
+                'Penerimaan Di Pusat - Dari Cabang', 
+                'Penerimaan Di Cabang - Dari Pusat', 
+                'Penerimaan Di Cabang - Dari Toko', 
+                'Retur - Cabang Ke Pusat', 
+                'Retur - Pusat Ke Supplier', 
+                'Perubahan Status Opname'
+            ]);
+            $table->datetime('tanggal_aktivitas');
             $table->timestamps();
         });
     }

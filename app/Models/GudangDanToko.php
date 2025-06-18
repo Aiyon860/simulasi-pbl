@@ -69,4 +69,9 @@ class GudangDanToko extends Model
     {
         return $this->hasMany(PenerimaanDiCabang::class, 'id_asal_barang');
     }
+
+    public function gudangOpname(): HasMany
+    {
+        return $this->hasMany(DetailGudang::class, 'id_gudang');
+    }
 }

@@ -66,6 +66,9 @@ class DetailGudangController extends Controller
                 ->get();
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
+                ->whereHas('gudangOpname', function ($query) {
+                    $query->where('stok_opname', 0);
+                })
                 ->get();
             $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 

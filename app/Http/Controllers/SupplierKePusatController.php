@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SupplierKePusatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $SupplierKePusats = SupplierKePusat::select([
@@ -43,6 +43,7 @@ class SupplierKePusatController extends Controller
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
+            $opname = $request->attributes->get('opname_status');
 
             $headings = $SupplierKePusats->isEmpty() ? [] : array_keys($SupplierKePusats->first()->getAttributes());
             $headings = array_map(function ($heading) {
@@ -55,6 +56,7 @@ class SupplierKePusatController extends Controller
                 'data' => [
                     'SupplierKePusats' => SupplierKePusatIndexResource::collection($SupplierKePusats),
                     'statuses' => StatusResource::collection($statuses),
+                    'status_opname' => $opname,
 
                     /** @var array<int, string> */
                     'headings' => $headings,

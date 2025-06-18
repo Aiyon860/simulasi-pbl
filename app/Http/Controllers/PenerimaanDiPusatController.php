@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PenerimaanDiPusatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $penerimaanDiPusat = PenerimaanDiPusat::select([
@@ -46,11 +46,14 @@ class PenerimaanDiPusatController extends Controller
                 'Jenis Penerimaan',
             ];
 
+            $opname = $request->attributes->get('opname_status');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Penerimaan Di Pusat retrieved successfully',
                 'data' => [
                     'penerimaanDiPusats' => PenerimaanDiPusatIndexResource::collection($penerimaanDiPusat),
+                    'status_opname' => $opname,
 
                     /** @var array<int, string> */
                     'headings' => $headings,

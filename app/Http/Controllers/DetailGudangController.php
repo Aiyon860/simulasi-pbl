@@ -40,11 +40,15 @@ class DetailGudangController extends Controller
                 return str_replace('_', ' ', ucfirst($heading));
             }, $headings);
 
+            $opname = $request->attributes->get('opname_status');
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Barang Gudang',
                 'data' => [
                     'detailGudangs' => DetailGudangIndexResource::collection($detailGudang),
+                    'status_opname' => $opname,                    
+
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ]

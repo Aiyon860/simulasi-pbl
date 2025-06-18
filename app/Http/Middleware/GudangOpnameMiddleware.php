@@ -17,12 +17,9 @@ class GudangOpnameMiddleware
     {
         $isOpname = ! $request->user()->lokasi->flag;
 
-        if ($isOpname) {
-            return response()->json([
-                'status' => false,
-                'message' => "Gudang yang Anda tempati masih dalam proses opname!",
-            ], 409);
-        }
+        $request->attributes->add([
+            'opname_status' => $isOpname,
+        ]);
 
         return $next($request);
     }

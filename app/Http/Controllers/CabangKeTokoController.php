@@ -45,7 +45,7 @@ class CabangKeTokoController extends Controller
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
-            
+
             $headings = [
                 'ID',
                 'Nama Barang',
@@ -54,14 +54,14 @@ class CabangKeTokoController extends Controller
                 'Tanggal',
                 'Status',
             ];
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Cabang Ke Toko',
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
                     'statuses' => StatusResource::collection($statuses),
-                    
+
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ],

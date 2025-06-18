@@ -165,19 +165,19 @@ class SupplierKePusatController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Supplier Ke Pusat dengan ID: {$id}",
+                'message' => "Data Supplier Ke Pusat dengan kode: {$SupplierKePusats->kode}",
                 'data' => new SupplierKePusatIndexResource($SupplierKePusats),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier Ke Pusat yang dicari tidak ditemukan.",
                 'error' => $e->getMessage()
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data Supplier Ke Pusat dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil data Supplier Ke Pusat.",
                 'error' => $th->getMessage(),
             ], 500);
         }
@@ -186,7 +186,20 @@ class SupplierKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $supplierKePusats = SupplierKePusat::findOrFail($id);
+            $supplierKePusats = SupplierKePusat::with([
+                'pusat:id,nama_gudang_toko', 
+                'supplier:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir', 
+                'satuanBerat:id,nama_satuan_berat', 
+                'status:id,nama_status'
+            ])->findOrFail($id, [
+                'id', 'kode', 'id_barang',
+                'id_pusat', 'id_supplier', 
+                'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal',
+                'id_kurir', 'id_status', 'flag'
+            ]);
 
             $validated = $request->validate([
                 'id_status' => 'required|exists:statuses,id',
@@ -198,7 +211,7 @@ class SupplierKePusatController extends Controller
             
             return response()->json([
                 'status' => true,
-                'message' => "Data Pusat ke Supplier dengan ID: {$id} berhasil diperbarui.",
+                'message' => "Data Pusat ke Supplier dengan kode: {$supplierKePusats->kode} berhasil diperbarui.",
                 'data' => new SupplierKePusatIndexResource($supplierKePusats),
             ]);
         } catch (ValidationException $e) {
@@ -210,13 +223,13 @@ class SupplierKePusatController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pusat ke Supplier dengan ID {$id} tidak ditemukan.",
+                'message' => "Data Pusat ke Supplier yang dicari tidak ditemukan.",
                 'error' => $e->getMessage()
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui data.',
+                'message' => 'Terjadi kesalahan saat memperbarui data Pusat Ke Supplier.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -225,12 +238,25 @@ class SupplierKePusatController extends Controller
     public function destroy(string $id)
     {
         try {
-            $SupplierKePusat = SupplierKePusat::findOrFail($id);
+            $SupplierKePusat = SupplierKePusat::with([
+                'pusat:id,nama_gudang_toko', 
+                'supplier:id,nama_gudang_toko', 
+                'barang:id,nama_barang',
+                'kurir:id,nama_kurir', 
+                'satuanBerat:id,nama_satuan_berat', 
+                'status:id,nama_status'
+            ])->findOrFail($id, [
+                'id', 'kode', 'id_barang',
+                'id_pusat', 'id_supplier', 
+                'id_satuan_berat', 'berat_satuan_barang', 
+                'jumlah_barang', 'tanggal',
+                'id_kurir', 'id_status', 'flag'
+            ]);
 
             if ($SupplierKePusat->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Supplier Ke Pusat dengan ID: {$id} sudah dihapus sebelumnya",
+                    'message' => "Data Supplier Ke Pusat dengan kode: {$SupplierKePusat->kode} sudah dihapus sebelumnya",
                 ]);
             }
 
@@ -240,18 +266,18 @@ class SupplierKePusatController extends Controller
             
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menghapus Data Supplier Ke Pusat dengan ID: {$id}",
+                'message' => "Berhasil menghapus Data Supplier Ke Pusat dengan kode: {$SupplierKePusat->kode}",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Supplier Ke Pusat dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Supplier Ke Pusat yang dicari tidak ditemukan.",
                 'error' => $e->getMessage()
             ], 404);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menghapus Data Supplier Ke Pusat dengan ID: {$id}.",
+                'message' => "Gagal menghapus Data Supplier Ke Pusat dengan.",
                 'error' => $th->getMessage(),
             ], 500);
         }

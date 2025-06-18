@@ -27,20 +27,27 @@ class CabangKePusatController extends Controller
     {
         try {
             $CabangKePusat = CabangKePusat::select([
-                'id', 'kode', 'id_pusat',
-                'id_cabang', 'id_barang', 'id_satuan_berat',
-                'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'id',
+                'kode',
+                'id_pusat',
+                'id_cabang',
+                'id_barang',
+                'id_satuan_berat',
+                'id_kurir',
+                'id_status',
+                'berat_satuan_barang',
+                'jumlah_barang',
+                'tanggal'
             ])->with(
-                'pusat:id,nama_gudang_toko,alamat,no_telepon',
-                'cabang:id,nama_gudang_toko,alamat,no_telepon',
-                'barang:id,nama_barang',
-                'kurir:id,nama_kurir',
-                'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
-            )->where('flag', 1)
-            ->orderBy('tanggal', 'desc')
-            ->get();
+                    'pusat:id,nama_gudang_toko,alamat,no_telepon',
+                    'cabang:id,nama_gudang_toko,alamat,no_telepon',
+                    'barang:id,nama_barang',
+                    'kurir:id,nama_kurir',
+                    'satuanBerat:id,nama_satuan_berat',
+                    'status:id,nama_status'
+                )->where('flag', 1)
+                ->orderBy('tanggal', 'desc')
+                ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
 
@@ -120,11 +127,11 @@ class CabangKePusatController extends Controller
             $barang = DetailGudang::where('id_gudang', $request->id_cabang)
                 ->where('id_barang', $request->id_barang)
                 ->first('jumlah_stok');
-            
+
             if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
-            $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
-            $stokTersedia = $barang?->jumlah_stok ?? 0;
-                return response()->json([ 
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
+                return response()->json([
                     'status' => false,
                     'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
@@ -173,14 +180,21 @@ class CabangKePusatController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'status:id,nama_status'
             ])->findOrFail($id, [
-                'id', 'kode', 'id_pusat',
-                'id_cabang', 'id_barang', 'id_satuan_berat',
-                'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
-            ]);
+                        'id',
+                        'kode',
+                        'id_pusat',
+                        'id_cabang',
+                        'id_barang',
+                        'id_satuan_berat',
+                        'id_kurir',
+                        'id_status',
+                        'berat_satuan_barang',
+                        'jumlah_barang',
+                        'tanggal'
+                    ]);
 
-             return response()->json([
-            'status' => true,
+            return response()->json([
+                'status' => true,
                 'message' => "Detail pengiriman dengan kode: {$cabangKePusat->kode} ({$cabangKePusat->barang->nama_barang}) berhasil ditemukan.",
                 'data' => new CabangKePusatIndexResource($cabangKePusat),
             ]);
@@ -202,15 +216,15 @@ class CabangKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-        $CabangKeToko = CabangKePusat::with('barang')->findOrFail($id);
+            $CabangKeToko = CabangKePusat::with('barang')->findOrFail($id);
 
-        $validated = $request->validate([
-            'id_status' => 'required|exists:statuses,id',
-        ]);
+            $validated = $request->validate([
+                'id_status' => 'required|exists:statuses,id',
+            ]);
 
-        DB::transaction(function () use ($validated, $CabangKeToko) {
-            $CabangKeToko->update($validated);
-        }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+            DB::transaction(function () use ($validated, $CabangKeToko) {
+                $CabangKeToko->update($validated);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
@@ -240,24 +254,24 @@ class CabangKePusatController extends Controller
 
     public function destroy(string $id)
     {
-         try {
-        $cabangKePusat = CabangKePusat::with('barang')->findOrFail($id);
+        try {
+            $cabangKePusat = CabangKePusat::with('barang')->findOrFail($id);
 
-        if ($cabangKePusat->flag == 0) {
+            if ($cabangKePusat->flag == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Data pengiriman dengan kode: {$cabangKePusat->kode} sudah dihapus sebelumnya.",
+                ], 409);
+            }
+
+            DB::transaction(function () use ($cabangKePusat) {
+                $cabangKePusat->update(['flag' => 0]);
+            }, 3);
+
             return response()->json([
-                'status' => false,
-                'message' => "Data pengiriman dengan kode: {$cabangKePusat->kode} sudah dihapus sebelumnya.",
-            ], 409);
-        }
-
-        DB::transaction(function () use ($cabangKePusat) {
-            $cabangKePusat->update(['flag' => 0]);
-        }, 3);
-
-        return response()->json([
-            'status' => true,
-            'message' => "Berhasil menghapus data pengiriman dengan kode: {$cabangKePusat->kode}.",
-        ]);
+                'status' => true,
+                'message' => "Berhasil menghapus data pengiriman dengan kode: {$cabangKePusat->kode}.",
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,

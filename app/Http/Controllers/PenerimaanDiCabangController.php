@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PenerimaanDiCabangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::select([
@@ -48,7 +48,7 @@ class PenerimaanDiCabangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data Penerimaan Di Cabang',
+                'message' => "Data Penerimaan Di {$request->user()->lokasi->nama_gudang_toko}",
                 'data' => [
                     'penerimaanDiCabangs' => PenerimaanDiCabangIndexResource::collection($penerimaanDiCabang),
 
@@ -83,7 +83,7 @@ class PenerimaanDiCabangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data untuk Form Tambah Penerimaan Di Cabang',
+                'message' => 'Data barang, jenis penerimaan, dan asal barang untuk Form Tambah Data Penerimaan Di Cabang',
                 'data' => [
                     'barangs' => BarangCreateResource::collection($barangs),
                     'jenisPenerimaan' => JenisPenerimaanCreateResource::collection($jenisPenerimaan),
@@ -103,15 +103,13 @@ class PenerimaanDiCabangController extends Controller
     public function store(Request $request)
     {
         try {
-            // Jika Anda menggunakan StorePenerimaanDiCabangRequest, Anda bisa langsung menggunakan $request->validated();
-            // Jika tidak, validasi manual seperti di bawah ini:
             $validated = $request->validate([
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
                 'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'berat_satuan_barang' => 'required|numeric|min:1', // Mengubah ke numeric untuk desimal
+                'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
             ]);
 
@@ -127,12 +125,12 @@ class PenerimaanDiCabangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data Penerimaan Di Cabang berhasil ditambahkan!',
+                'message' => "Data Penerimaan Di {$request->user()->lokasi->nama_gudang_toko} berhasil ditambahkan!",
             ], 201); // 201 Created
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data yang diberikan tidak valid.',
+                'message' => 'Data yang dibutuhkan untuk laporan penerimaan di cabang yang diberikan tidak valid.',
                 'error' => $e->getMessage(),
             ], 422); // 422 Unprocessable Entity
         } catch (\Exception $e) {
@@ -160,19 +158,19 @@ class PenerimaanDiCabangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Penerimaan Di Cabang dengan ID: {$id}",
+                'message' => "Detail Data Penerimaan Di Cabang dengan asal barang dari {$penerimaanDiCabang->asalBarang->nama_gudang_toko}",
                 'data' => new PenerimaanDiCabangShowResource($penerimaanDiCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Cabang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404); // 404 Not Found
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil detail data Penerimaan Di Cabang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat mengambil detail data Penerimaan Di Cabang.",
                 'error' => $e->getMessage(),
             ], 500); // 500 Internal Server Error
         }
@@ -181,13 +179,18 @@ class PenerimaanDiCabangController extends Controller
     public function destroy(string $id)
     {
         try {
-            $penerimaanDiCabang = PenerimaanDiCabang::findOrFail($id);
+            $penerimaanDiCabang = PenerimaanDiCabang::with([
+                'asalBarang:id,nama_gudang_toko',
+            ])->findOrFail($id, [
+                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
+                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
+                'jumlah_barang', 'tanggal'
+            ]);
 
-            // Opsional: Cek jika flag sudah 0, untuk menghindari penghapusan berulang
             if ($penerimaanDiCabang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Penerimaan Di Cabang dengan ID: {$id} sudah tidak aktif.",
+                    'message' => "Data Penerimaan Di Cabang dengan asal barang dari {$penerimaanDiCabang->asalBarang->nama_gudang_toko} sudah tidak aktif.",
                 ], 409); // 409 Conflict
             }
 
@@ -197,18 +200,18 @@ class PenerimaanDiCabangController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} berhasil dinonaktifkan!",
+                'message' => "Data Penerimaan Di Cabang dengan ID: {$penerimaanDiCabang->asalBarang->nama_gudang_toko} berhasil dinonaktifkan!",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Penerimaan Di Cabang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data Penerimaan Di Cabang yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Cabang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Cabang.",
                 'error' => $e->getMessage(),
             ], 500);
         }

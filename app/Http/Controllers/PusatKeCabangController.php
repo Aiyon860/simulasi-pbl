@@ -55,7 +55,7 @@ class PusatKeCabangController extends Controller
 
             return response()->json([
                 'status'=> true,
-                'message'=> 'Data Pusat Ke Cabang',
+                'message'=> 'Data transaksi pengiriman barang dari pusat ke cabang',
                 'data'=> [
                     'pusatKeCabangs' => PusatKeCabangIndexResource::collection($pusatKeCabang),
                     'statuses' => StatusResource::collection($statuses),
@@ -67,7 +67,7 @@ class PusatKeCabangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data pengiriman ke cabang.',
+                'message' => 'Terjadi kesalahan saat mengambil data pengiriman dari pusat ke cabang.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -82,7 +82,6 @@ class PusatKeCabangController extends Controller
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
             $kurir = Kurir::select(['id', 'nama_kurir'])->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -90,7 +89,6 @@ class PusatKeCabangController extends Controller
                 'data' => [
                     'barangs' => BarangCreateResource::collection($barangs),
                     'cabang' => CabangCreateResource::collection($cabang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                     'kurir' => KurirCreateResource::collection($kurir),
                 ]
             ]);
@@ -182,22 +180,25 @@ class PusatKeCabangController extends Controller
                 'jumlah_barang', 'tanggal',
                 'id_kurir', 'id_status',
             ]);
+            
+            $namaBarang = $pusatKeCabang->barang->nama_barang ?? 'Tidak diketahui';
+            $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko ?? 'Tidak diketahui';
 
             return response()->json([
                 'status' => true,
-                'message' => "Detail Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
+                'message' => "Detail pengiriman barang '{$namaBarang}' ke cabang '{$namaCabang}'",
                 'data' => new PusatKeCabangShowResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pusat Ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data pengiriman tidak ditemukan.",
                 'error' => $e->getMessage()
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat mengambil data dengan ID: {$id}",
+                'message' => "Terjadi kesalahan saat mengambil data pengiriman.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -212,7 +213,7 @@ class PusatKeCabangController extends Controller
             if ($pusatKeCabang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} sudah dihapus sebelumnya.",
+                    'message' => "Pengiriman ke cabang '{$pusatKeCabang->cabang->nama_gudang_toko}' sudah dihapus sebelumnya.",
                 ], 409); // Conflict
             }
 
@@ -222,18 +223,18 @@ class PusatKeCabangController extends Controller
             
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil menghapus Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
+                'message' => "Berhasil menghapus pengiriman barang '{$pusatKeCabang->barang->nama_barang}' ke cabang '{$pusatKeCabang->cabang->nama_gudang_toko}'",
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data pengiriman tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menghapus Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id}.",
+                'message' => "Gagal menghapus data pengiriman.",
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -251,21 +252,24 @@ class PusatKeCabangController extends Controller
             if ($pusatKeCabang->flag == 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} sudah dihapus sebelumnya.",
+                    'message' => "Pengiriman ke cabang '{$pusatKeCabang->cabang->nama_gudang_toko}' sudah dihapus sebelumnya.",
                 ], 409); // Conflict
             }
 
             $pusatKeCabang->update($validated);
 
+            $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko;
+            $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil memperbarui status pengiriman dari Pusat Ke Cabang dengan ID: {$id}",
+                'message' => "Status pengiriman ke cabang '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'",
                 'data' => new PusatKeCabangIndexResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Pengiriman dari Pusat Ke Cabang dengan ID: {$id} tidak ditemukan.",
+                'message' => "Data pengiriman tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (ValidationException $e) {
@@ -277,7 +281,7 @@ class PusatKeCabangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat memperbarui status pengiriman dari Pusat Ke Cabang dengan ID: {$id}.",
+                'message' => "Terjadi kesalahan saat memperbarui status pengiriman.",
                 'error' => $e->getMessage(),
             ], 500);
         }

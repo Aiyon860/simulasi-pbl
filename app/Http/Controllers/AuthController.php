@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\UserIndexResource;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
@@ -19,7 +20,7 @@ class AuthController extends Controller
             if (! $accessToken = JWTAuth::attempt($credentials)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid credentials'
+                    'message' => 'Data kredensial yang diberikan tidak valid'
                 ], 401);
             }
 
@@ -36,14 +37,14 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Access Token and Refresh Token',
+                'message' => "Access Token and Refresh Token untuk user {$user->nama_user}",
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
             ]);
         } catch (JWTException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Could not create token',
+                'message' => 'Gagal membuat token!',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -58,19 +59,19 @@ class AuthController extends Controller
             if (! $user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'User not found',
+                    'message' => 'User tidak ditemukan',
                 ], 404);
             }
 
             return response()->json([
                 'status' => true,
-                'message' => 'User data retrieved successfully',
+                'message' => "Data user {$user->nama_user} berhasil diambil!",
                 'data' => new UserIndexResource($user),
             ]);
         } catch (JWTException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid token',
+                'message' => 'Token yang diberikan invalid',
                 'error' => $e->getMessage(),
             ], 401);
         }
@@ -79,16 +80,18 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            $user = auth()->user();
+
             JWTAuth::invalidate(JWTAuth::getToken());
-    
+
             return response()->json([
                 'status' => true,
-                'message' => 'Successfully logged out',
+                'message' => "{$user->nama_user} berhasil log out!",
             ]);
         } catch (JWTException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Logout failed',
+                'message' => 'Gagal melakukan logout!',
                 'error' => $e->getMessage(),
             ], 401);
         }
@@ -102,7 +105,7 @@ class AuthController extends Controller
             if (empty($token)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Refresh token is required'
+                    'message' => 'Error membutuhkan refresh token'
                 ], 400);
             }
 
@@ -129,19 +132,19 @@ class AuthController extends Controller
         } catch (TokenInvalidException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Token is invalid',
+                'message' => 'Token yang diberikan invalid',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (TokenExpiredException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Token is expired',
+                'message' => 'Token yang diberikan expired',
                 'error' => $e->getMessage()
             ], 401);
         } catch (JWTException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Could not refresh token',
+                'message' => 'Tidak dapat melakukan refresh token',
                 'error' => $e->getMessage(),
             ], 500);
         }

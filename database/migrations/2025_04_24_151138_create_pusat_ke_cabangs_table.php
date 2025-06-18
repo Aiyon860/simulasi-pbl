@@ -33,6 +33,12 @@ return new class extends Migration
                 ->on('barangs')
                 ->cascadeOnUpdate();
 
+            $table->unsignedBigInteger('id_verifikasi')->default(1);
+            $table->foreign('id_verifikasi')
+                ->references('id')
+                ->on('verifikasi')
+                ->cascadeOnUpdate();
+
             $table->dateTime('tanggal');
             $table->integer('flag')->default(1);
             $table->timestamps();

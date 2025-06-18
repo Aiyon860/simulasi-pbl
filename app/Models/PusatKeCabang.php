@@ -26,6 +26,7 @@ class PusatKeCabang extends Model
         'id_cabang',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -54,5 +55,10 @@ class PusatKeCabang extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, 'id_status');
+    }
+
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
     }
 }

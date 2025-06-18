@@ -34,6 +34,11 @@ return new class extends Migration
             $table->foreign('id_kurir')->references('id')->on('kurirs')->cascadeOnUpdate();
             $table->foreign('id_status')->references('id')->on('statuses')->cascadeOnUpdate();
 
+            $table->unsignedBigInteger('id_verifikasi')->default(1);
+            $table->foreign('id_verifikasi')
+                ->references('id')
+                ->on('verifikasi')
+                ->cascadeOnUpdate();
         });
     }
 

@@ -46,11 +46,14 @@ class PenerimaanDiCabangController extends Controller
                 'Jenis Penerimaan',
             ];
 
+            $opname = $request->attributes->get('opname_status');
+
             return response()->json([
                 'status' => true,
                 'message' => "Data Penerimaan Di {$request->user()->lokasi->nama_gudang_toko}",
                 'data' => [
                     'penerimaanDiCabangs' => PenerimaanDiCabangIndexResource::collection($penerimaanDiCabang),
+                    'status_opname' => $opname,
 
                     /** @var array<int, string> */
                     'headings' => $headings,

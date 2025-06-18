@@ -40,6 +40,12 @@ return new class extends Migration
                 ->references('id')
                 ->on('barangs')
                 ->cascadeOnUpdate();
+
+            $table->unsignedBigInteger('id_verifikasi')->default(1);
+            $table->foreign('id_verifikasi')
+                ->references('id')
+                ->on('verifikasi')
+                ->cascadeOnUpdate();
     
             $table->integer('berat_satuan_barang');
             $table->integer('jumlah_barang');

@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CabangKeTokoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $cabangKeToko = CabangKeToko::select([
@@ -45,6 +45,7 @@ class CabangKeTokoController extends Controller
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
+            $opname = $request->attributes->get('opname_status');
 
             $headings = [
                 'ID',
@@ -61,6 +62,7 @@ class CabangKeTokoController extends Controller
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
                     'statuses' => StatusResource::collection($statuses),
+                    'status_opname' => $opname,                    
 
                     /** @var array<int, string> */
                     'headings' => $headings,

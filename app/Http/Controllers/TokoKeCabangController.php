@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;;
 
 class TokoKeCabangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $TokoKeCabang = TokoKeCabang::select([
@@ -44,6 +44,7 @@ class TokoKeCabangController extends Controller
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
+            $opname = $request->attributes->get('opname_status');
 
             $headings = $TokoKeCabang->isEmpty() ? [] : array_keys($TokoKeCabang->first()->getAttributes());
             $headings = array_map(function ($heading) {
@@ -56,6 +57,7 @@ class TokoKeCabangController extends Controller
                 'data' => [
                     'TokoKeCabangs' => TokoKeCabangIndexResource::collection($TokoKeCabang),
                     'statuses' => StatusResource::collection($statuses),
+                    'status_opname' => $opname,
 
                     /** @var array<int, string> */
                     'headings' => $headings,

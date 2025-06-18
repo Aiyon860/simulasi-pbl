@@ -42,12 +42,17 @@ return new class extends Migration
             $table->Integer('berat_satuan_barang');
             $table->Integer('jumlah_barang');
 
-            
             $table->unsignedBigInteger('id_kurir'); // Foreign Key
             $table->foreign('id_kurir')->references('id')->on('kurirs')->cascadeOnUpdate();
 
             $table->unsignedBigInteger('id_status'); // Foreign Key
             $table->foreign('id_status')->references('id')->on('statuses')->cascadeOnUpdate();
+
+            $table->unsignedBigInteger('id_verifikasi')->default(1);
+            $table->foreign('id_verifikasi')
+                ->references('id')
+                ->on('verifikasi')
+                ->cascadeOnUpdate();
             
             $table->dateTime('tanggal');
             $table-> integer(column: 'flag')->default(value: 1);

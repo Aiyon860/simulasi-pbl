@@ -93,7 +93,6 @@ class DetailGudangController extends Controller
         $validated = $request->validate([
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
-            'id_satuan_berat' => 'required|exists:satuan_berats,id',
             'jumlah_stok' => 'required|integer|min:0',
         ]);
 
@@ -134,8 +133,8 @@ class DetailGudangController extends Controller
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
-                'id', 'id_barang', 'id_gudang',
-                'id_satuan_berat', 'jumlah_stok',
+                'id', 'id_barang', 
+                'id_gudang', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
 
@@ -166,8 +165,8 @@ class DetailGudangController extends Controller
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
-                'id', 'id_barang', 'id_gudang',
-                'id_satuan_berat', 'jumlah_stok',
+                'id', 'id_barang', 
+                'id_gudang', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
             $barangs = Barang::select(['id', 'nama_barang'])->get();
@@ -205,7 +204,6 @@ class DetailGudangController extends Controller
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
             'jumlah_stok' => 'required|integer|min:1',
-            'id_satuan_berat' => 'required|exists:satuan_berats,id',
             'stok_opname' => 'nullable|integer|min:0|max:1', // Ditambahkan nullable agar tidak selalu wajib diisi
         ]);
 

@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('penerimaan_di_pusats', function (Blueprint $table) {
             $table->id();
+            $table->string('kode');
+            
             $table->unsignedBigInteger('id_jenis_penerimaan');
             $table->foreign('id_jenis_penerimaan')
                 ->references('id')
@@ -43,8 +45,21 @@ return new class extends Migration
                 ->on('verifikasi')
                 ->cascadeOnUpdate();
 
+            $table->unsignedBigInteger('id_laporan_pengiriman')->nullable();
+            $table->foreign('id_laporan_pengiriman')
+                ->references('id')
+                ->on('supplier_ke_pusats')
+                ->cascadeOnUpdate();
+
+            $table->unsignedBigInteger('id_laporan_retur')->nullable();
+            $table->foreign('id_laporan_retur')
+                ->references('id')
+                ->on('cabang_ke_pusats')
+                ->cascadeOnUpdate();
+
             $table->Integer('berat_satuan_barang');
             $table->Integer('jumlah_barang');
+            $table->integer('diterima')->default(0); // 0 atau 1            
             $table->dateTime('tanggal');
             $table->integer('flag')->default(1);
 

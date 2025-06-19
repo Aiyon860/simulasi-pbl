@@ -14,7 +14,7 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\PusatKeCabangShowResource;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -28,16 +28,11 @@ class PusatKeCabangController extends Controller
         try {
             $pusatKeCabang = PusatKeCabang::select([
                 'id', 'kode', 'id_barang',
-                'id_pusat', 'id_cabang', 
-                'id_satuan_berat', 'berat_satuan_barang', 
-                'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_cabang', 'jumlah_barang', 
+                'tanggal', 'id_status',
             ])->with([
-                'pusat:id,nama_gudang_toko', 
                 'cabang:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
-                'kurir:id,nama_kurir', 
-                'satuanBerat:id,nama_satuan_berat', 
                 'status:id,nama_status'
             ])->where('flag', '=', 1)
             ->get();
@@ -78,7 +73,9 @@ class PusatKeCabangController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])
+                ->with('satuanBerat:id,nama_satuan_berat')
+                ->get();
             $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('id', '!=', 1)
                 ->where('kategori_bangunan', '=', 0)
@@ -130,7 +127,7 @@ class PusatKeCabangController extends Controller
             $currentTime = now();
 
             $pusatKeCabang = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generatePusatKeCabangCode($currentTime),
+                'kode' => CodeHelpers::generatePusatKeCabangCode($currentTime),
                 'id_pusat' => 1, 
                 'id_status' => 1,
                 'tanggal' => $currentTime,

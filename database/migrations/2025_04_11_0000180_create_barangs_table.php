@@ -29,6 +29,7 @@ return new class extends Migration
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
 
+            $table->integer('berat_satuan_barang');
             $table->integer('flag')->default(1);
 
             $table->timestamps();

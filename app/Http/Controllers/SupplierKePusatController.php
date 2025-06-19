@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use App\Http\Resources\SupplierCreateResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -118,7 +118,7 @@ class SupplierKePusatController extends Controller
             $currentTime = now();
 
             $supplierKePusat = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateSupplierKePusatCode($currentTime),
+                'kode' => CodeHelpers::generateSupplierKePusatCode($currentTime),
                 'id_status' => 1,
                 'id_pusat' => 1,
                 'tanggal' => $currentTime,

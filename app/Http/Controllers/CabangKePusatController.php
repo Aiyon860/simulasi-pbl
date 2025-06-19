@@ -14,10 +14,8 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
-use App\Http\Resources\CabangKePusatShowResource;
-use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\CabangKePusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -85,7 +83,8 @@ class CabangKePusatController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])
+            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])
+                ->with('satuanBerat:id,nama_satuan_berat')
                 ->where('flag', '=', 1)
                 ->get();
             $kurir = Kurir::select(['id', 'nama_kurir'])->get();
@@ -93,7 +92,6 @@ class CabangKePusatController extends Controller
                 ->where('id', '!=', 1)
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -101,7 +99,6 @@ class CabangKePusatController extends Controller
                 'data' => [
                     'barangs' => BarangCreateResource::collection($barangs),
                     'cabangs' => CabangCreateResource::collection($cabang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                     'kurir' => KurirCreateResource::collection($kurir),
                 ]
             ]);
@@ -142,7 +139,7 @@ class CabangKePusatController extends Controller
             $currentTime = now();
 
             $cabangKePusat = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateCabangKePusatCode($currentTime),
+                'kode' => CodeHelpers::generateCabangKePusatCode($currentTime),
                 'id_pusat' => 1,
                 'id_status' => 1,
                 'tanggal' => $currentTime,

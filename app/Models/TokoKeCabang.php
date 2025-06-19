@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TokoKeCabang extends Model
 {
@@ -72,5 +72,10 @@ class TokoKeCabang extends Model
     public function verifikasi(): BelongsTo
     {
         return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
+
+    public function laporanRetur(): HasOne
+    {
+        return $this->hasOne(PenerimaanDiCabang::class, 'id_laporan_retur');
     }
 }

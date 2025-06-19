@@ -16,7 +16,7 @@ use App\Http\Resources\TokoCreateResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\TokoKeCabangIndexResource;
@@ -125,7 +125,7 @@ class TokoKeCabangController extends Controller
             $currentTime = now();
 
             $tokoKeCabang = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateTokoKeCabangCode($currentTime),
+                'kode' => CodeHelpers::generateTokoKeCabangCode($currentTime),
                 'id_status' => 1,
                 'tanggal' => $currentTime,
             ]);

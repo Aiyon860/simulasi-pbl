@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use App\Observers\CabangKePusatObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Observers\CabangKePusatObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
 #[ObservedBy([CabangKePusatObserver::class])]
 class CabangKePusat extends Model
@@ -66,5 +67,10 @@ class CabangKePusat extends Model
     public function verifikasi(): BelongsTo
     {
         return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
+
+    public function laporanRetur(): HasOne
+    {
+        return $this->hasOne(PenerimaanDiPusat::class, 'id_laporan_retur');
     }
 }

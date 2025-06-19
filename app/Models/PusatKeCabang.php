@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([PusatKeCabangObserver::class])]
@@ -63,5 +64,10 @@ class PusatKeCabang extends Model
     public function verifikasi(): BelongsTo
     {
         return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
+
+    public function laporanPengiriman(): HasOne
+    {
+        return $this->hasOne(PenerimaanDiCabang::class, 'id_laporan_pengiriman');
     }
 }

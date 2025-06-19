@@ -21,17 +21,8 @@ return new class extends Migration
                 ->cascadeOnUpdate();
 
             $table->string('ip_address', 45); // untuk IPv6 juga
-            $table->enum('aktivitas', [
-                'Pengiriman - Pusat Ke Cabang', 
-                'Pengiriman - Cabang Ke Toko', 
-                'Penerimaan Di Pusat - Dari Supplier', 
-                'Penerimaan Di Pusat - Dari Cabang', 
-                'Penerimaan Di Cabang - Dari Pusat', 
-                'Penerimaan Di Cabang - Dari Toko', 
-                'Retur - Cabang Ke Pusat', 
-                'Retur - Pusat Ke Supplier', 
-                'Perubahan Status Opname'
-            ]);
+
+            $table->text('aktivitas');
             $table->datetime('tanggal_aktivitas');
             $table->timestamps();
         });

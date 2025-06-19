@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\PenerimaanDiPusatObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+#[ObservedBy([PenerimaanDiPusatObserver::class])]
 class PenerimaanDiPusat extends Model
 {
     /** @use HasFactory<\Database\Factories\KurirFactory> */

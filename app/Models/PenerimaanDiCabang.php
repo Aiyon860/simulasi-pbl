@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\PenerimaanDiCabangObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+#[ObservedBy([PenerimaanDiCabangObserver::class])]
 class PenerimaanDiCabang extends Model
 {
     /** @use HasFactory<\Database\Factories\PenerimaanDiCabangFactory> */

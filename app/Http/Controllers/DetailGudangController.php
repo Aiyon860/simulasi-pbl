@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
-use App\Models\SatuanBerat;
 use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
@@ -14,8 +13,6 @@ use App\Http\Resources\GudangCreateResource;
 use App\Http\Resources\DetailGudangEditResource;
 use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
-use App\Http\Resources\SatuanBeratCreateResource;
-use App\Http\Resources\CabangKePusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DetailGudangController extends Controller
@@ -30,7 +27,6 @@ class DetailGudangController extends Controller
             ->with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
-                'satuanBerat:id,nama_satuan_berat'
             ])->where('id_gudang', $request->user()->lokasi->id)
             ->orderBy('stok_opname', 'asc')
             ->get();
@@ -74,7 +70,6 @@ class DetailGudangController extends Controller
                     $query->where('stok_opname', 0);
                 })
                 ->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -82,7 +77,6 @@ class DetailGudangController extends Controller
                 'data' => [
                     'barangs' => BarangCreateResource::collection($barangs),
                     'gudang' => GudangCreateResource::collection($gudang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -139,7 +133,6 @@ class DetailGudangController extends Controller
             $detailGudang = DetailGudang::with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
-                'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
                 'id', 'id_barang', 'id_gudang',
                 'id_satuan_berat', 'jumlah_stok',
@@ -172,7 +165,6 @@ class DetailGudangController extends Controller
             $detailGudang = DetailGudang::with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
-                'satuanBerat:id,nama_satuan_berat'
             ])->findOrFail($id, [
                 'id', 'id_barang', 'id_gudang',
                 'id_satuan_berat', 'jumlah_stok',
@@ -182,7 +174,6 @@ class DetailGudangController extends Controller
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -191,7 +182,6 @@ class DetailGudangController extends Controller
                     'detailGudang' => new DetailGudangEditResource($detailGudang),
                     'barangs' => BarangCreateResource::collection($barangs),
                     'gudang' => GudangCreateResource::collection($gudang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (ModelNotFoundException $e) {

@@ -204,7 +204,7 @@ class CabangKePusatController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Cabang Ke Pusat yang dicari tidak ditemukan:.",
+                'message' => "Data Cabang Ke Pusat yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {

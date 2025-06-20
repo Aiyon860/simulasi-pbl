@@ -26,7 +26,7 @@ return new class extends Migration
                 ->on('barangs')
                 ->cascadeOnUpdate();
 
-            $table->bigInteger('jumlah_stok');
+            $table->bigInteger('jumlah_stok')->default(0);
             $table->integer('stok_opname')->default(0);
             $table->integer('flag')->default(1);
 

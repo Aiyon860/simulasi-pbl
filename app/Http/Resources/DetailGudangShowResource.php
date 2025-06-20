@@ -18,7 +18,7 @@ class DetailGudangShowResource extends JsonResource
             'id' => (int) $this->id,
             'nama_barang' => $this->barang->nama_barang,
             'nama_gudang' => $this->gudang->nama_gudang_toko,
-            'nama_satuan_berat' => $this->satuanBerat->nama_satuan_berat,
+            'nama_satuan_berat' => $this->barang->satuanBerat->nama_satuan_berat,
             'jumlah_stok' => (int) $this->jumlah_stok,
             'stok_opname' => $this->stok_opname ? 'Aktif' : 'Nonaktif',
             'status' => $this->flag ? 'Aktif' : 'Nonaktif',

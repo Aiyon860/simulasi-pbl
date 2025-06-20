@@ -117,31 +117,35 @@ class CabangKePusatController extends Controller
             $validated = $request->validate([
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
             ]);
 
-            $barang = DetailGudang::where('id_gudang', $request->id_cabang)
+            $barangDiGudang = DetailGudang::where('id_gudang', $request->id_cabang)
                 ->where('id_barang', $request->id_barang)
                 ->first('jumlah_stok');
-
-            if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
-                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
-                $stokTersedia = $barang?->jumlah_stok ?? 0;
+    
+            if (!$barangDiGudang || $barangDiGudang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barangDiGudang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barangDiGudang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
+                    'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
 
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
+            ]);
+                
             $currentTime = now();
 
             $cabangKePusat = array_merge($validated, [
                 'kode' => CodeHelpers::generateCabangKePusatCode($currentTime),
                 'id_pusat' => 1,
                 'id_status' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]);
 
@@ -200,7 +204,7 @@ class CabangKePusatController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Data Cabang Ke Pusat yang dicari tidak ditemukan:.",
+                'message' => "Data Cabang Ke Pusat yang dicari tidak ditemukan.",
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {

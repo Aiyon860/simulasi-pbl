@@ -113,11 +113,13 @@ class PenerimaanDiCabangController extends Controller
                 'id_barang' => 'required|exists:barangs,id',
                 'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
                 'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'id_laporan_pengiriman' => 'nullable|exists:pusat_ke_cabangs,id',
                 'id_laporan_retur' => 'nullable|exists:toko_ke_cabangs,id',
+            ]);
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
             ]);
 
             $currentTime = now();
@@ -125,6 +127,8 @@ class PenerimaanDiCabangController extends Controller
             $penerimaanDiCabang = array_merge($validated, [
                 'kode' => CodeHelpers::generatePenerimaanDiCabangCode($currentTime),
                 'diterima' => 1, 
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]);
 

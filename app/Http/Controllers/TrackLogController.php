@@ -1,13 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Enums\TrackLogEnum;
 use Exception;
 use App\Models\TrackLog;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
+use App\Http\Resources\TrackLogShowResource;
 use App\Http\Resources\TrackLogIndexResource;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TrackLogController extends Controller
 {
@@ -21,7 +19,7 @@ class TrackLogController extends Controller
         ->get();
 
         $headings = [
-            'ID', 'Nama User', 'IP Address', 'Aktivitas', 'Tanggal Aktivitas',
+            'ID', 'Nama User', 'Aktivitas', 'Tanggal Aktivitas',
         ];
 
         return response()->json([
@@ -34,38 +32,36 @@ class TrackLogController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function show(string $id)
     {
         try {
-            $validated = $request->validate([
-                'id_user' => 'required|exists:users,id',
-                'ip_address' => 'required|ip|max:45',
-                'aktivitas' => ['required', Rule::enum(TrackLogEnum::class)],
-                'tanggal_aktivitas' => 'required|date',
+            $trackLog = TrackLog::with(
+                'user:id,nama_user'
+            )->findOrFail($id, [
+                'id', 
+                'id_user', 
+                'ip_address',
+                'aktivitas', 
+                'tanggal_aktivitas'
             ]);
-
-            DB::transaction(function () use ($validated) {
-                TrackLog::create($validated);
-            }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Track log aktivitas {$request->aktivitas} berhasil dibuat!",
-            ], 201);
+                'message' => 'Data Track Log Spesifik',
+                'data' => new TrackLogShowResource($trackLog),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data track log yang dicari tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal membuat track log',
+                'message' => 'Gagal mengambil data track log spesifik',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
-
-    // public function show(TrackLog $trackLog)
-    // {
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $trackLog->load('user'),
-    //     ]);
-    // }
 }

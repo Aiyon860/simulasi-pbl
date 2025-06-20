@@ -117,9 +117,7 @@ class TokoKeCabangController extends Controller
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_toko' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'nullable|exists:kurirs,id',
-                'berat_satuan_barang' => 'required|numeric|min:0',
                 'jumlah_barang' => 'required|integer|min:1',
             ]);
 
@@ -132,15 +130,21 @@ class TokoKeCabangController extends Controller
                 $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
+                    'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
+            ]);
 
             $currentTime = now();
 
             $tokoKeCabang = array_merge($validated, [
                 'kode' => CodeHelpers::generateTokoKeCabangCode($currentTime),
                 'id_status' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]);
 

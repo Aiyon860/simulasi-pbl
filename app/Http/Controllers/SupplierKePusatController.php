@@ -6,6 +6,8 @@ use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\Status;
 use App\Models\SatuanBerat;
+use App\Helpers\CodeHelpers;
+use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\SupplierKePusat;
@@ -13,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
-use App\Helpers\CodeHelpers;
 use App\Http\Resources\SupplierCreateResource;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -114,6 +115,19 @@ class SupplierKePusatController extends Controller
                 'id_kurir' => 'required|exists:kurirs,id',
                 'berat_satuan_barang' => 'required|numeric|min:0',
             ]);
+
+            $barang = DetailGudang::where('id_gudang', $request->id_supplier)   // gudang pusat
+                ->where('id_barang', $request->id_barang)
+                ->firstOrFail(['jumlah_stok']);
+
+            if ($barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
+                return response()->json([
+                    'status' => false,
+                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
+                ], 409);
+            }
 
             $currentTime = now();
 

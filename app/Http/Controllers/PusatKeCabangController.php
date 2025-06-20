@@ -118,9 +118,11 @@ class PusatKeCabangController extends Controller
                 ->firstOrFail(['jumlah_stok']);
 
             if ($barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
 

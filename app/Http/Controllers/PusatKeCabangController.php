@@ -108,9 +108,7 @@ class PusatKeCabangController extends Controller
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'jumlah_barang' => 'required|integer|min:1',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
             ]);
 
             $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
@@ -122,9 +120,13 @@ class PusatKeCabangController extends Controller
                 $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
+                    'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
+            ]);
 
             $currentTime = now();
 
@@ -132,6 +134,8 @@ class PusatKeCabangController extends Controller
                 'kode' => CodeHelpers::generatePusatKeCabangCode($currentTime),
                 'id_pusat' => 1, 
                 'id_status' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]); 
 

@@ -40,7 +40,7 @@ class TrackLogController extends Controller
             $validated = $request->validate([
                 'id_user' => 'required|exists:users,id',
                 'ip_address' => 'required|ip|max:45',
-                'aktivitas' => ['required', Rule::enum(TrackLogEnum::class)],
+                'aktivitas' => 'required|string',
                 'tanggal_aktivitas' => 'required|date',
             ]);
 

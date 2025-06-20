@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PenerimaanDiPusatBarangCreateResource;
 use App\Models\Barang;
 use App\Helpers\CodeHelpers;
 use Illuminate\Http\Request;
@@ -72,7 +73,7 @@ class PenerimaanDiPusatController extends Controller
     public function create()
     {
         try{
-            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])
+            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat', 'berat_satuan_barang'])
                 ->with('satuanBerat:id,nama_satuan_berat')
                 ->where('flag', '=', 1)
                 ->orderBy('id')
@@ -89,7 +90,7 @@ class PenerimaanDiPusatController extends Controller
                 'status' => true,
                 'message' => 'Data Barang, Jenis Penerimaan, dan Asal Barang',
                 'data' => [
-                    'barangs' => BarangCreateResource::collection($barangs),
+                    'barangs' => PenerimaanDiPusatBarangCreateResource::collection($barangs),
                     'jenisPenerimaan' => JenisPenerimaanCreateResource::collection($jenisPenerimaan),
                     'asalBarang' => AsalBarangCreateResource::collection($asalBarang),
                 ]
@@ -110,11 +111,13 @@ class PenerimaanDiPusatController extends Controller
                 'id_barang' => 'required|exists:barangs,id',
                 'id_jenis_penerimaan' => 'required|exists:jenis_penerimaans,id',
                 'id_asal_barang' => 'required|exists:gudang_dan_tokos,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
-                'berat_satuan_barang' => 'required|integer|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
                 'id_laporan_pengiriman' => 'nullable|exists:supplier_ke_pusats,id',
                 'id_laporan_retur' => 'nullable|exists:cabang_ke_pusats,id',
+            ]);
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
             ]);
 
             $currentTime = now();
@@ -122,6 +125,8 @@ class PenerimaanDiPusatController extends Controller
             $penerimaanDiPusat = array_merge($validated, [
                 'kode' => CodeHelpers::generatePenerimaanDiPusatCode($currentTime),
                 'diterima' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]);
 

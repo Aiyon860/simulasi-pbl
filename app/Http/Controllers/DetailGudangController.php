@@ -93,7 +93,6 @@ class DetailGudangController extends Controller
         $validated = $request->validate([
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
-            'jumlah_stok' => 'required|integer|min:0',
         ]);
 
         try {
@@ -130,7 +129,8 @@ class DetailGudangController extends Controller
     {
         try {
             $detailGudang = DetailGudang::with([
-                'barang:id,nama_barang',
+                'barang:id,nama_barang,id_satuan_berat',
+                'barang.satuanBerat:id,nama_satuan_berat',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
                 'id', 'id_barang', 
@@ -162,14 +162,15 @@ class DetailGudangController extends Controller
     {
         try {
             $detailGudang = DetailGudang::with([
-                'barang:id,nama_barang',
+                'barang:id,nama_barang,id_satuan_berat',
+                'barang.satuanBerat:id,nama_satuan_berat',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
                 'id', 'id_barang', 
                 'id_gudang', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])->get();
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
                 ->get();

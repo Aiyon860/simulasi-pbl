@@ -15,7 +15,7 @@ use App\Http\Resources\TokoCreateResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\CabangKeTokoShowResource;
 use App\Http\Resources\CabangKeTokoIndexResource;
@@ -132,16 +132,18 @@ class CabangKeTokoController extends Controller
                 ->first();
 
             if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
 
             $currentTime = now();
 
             $cabangKeToko = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateCabangKeTokoCode($currentTime),
+                'kode' => CodeHelpers::generateCabangKeTokoCode($currentTime),
                 'id_status' => 1,
                 'tanggal' => $currentTime,
             ]);

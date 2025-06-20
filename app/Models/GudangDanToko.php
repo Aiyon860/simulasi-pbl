@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\GudangDanTokoObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+#[ObservedBy([GudangDanTokoObserver::class])]
 class GudangDanToko extends Model
 {
     /** @use HasFactory<\Database\Factories\GudangFactory> */

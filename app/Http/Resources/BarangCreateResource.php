@@ -17,6 +17,8 @@ class BarangCreateResource extends JsonResource
         return [
             'id' => (int) $this->id,
             'nama_barang' => $this->nama_barang,
+            'id_satuan_berat' => (int) $this->id_satuan_berat,
+            'nama_satuan_berat' => $this->satuanBerat->nama_satuan_berat
         ];
     }
 }

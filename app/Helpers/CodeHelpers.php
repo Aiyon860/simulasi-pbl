@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Carbon\Carbon;
 
-class ShippingAndReturnCodeHelpers
+class CodeHelpers
 {
     /**
      * Generate kode untuk Toko ke Cabang (TKC)
@@ -52,6 +52,22 @@ class ShippingAndReturnCodeHelpers
     public static function generateSupplierKePusatCode($datetime): string
     {
         return 'SKP-' . self::getFormattedDateTime($datetime);
+    }
+
+    /**
+     * Generate kode untuk Penerimaan Di Pusat (PDP)
+     */
+    public static function generatePenerimaanDiPusatCode($datetime): string
+    {
+        return 'PDP-' . self::getFormattedDateTime($datetime);
+    }
+
+    /**
+     * Generate kode untuk Penerimaan Di Cabang (PDC)
+     */
+    public static function generatePenerimaanDiCabangCode($datetime): string
+    {
+        return 'PDC-' . self::getFormattedDateTime($datetime);
     }
 
     /**

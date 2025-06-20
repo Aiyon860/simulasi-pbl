@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\SatuanBerat;
+use App\Helpers\CodeHelpers;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
@@ -24,16 +25,18 @@ class PenerimaanDiCabangController extends Controller
     {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::select([
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
-                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'id', 
+                'id_cabang', 
+                'id_barang', 
+                'id_jenis_penerimaan',
+                'id_asal_barang', 
+                'jumlah_barang', 
+                'tanggal'
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
-                'satuanBerat:id,nama_satuan_berat'
-            ])
-            ->where('flag', '=', 1)
+            ])->where('flag', '=', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -44,6 +47,7 @@ class PenerimaanDiCabangController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Jenis Penerimaan',
+                'Sudah Diterima',
             ];
 
             $opname = $request->attributes->get('opname_status');
@@ -82,7 +86,6 @@ class PenerimaanDiCabangController extends Controller
                 })
                 ->where('flag', '=', 1)
                 ->get();
-            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])->get();
 
             return response()->json([
                 'status' => true,
@@ -91,7 +94,6 @@ class PenerimaanDiCabangController extends Controller
                     'barangs' => BarangCreateResource::collection($barangs),
                     'jenisPenerimaan' => JenisPenerimaanCreateResource::collection($jenisPenerimaan),
                     'asalBarang' => AsalBarangCreateResource::collection($asalBarang),
-                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -114,11 +116,15 @@ class PenerimaanDiCabangController extends Controller
                 'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
+                'id_laporan_pengiriman' => 'nullable|exists:pusat_ke_cabangs,id',
+                'id_laporan_retur' => 'nullable|exists:toko_ke_cabangs,id',
             ]);
 
             $currentTime = now();
 
             $penerimaanDiCabang = array_merge($validated, [
+                'kode' => CodeHelpers::generatePenerimaanDiCabangCode($currentTime),
+                'diterima' => 1, 
                 'tanggal' => $currentTime,
             ]);
 
@@ -152,11 +158,24 @@ class PenerimaanDiCabangController extends Controller
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
-                'satuanBerat:id,nama_satuan_berat'
+                'cabang:id,nama_gudang_toko',
+                'satuanBerat:id,nama_satuan_berat',
+                'laporanPengiriman:id,kode',
+                'laporanRetur:id,kode',
             ])->findOrFail($id, [
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
-                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'id', 
+                'kode',
+                'id_cabang', 
+                'id_barang', 
+                'id_jenis_penerimaan',
+                'id_asal_barang', 
+                'id_satuan_berat', 
+                'id_laporan_pengiriman',
+                'id_laporan_retur',
+                'berat_satuan_barang',
+                'jumlah_barang', 
+                'diterima',
+                'tanggal'
             ]);
 
             return response()->json([
@@ -179,15 +198,88 @@ class PenerimaanDiCabangController extends Controller
         }
     }
 
+    public function update(Request $request, string $id)
+    {
+        try {
+            $penerimaanDiCabang = PenerimaanDiCabang::with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
+                'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'cabang:id,nama_gudang_toko',
+                'satuanBerat:id,nama_satuan_berat',
+                'laporanPengiriman:id,kode',
+                'laporanRetur:id,kode',
+            ])->findOrFail($id, [
+                'id', 
+                'kode',
+                'id_cabang', 
+                'id_barang', 
+                'id_jenis_penerimaan',
+                'id_asal_barang', 
+                'id_satuan_berat', 
+                'id_laporan_pengiriman',
+                'id_laporan_retur',
+                'berat_satuan_barang',
+                'jumlah_barang', 
+                'diterima',
+                'tanggal'
+            ]);
+
+            DB::transaction(function () use ($penerimaanDiCabang) {
+                $penerimaanDiCabang->update(['diterima' => 1]);
+            }, 3);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Barang {$penerimaanDiCabang->barang->nama_barang} berhasil diterima dengan kode laporan penerimaan di cabang: {$penerimaanDiCabang->kode}",
+                'data' => new PenerimaanDiCabangShowResource($penerimaanDiCabang),
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data yang diberikan untuk mengupdate data laporan penerimaan di cabang tidak valid.',
+                'errors' => $e->getMessage(),
+            ], 422);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Data laporan penerimaan di cabang yang dicari tidak ditemukan.",
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat memperbarui data laporan penerimaan di cabang.",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function destroy(string $id)
     {
         try {
             $penerimaanDiCabang = PenerimaanDiCabang::with([
+                'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
+                'barang:id,nama_barang',
+                'cabang:id,nama_gudang_toko',
+                'satuanBerat:id,nama_satuan_berat',
+                'laporanPengiriman:id,kode',
+                'laporanRetur:id,kode',
             ])->findOrFail($id, [
-                'id', 'id_cabang', 'id_barang', 'id_jenis_penerimaan',
-                'id_asal_barang', 'id_satuan_berat', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'id', 
+                'kode',
+                'id_cabang', 
+                'id_barang', 
+                'id_jenis_penerimaan',
+                'id_asal_barang', 
+                'id_satuan_berat', 
+                'id_laporan_pengiriman',
+                'id_laporan_retur',
+                'berat_satuan_barang',
+                'jumlah_barang', 
+                'diterima',
+                'tanggal'
             ]);
 
             if ($penerimaanDiCabang->flag == 0) {

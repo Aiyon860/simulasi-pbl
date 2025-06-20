@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Helpers\CodeHelpers;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -20,11 +21,13 @@ return new class extends Migration
                 -- Cek jika status yang baru adalah 3 (terkirim)
                 IF NEW.id_status = 3 THEN
                     INSERT INTO penerimaan_di_cabangs (
+                        kode,
                         id_jenis_penerimaan,
                         id_asal_barang,
                         id_cabang,
                         id_barang,
                         id_satuan_berat,
+                        id_laporan_pengiriman,
                         berat_satuan_barang,
                         jumlah_barang,
                         tanggal,
@@ -32,11 +35,13 @@ return new class extends Migration
                         updated_at
                     )
                     VALUES (
+                        CONCAT('PDC-', DATE_FORMAT(NOW(), '%d%m%Y%H%i%s')), -- Kode
                         1, -- JENIS PENERIMAAN: Pengiriman
                         NEW.id_pusat,
                         NEW.id_cabang,
                         NEW.id_barang,
                         NEW.id_satuan_berat,
+                        NEW.id,
                         NEW.berat_satuan_barang,
                         NEW.jumlah_barang,
                         NOW(),
@@ -56,10 +61,12 @@ return new class extends Migration
                 -- Cek jika status yang baru adalah 3 (terkirim)
                 IF NEW.id_status = 3 THEN
                     INSERT INTO penerimaan_di_pusats (
+                        kode,
                         id_jenis_penerimaan,
                         id_asal_barang,
                         id_barang,
                         id_satuan_berat,
+                        id_laporan_retur,
                         berat_satuan_barang,
                         jumlah_barang,
                         tanggal,
@@ -67,10 +74,12 @@ return new class extends Migration
                         updated_at
                     )
                     VALUES (
+                        CONCAT('PDP-', DATE_FORMAT(NOW(), '%d%m%Y%H%i%s')), -- Kode
                         2, -- JENIS PENERIMAAN: Retur
                         NEW.id_cabang,
                         NEW.id_barang,
                         NEW.id_satuan_berat,
+                        NEW.id,
                         NEW.berat_satuan_barang,
                         NEW.jumlah_barang,
                         NOW(),

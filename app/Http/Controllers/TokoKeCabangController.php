@@ -6,6 +6,8 @@ use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\Status;
 use App\Models\SatuanBerat;
+use App\Helpers\CodeHelpers;
+use App\Models\DetailGudang;
 use App\Models\TokoKeCabang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
@@ -16,7 +18,6 @@ use App\Http\Resources\TokoCreateResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\SatuanBeratCreateResource;
 use App\Http\Resources\TokoKeCabangIndexResource;
@@ -122,10 +123,23 @@ class TokoKeCabangController extends Controller
                 'jumlah_barang' => 'required|integer|min:1',
             ]);
 
+            $barang = DetailGudang::where('id_gudang', $request->id_toko)   // gudang pusat
+                ->where('id_barang', $request->id_barang)
+                ->firstOrFail(['jumlah_stok']);
+
+            if ($barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
+                return response()->json([
+                    'status' => false,
+                    'message' => "Stok untuk barang \"$namaBarang\" tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
+                ], 409);
+            }
+
             $currentTime = now();
 
             $tokoKeCabang = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateTokoKeCabangCode($currentTime),
+                'kode' => CodeHelpers::generateTokoKeCabangCode($currentTime),
                 'id_status' => 1,
                 'tanggal' => $currentTime,
             ]);

@@ -1,15 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\Barang;
+use App\Models\SatuanBerat;
 use Illuminate\Http\Request;
 use App\Models\KategoriBarang;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\BarangEditResource;
+use App\Http\Resources\BarangShowResource;
 use App\Http\Resources\BarangIndexResource;
-use App\Http\Resources\BarangStoreResource;
 use App\Http\Resources\KategoriBarangResource;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\SatuanBeratCreateResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BarangController extends Controller
@@ -17,10 +19,19 @@ class BarangController extends Controller
     public function index()
     {
         try {
-            $barangs = Barang::with(['kategori:id,nama_kategori_barang'])
-                ->where('flag', 1)
-                ->orderBy('nama_barang')
-                ->get();
+            $barangs = Barang::with([
+                'kategori:id,nama_kategori_barang',
+                'satuanBerat:id,nama_satuan_berat',
+            ])->where('flag', 1)
+            ->orderBy('nama_barang')
+            ->get();
+
+            $headings = [
+                'ID',
+                'Nama Barang',
+                'Kategori Barang',
+                'Satuan Berat'
+            ];
 
             return response()->json([
                 'status' => true,
@@ -28,12 +39,8 @@ class BarangController extends Controller
                 'data' => [
                     'barangs' => BarangIndexResource::collection($barangs),
 
-                    /** @var array<int, 'ID' | 'Nama Barang' | 'Kategori Barang' | 'Status'> */
-                    'headings' => [
-                        'ID',
-                        'Nama Barang',
-                        'Kategori Barang',
-                    ],
+                    /** @var array<int, string> */
+                    'headings' => $headings
                 ],
             ]);
         } catch (\Exception $e) {
@@ -53,11 +60,16 @@ class BarangController extends Controller
                 ->orderBy('nama_kategori_barang')
                 ->get();
 
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])
+                ->orderBy('nama_satuan_berat')
+                ->get();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Data Kategori Barang untuk Form Tambah Barang',
                 'data' => [
                     'categories' => KategoriBarangResource::collection($categories),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -75,6 +87,8 @@ class BarangController extends Controller
             $validated = $request->validate([
                 'nama_barang' => 'required|unique:barangs|string|max:255',
                 'id_kategori_barang' => 'required|exists:kategori_barangs,id',
+                'id_satuan_berat' => 'required|exists:satuan_berats,id',
+                'berat_satuan_barang' => 'required|numeric|min:1'
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -88,7 +102,7 @@ class BarangController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data nama barang maupun kategori barang yang diberikan tidak valid.',
+                'message' => 'Data yang diberikan tidak valid.',
                 'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
@@ -103,15 +117,20 @@ class BarangController extends Controller
     public function show(string $id)
     {
         try {
-            $barang = Barang::with('kategori:id,nama_kategori_barang')
-                ->findOrFail($id, [
-                    'id', 'nama_barang', 'id_kategori_barang'
+            $barang = Barang::with([
+                'kategori:id,nama_kategori_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])->findOrFail($id, [
+                'id', 'nama_barang', 
+                'id_kategori_barang',
+                'id_satuan_berat',
+                'berat_satuan_barang',
             ]);
 
             return response()->json([
                 'status' => true,
                 'message' => "Detail Data Barang {$barang->nama_barang}",
-                'data' => new BarangIndexResource($barang),
+                'data' => new BarangShowResource($barang),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -131,14 +150,23 @@ class BarangController extends Controller
     public function edit(string $id)
     {
         try {
-            $barang = Barang::with('kategori:id,nama_kategori_barang')
-                ->findOrFail($id, [
-                    'id', 'nama_barang', 'id_kategori_barang'
+            $barang = Barang::with([
+                'kategori:id,nama_kategori_barang',
+                'satuanBerat:id,nama_satuan_berat'
+            ])->findOrFail($id, [
+                'id', 'nama_barang', 
+                'id_kategori_barang',
+                'id_satuan_berat',
+                'berat_satuan_barang'
             ]);
 
             $categories = KategoriBarang::select('id', 'nama_kategori_barang')
                 ->where('flag', 1)
                 ->orderBy('nama_kategori_barang')
+                ->get();
+
+            $satuanBerat = SatuanBerat::select(['id', 'nama_satuan_berat'])
+                ->orderBy('nama_satuan_berat')
                 ->get();
 
             return response()->json([
@@ -147,6 +175,7 @@ class BarangController extends Controller
                 'data' => [
                     'barang' => new BarangEditResource($barang),
                     'categories' => KategoriBarangResource::collection($categories),
+                    'satuanBerat' => SatuanBeratCreateResource::collection($satuanBerat),
                 ],
             ]);
         } catch (ModelNotFoundException $e) {
@@ -170,12 +199,14 @@ class BarangController extends Controller
             $barang = Barang::findOrFail($id);
 
             $rules = [
-                'nama_barang' => 'required|string|max:255',
+                'nama_barang' => 'nullable|string|max:255',
                 'id_kategori_barang' => 'nullable|exists:kategori_barangs,id',
+                'id_satuan_berat' => 'nullable|exists:satuan_berats,id',
+                'berat_satuan_barang' => 'nullable|numeric|min:1'
             ];
 
             if ($request->input('nama_barang') !== $barang->nama_barang) {
-                $rules['nama_barang'][] = 'unique:barangs';
+                $rules['nama_barang'] .= '|unique:barangs';
             }
 
             $validated = $request->validate($rules);
@@ -187,7 +218,7 @@ class BarangController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Barang {$barang->nama_barang} berhasil diperbarui!",
-                'data' => new BarangIndexResource($barang),
+                'data' => new BarangShowResource($barang),
             ]);
         } catch (ValidationException $e) {
             return response()->json([

@@ -22,6 +22,7 @@ class Barang extends Model
         'nama_barang',
         'id_kategori_barang',
         'id_satuan_berat',
+        'berat_satuan_barang',
         'flag'
     ];
 

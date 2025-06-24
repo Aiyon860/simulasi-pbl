@@ -33,6 +33,7 @@ class PusatKeCabangShowResource extends JsonResource
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
             'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
+            'jenis_verifikasi' => $this->verifikasi->jenis_verifikasi,
         ];
     }
 }

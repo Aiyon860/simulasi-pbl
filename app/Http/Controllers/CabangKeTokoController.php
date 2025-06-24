@@ -31,14 +31,15 @@ class CabangKeTokoController extends Controller
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_verifikasi'
             ])->with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])
             ->where('flag', 1)
             ->orderBy('tanggal', 'desc')
@@ -54,6 +55,7 @@ class CabangKeTokoController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -184,12 +186,13 @@ class CabangKeTokoController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_verifikasi'
             ]);
 
             // Gunakan 'kode' atau atribut lain yang lebih deskriptif
@@ -219,7 +222,8 @@ class CabangKeTokoController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
             $cabangKeToko = CabangKeToko::findOrFail($id);
@@ -238,7 +242,19 @@ class CabangKeTokoController extends Controller
                 ], 409); // Conflict
             }
 
-            $cabangKeToko->update($validated);
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Pengiriman ke toko dengan kode: {$cabangKeToko->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaCabang = $cabangKeToko->cabang->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status pengiriman ke toko '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
+
+            DB::transaction(function () use ($cabangKeToko, $validated) {
+                $cabangKeToko->update($validated);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
 
             return response()->json([
                 'status' => true,

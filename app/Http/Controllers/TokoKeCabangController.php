@@ -32,14 +32,15 @@ class TokoKeCabangController extends Controller
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_verifikasi',
             ])->with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
@@ -210,22 +211,24 @@ class TokoKeCabangController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            $validated = $request->validate([
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
+            ]);
+
             $TokoKeCabang = TokoKeCabang::with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
-            ]);
-
-            $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'jumlah_barang', 'tanggal', 'id_verifikasi'
             ]);
 
             DB::transaction(function () use ($validated, $TokoKeCabang) {

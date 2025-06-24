@@ -32,14 +32,15 @@ class PusatKeSupplierController extends Controller
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_kurir', 'id_status', 'id_verifikasi',
             ])->with([
                 'pusat:id,nama_gudang_toko', 
                 'supplier:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
@@ -54,6 +55,7 @@ class PusatKeSupplierController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -179,13 +181,14 @@ class PusatKeSupplierController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_kurir', 'id_status', 'id_verifikasi'
             ]);
 
             return response()->json([
@@ -212,7 +215,8 @@ class PusatKeSupplierController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
             $pusatKeSupplier = PusatKeSupplier::with([
@@ -221,13 +225,15 @@ class PusatKeSupplierController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status', 'flag'
+                'id_kurir', 'id_status', 'flag',
+                'id_verifikasi'
             ]);
 
             if ($pusatKeSupplier->flag == 0) {
@@ -237,11 +243,23 @@ class PusatKeSupplierController extends Controller
                 ], 409); // Conflict
             }
 
-            $pusatKeSupplier->update($validated);
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Retur ke supplier dengan kode: {$pusatKeSupplier->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaSupplier = $pusatKeSupplier->supplier->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status retur ke supplier '{$namaSupplier}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
+
+            DB::transaction(function () use ($pusatKeSupplier, $validated) {
+                $pusatKeSupplier->update($validated);
+            }, 3);
+
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil memperbarui status pengiriman dari Pusat Ke Supplier dengan Kode: {$pusatKeSupplier->kode}.",
+                'message' => $pesan,
                 'data' => new PusatKeSupplierIndexResource($pusatKeSupplier),
             ]);
         } catch (ModelNotFoundException $e) {

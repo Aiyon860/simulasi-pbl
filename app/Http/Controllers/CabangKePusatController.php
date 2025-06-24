@@ -35,14 +35,16 @@ class CabangKePusatController extends Controller
                 'id_status',
                 'berat_satuan_barang',
                 'jumlah_barang',
-                'tanggal'
+                'tanggal',
+                'id_verifikasi'
             ])->with(
                     'pusat:id,nama_gudang_toko,alamat,no_telepon',
                     'cabang:id,nama_gudang_toko,alamat,no_telepon',
                     'barang:id,nama_barang',
                     'kurir:id,nama_kurir',
                     'satuanBerat:id,nama_satuan_berat',
-                    'status:id,nama_status'
+                    'status:id,nama_status',
+                    'verifikasi:id,jenis_verifikasi'
                 )->where('flag', 1)
                 ->orderBy('tanggal', 'desc')
                 ->get();
@@ -57,6 +59,7 @@ class CabangKePusatController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -181,7 +184,8 @@ class CabangKePusatController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                         'id',
                         'kode',
@@ -193,7 +197,8 @@ class CabangKePusatController extends Controller
                         'id_status',
                         'berat_satuan_barang',
                         'jumlah_barang',
-                        'tanggal'
+                        'tanggal',
+                        'id_verifikasi'
                     ]);
 
             return response()->json([
@@ -219,20 +224,30 @@ class CabangKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $CabangKeToko = CabangKePusat::with('barang')->findOrFail($id);
-
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
-            DB::transaction(function () use ($validated, $CabangKeToko) {
-                $CabangKeToko->update($validated);
+            $CabangKePusat = CabangKePusat::with('barang')->findOrFail($id);
+
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Retur ke pusat dengan kode: {$CabangKePusat->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaCabang = $CabangKePusat->cabang->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status retur ke pusat '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
+
+            DB::transaction(function () use ($validated, $CabangKePusat) {
+                $CabangKePusat->update($validated);
             }, 3); // Maksimal 3 percobaan jika terjadi deadlock
 
             return response()->json([
                 'status' => true,
-                'message' => "Status pengiriman dengan kode: {$CabangKeToko->kode} ({$CabangKeToko->barang->nama_barang}) berhasil diperbarui.",
-                'data' => new CabangKePusatIndexResource($CabangKeToko),
+                'message' => $pesan,
+                'data' => new CabangKePusatIndexResource($CabangKePusat),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

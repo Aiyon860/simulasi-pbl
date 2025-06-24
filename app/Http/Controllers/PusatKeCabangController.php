@@ -29,11 +29,12 @@ class PusatKeCabangController extends Controller
             $pusatKeCabang = PusatKeCabang::select([
                 'id', 'kode', 'id_barang',
                 'id_cabang', 'jumlah_barang', 
-                'tanggal', 'id_status',
+                'tanggal', 'id_status', 'id_verifikasi',
             ])->with([
                 'cabang:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', '=', 1)
             ->get();
 
@@ -47,6 +48,7 @@ class PusatKeCabangController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -177,13 +179,14 @@ class PusatKeCabangController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_cabang', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_kurir', 'id_status', 'id_verifikasi',
             ]);
             
             $namaBarang = $pusatKeCabang->barang->nama_barang ?? 'Tidak diketahui';
@@ -249,7 +252,8 @@ class PusatKeCabangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
             $pusatKeCabang = PusatKeCabang::findOrFail($id);
@@ -261,14 +265,22 @@ class PusatKeCabangController extends Controller
                 ], 409); // Conflict
             }
 
-            $pusatKeCabang->update($validated);
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Pengiriman ke cabang dengan kode: {$pusatKeCabang->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status pengiriman ke cabang '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
 
-            $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko;
-            $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+            DB::transaction(function () use ($pusatKeCabang, $validated) {
+                $pusatKeCabang->update($validated); 
+            }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Status pengiriman ke cabang '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'",
+                'message' => $pesan,
                 'data' => new PusatKeCabangIndexResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {

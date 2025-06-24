@@ -30,11 +30,13 @@ class PenerimaanDiPusatController extends Controller
                 'id_asal_barang',
                 'jumlah_barang', 
                 'diterima',
-                'tanggal'
+                'tanggal',
+                'id_verifikasi',
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
+                'verifikasi:id,jenis_verifikasi',
             ])->where('flag', '=', 1)
             ->get();
 
@@ -46,6 +48,7 @@ class PenerimaanDiPusatController extends Controller
                 'Tanggal',
                 'Jenis Penerimaan',
                 'Sudah Diterima',
+                'Verifikasi',
             ];
 
             $opname = $request->attributes->get('opname_status');
@@ -158,6 +161,7 @@ class PenerimaanDiPusatController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'laporanPengiriman:id,kode',
                 'laporanRetur:id,kode',
+                'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
                 'id', 
                 'kode',
@@ -171,6 +175,7 @@ class PenerimaanDiPusatController extends Controller
                 'jumlah_barang', 
                 'diterima',
                 'tanggal',
+                'id_verifikasi'
             ]);
 
             return response()->json([
@@ -190,6 +195,10 @@ class PenerimaanDiPusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            $validated = $request->validate([
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
+            ]);
+
             $penerimaanDiPusat = PenerimaanDiPusat::with(
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
@@ -198,6 +207,7 @@ class PenerimaanDiPusatController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'laporanPengiriman:id,kode',
                 'laporanRetur:id,kode',
+                'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
                 'id', 
                 'kode',
@@ -211,15 +221,28 @@ class PenerimaanDiPusatController extends Controller
                 'jumlah_barang', 
                 'diterima',
                 'tanggal',
+                'id_verifikasi',
             ]);
 
-            DB::transaction(function () use ($penerimaanDiPusat) {
-                $penerimaanDiPusat->update(['diterima' => 1]);
+            $pesan = null;
+            $updatedFields = [];
+            if (isset($validated['id_verifikasi'])) {
+                $updatedFields = $validated;
+
+                $pesan = "Barang {$penerimaanDiPusat->barang->nama_barang} berhasil diverifikasi dengan kode laporan penerimaan di pusat: {$penerimaanDiPusat->kode}.";
+            } else {
+                $updatedFields = ['diterima' => 1];
+
+                $pesan = "Barang {$penerimaanDiPusat->barang->nama_barang} berhasil diterima dengan kode laporan penerimaan di pusat: {$penerimaanDiPusat->kode}";
+            }
+
+            DB::transaction(function () use ($penerimaanDiPusat, $updatedFields) {
+                $penerimaanDiPusat->update($updatedFields);
             }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Barang {$penerimaanDiPusat->barang->nama_barang} berhasil diterima dengan kode laporan penerimaan di pusat: {$penerimaanDiPusat->kode}",
+                'message' => $pesan,
                 'data' => new PenerimaanDiPusatShowResource($penerimaanDiPusat),
             ]);
         } catch (ValidationException $e) {

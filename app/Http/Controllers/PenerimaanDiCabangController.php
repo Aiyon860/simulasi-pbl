@@ -33,10 +33,12 @@ class PenerimaanDiCabangController extends Controller
                 'jumlah_barang', 
                 'tanggal',
                 'diterima',
+                'id_verifikasi',
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
                 'barang:id,nama_barang',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', '=', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
@@ -49,6 +51,7 @@ class PenerimaanDiCabangController extends Controller
                 'Tanggal',
                 'Jenis Penerimaan',
                 'Sudah Diterima',
+                'Verifikasi',
             ];
 
             $opname = $request->attributes->get('opname_status');
@@ -167,6 +170,7 @@ class PenerimaanDiCabangController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'laporanPengiriman:id,kode',
                 'laporanRetur:id,kode',
+                'verifikasi:id,jenis_verifikasi',
             ])->findOrFail($id, [
                 'id', 
                 'kode',
@@ -180,7 +184,8 @@ class PenerimaanDiCabangController extends Controller
                 'berat_satuan_barang',
                 'jumlah_barang', 
                 'diterima',
-                'tanggal'
+                'tanggal',
+                'id_verifikasi',
             ]);
 
             return response()->json([
@@ -206,6 +211,10 @@ class PenerimaanDiCabangController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            $validated = $request->validate([
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
+            ]);
+
             $penerimaanDiCabang = PenerimaanDiCabang::with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',
@@ -214,6 +223,7 @@ class PenerimaanDiCabangController extends Controller
                 'satuanBerat:id,nama_satuan_berat',
                 'laporanPengiriman:id,kode',
                 'laporanRetur:id,kode',
+                'verifikasi:id,jenis_verifikasi',
             ])->findOrFail($id, [
                 'id', 
                 'kode',
@@ -227,23 +237,36 @@ class PenerimaanDiCabangController extends Controller
                 'berat_satuan_barang',
                 'jumlah_barang', 
                 'diterima',
-                'tanggal'
+                'tanggal',
+                'id_verifikasi',
             ]);
 
-            DB::transaction(function () use ($penerimaanDiCabang) {
-                $penerimaanDiCabang->update(['diterima' => 1]);
+            $pesan = null;
+            $updatedFields = [];
+            if (isset($validated['id_verifikasi'])) {
+                $updatedFields = $validated;
+
+                $pesan = "Barang {$penerimaanDiCabang->barang->nama_barang} berhasil diverifikasi dengan kode laporan penerimaan di cabang: {$penerimaanDiCabang->kode}.";
+            } else {
+                $updatedFields = ['diterima' => 1];
+
+                $pesan = "Barang {$penerimaanDiCabang->barang->nama_barang} berhasil diterima dengan kode laporan penerimaan di cabang: {$penerimaanDiCabang->kode}";
+            }
+
+            DB::transaction(function () use ($penerimaanDiCabang, $updatedFields) {
+                $penerimaanDiCabang->update($updatedFields);
             }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Barang {$penerimaanDiCabang->barang->nama_barang} berhasil diterima dengan kode laporan penerimaan di cabang: {$penerimaanDiCabang->kode}",
+                'message' => $pesan,
                 'data' => new PenerimaanDiCabangShowResource($penerimaanDiCabang),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan untuk mengupdate data laporan penerimaan di cabang tidak valid.',
-                'errors' => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

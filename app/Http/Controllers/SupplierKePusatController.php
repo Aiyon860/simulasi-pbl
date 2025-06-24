@@ -31,14 +31,15 @@ class SupplierKePusatController extends Controller
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_kurir', 'id_status', 'verifikasi',
             ])->with([
                 'pusat:id,nama_gudang_toko', 
                 'supplier:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
@@ -206,23 +207,25 @@ class SupplierKePusatController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            $validated = $request->validate([
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
+            ]);
+
             $supplierKePusats = SupplierKePusat::with([
                 'pusat:id,nama_gudang_toko', 
                 'supplier:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_supplier', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status', 'flag'
-            ]);
-
-            $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_kurir', 'id_status', 'flag', 'id_verifikasi'
             ]);
 
             DB::transaction(function () use ($validated, $supplierKePusats) {

@@ -31,6 +31,8 @@ class SupplierKePusatIndexResource extends JsonResource
             'berat_satuan_barang' => (int) $this->berat_satuan_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
+            'id_verifikasi' => (int) $this->verifikasi->id,
+            'jenis_verifikasi' => $this->verifikasi->jenis_verifikasi,
         ];
     }
 }

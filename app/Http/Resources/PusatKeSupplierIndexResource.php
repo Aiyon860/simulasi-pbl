@@ -27,6 +27,8 @@ class PusatKeSupplierIndexResource extends JsonResource
             'status' => $this->status->nama_status,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
+            'id_verifikasi' => (int) $this->verifikasi->id,
+            'jenis_verifikasi' => $this->verifikasi->jenis_verifikasi,
         ];
     }
 }

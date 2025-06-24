@@ -31,7 +31,8 @@ class PenerimaanDiCabangController extends Controller
                 'id_jenis_penerimaan',
                 'id_asal_barang', 
                 'jumlah_barang', 
-                'tanggal'
+                'tanggal',
+                'diterima',
             ])->with([
                 'jenisPenerimaan:id,nama_jenis_penerimaan',
                 'asalBarang:id,nama_gudang_toko',

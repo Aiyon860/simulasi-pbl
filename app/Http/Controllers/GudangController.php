@@ -90,7 +90,7 @@ class GudangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

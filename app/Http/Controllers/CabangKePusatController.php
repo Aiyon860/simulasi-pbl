@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 use App\Models\Kurir;
 use App\Models\Barang;
 use App\Models\Status;
-use App\Models\SatuanBerat;
+use App\Helpers\CodeHelpers;
 use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\CabangKePusat;
@@ -14,8 +14,8 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\CabangKePusatShowResource;
 use App\Http\Resources\CabangKePusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -164,7 +164,7 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan untuk menambah laporan cabang ke pusat tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -204,7 +204,7 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Detail pengiriman dengan kode: {$cabangKePusat->kode} ({$cabangKePusat->barang->nama_barang}) berhasil ditemukan.",
-                'data' => new CabangKePusatIndexResource($cabangKePusat),
+                'data' => new CabangKePusatShowResource($cabangKePusat),
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -259,7 +259,7 @@ class CabangKePusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan untuk mengupdate laporan cabang ke pusat tidak valid.',
-                'error' => $e->getMessage()
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([

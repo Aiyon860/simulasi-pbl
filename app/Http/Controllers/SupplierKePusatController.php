@@ -155,7 +155,7 @@ class SupplierKePusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 422);
         } catch (\Throwable $th) {
             return response()->json([
@@ -241,7 +241,7 @@ class SupplierKePusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

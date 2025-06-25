@@ -7,9 +7,9 @@ use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
-use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\GudangCreateResource;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\DetailGudangEditResource;
 use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
@@ -114,7 +114,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang anda masukkan tidak valid',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -230,7 +230,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data yang anda masukkan tidak valid",
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

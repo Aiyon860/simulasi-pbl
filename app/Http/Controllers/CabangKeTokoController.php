@@ -166,7 +166,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Throwable $th) {
             return response()->json([
@@ -271,7 +271,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid. Mohon periksa kembali input Anda.',
-                'error' => $e->getMessage()
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([

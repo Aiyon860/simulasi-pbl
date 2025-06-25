@@ -140,7 +140,7 @@ class ProfileController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang dibutuhkan untuk mengupdate user tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

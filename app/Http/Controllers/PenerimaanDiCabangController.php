@@ -148,7 +148,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang dibutuhkan untuk laporan penerimaan di cabang yang diberikan tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422); // 422 Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([
@@ -266,7 +266,7 @@ class PenerimaanDiCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan untuk mengupdate data laporan penerimaan di cabang tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

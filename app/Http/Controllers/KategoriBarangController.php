@@ -80,8 +80,8 @@ class KategoriBarangController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Gagal menambahkan kategori barang. Silakan coba lagi.",
-                'error' => $e->getMessage(),
+                'message' => "Kategori barang ini sudah ada.",
+                'error' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -174,7 +174,7 @@ class KategoriBarangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Gagal memperbarui kategori barang. Silakan coba lagi.",
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

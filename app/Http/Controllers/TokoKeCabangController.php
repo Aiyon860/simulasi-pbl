@@ -244,7 +244,7 @@ class TokoKeCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'errors' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (ModelNotFoundException $e) {
             return response()->json([

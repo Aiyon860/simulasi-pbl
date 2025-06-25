@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\PenerimaanDiPusatBarangCreateResource;
 use App\Models\Barang;
 use App\Helpers\CodeHelpers;
 use Illuminate\Http\Request;
@@ -10,13 +9,14 @@ use App\Models\GudangDanToko;
 use App\Models\JenisPenerimaan;
 use App\Models\PenerimaanDiPusat;
 use Illuminate\Support\Facades\DB;
-use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\AsalBarangCreateResource;
 use App\Http\Resources\JenisPenerimaanCreateResource;
 use App\Http\Resources\PenerimaanDiPusatShowResource;
 use App\Http\Resources\PenerimaanDiPusatIndexResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Http\Resources\PenerimaanDiPusatBarangCreateResource;
 
 class PenerimaanDiPusatController extends Controller
 {
@@ -145,7 +145,7 @@ class PenerimaanDiPusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data yang dikirim tidak valid.",
-                'error' => $th->getMessage(),
+                'error' => $th->errors()
             ], 422);
         }
     }
@@ -249,7 +249,7 @@ class PenerimaanDiPusatController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan untuk mengupdate data laporan penerimaan di pusat tidak valid.',
-                'errors' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

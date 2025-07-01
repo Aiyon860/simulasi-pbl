@@ -28,6 +28,7 @@ class CabangKePusatIndexResource extends JsonResource
             'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
             'id_status' => (int) $this->id_status,
             'status' => $this->status->nama_status,
+            'id_verifikasi' => $this->id_verifikasi,
             'jenis_verifikasi' => $this->verifikasi->jenis_verifikasi,
         ];
     }

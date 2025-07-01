@@ -15,22 +15,23 @@ class GudangController extends Controller
     {
         try {
             $GudangDanToko = GudangDanToko::where('kategori_bangunan', 0)
+                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
                     'id',
                     'nama_gudang_toko',
                     'alamat',
                     'no_telepon',
-                    'flag'
+                    'flag',
                 ]);
 
-            $headings = $GudangDanToko->isEmpty() ? [] : array_keys($GudangDanToko->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                if ($heading === 'flag') {
-                    $heading = 'Status';
-                }
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "ID",
+                "Nama Gudang",
+                "Alamat",
+                "No telepon",
+                "Status"
+            ];
 
             return response()->json([
                 'status' => true,

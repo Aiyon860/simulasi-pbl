@@ -307,7 +307,8 @@ class PenerimaanDiCabangController extends Controller
                 'berat_satuan_barang',
                 'jumlah_barang', 
                 'diterima',
-                'tanggal'
+                'tanggal',
+                'flag',
             ]);
 
             if ($penerimaanDiCabang->flag == 0) {
@@ -334,7 +335,7 @@ class PenerimaanDiCabangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => "Terjadi kesalahan saat menonaktifkan Data Penerimaan Di Cabang.",
+                'message' => "Terjadi kesalahan saat menghapus Data Penerimaan Di Cabang.",
                 'error' => $e->getMessage(),
             ], 500);
         }

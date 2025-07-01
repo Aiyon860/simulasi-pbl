@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Observers\CabangKePusatObserver;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+
+#[ObservedBy([CabangKePusatObserver::class])]
 class CabangKePusat extends Model
 {
     /** @use HasFactory<\Database\Factories\KurirFactory> */
@@ -24,6 +29,7 @@ class CabangKePusat extends Model
         'id_cabang',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -56,5 +62,15 @@ class CabangKePusat extends Model
     public function satuanBerat(): BelongsTo
     {
         return $this->belongsTo(SatuanBerat::class, 'id_satuan_berat');
+    }
+
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
+
+    public function laporanRetur(): HasOne
+    {
+        return $this->hasOne(PenerimaanDiPusat::class, 'id_laporan_retur');
     }
 }

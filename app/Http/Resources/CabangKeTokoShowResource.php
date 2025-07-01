@@ -32,7 +32,8 @@ class CabangKeTokoShowResource extends JsonResource
             'status' => $this->status->nama_status,
             'berat_satuan_barang' => $this->berat_satuan_barang,
             'jumlah_barang' => $this->jumlah_barang,
-            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}"
+            'tanggal' => "{$day} {$month} {$tanggal->format('Y')}",
+            'jenis_verifikasi' => $this->verifikasi->jenis_verifikasi,
         ];
     }
 }

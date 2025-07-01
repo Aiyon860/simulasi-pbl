@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class SupplierKePusat extends Model
 {
     /** @use HasFactory<\Database\Factories\SupplierKePusatFactory> */
@@ -23,6 +25,7 @@ class SupplierKePusat extends Model
         'id_status',
         'id_kurir',
         'id_barang',
+        'id_verifikasi',
         'jumlah_barang',
         'berat_satuan_barang',
         'id_satuan_berat',
@@ -59,6 +62,13 @@ class SupplierKePusat extends Model
         return $this->belongsTo(SatuanBerat::class, 'id_satuan_berat');
     }
 
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
 
-
+    public function laporanPengiriman(): HasOne
+    {
+        return $this->hasOne(PenerimaanDiPusat::class, 'id_laporan_pengiriman');
+    }
 }

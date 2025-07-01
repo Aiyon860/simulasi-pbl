@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\CabangKeTokoObserver;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
+#[ObservedBy([CabangKeTokoObserver::class])]
 class CabangKeToko extends Model
 {
     /** @use HasFactory<\Database\Factories\CabangKeTokoFactory> */
@@ -25,6 +28,7 @@ class CabangKeToko extends Model
         'id_toko',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -58,5 +62,10 @@ class CabangKeToko extends Model
     public function status()
     {
         return $this->belongsTo(Status::class, 'id_status');
+    }
+
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
     }
 }

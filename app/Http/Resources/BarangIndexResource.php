@@ -18,6 +18,7 @@ class BarangIndexResource extends JsonResource
             'id' => (int) $this->id,
             'nama_barang' => $this->nama_barang,
             'kategori_barang' => $this->kategori->nama_kategori_barang,
+            'satuan_berat' => $this->satuanBerat->nama_satuan_berat,
         ];
     }
 }

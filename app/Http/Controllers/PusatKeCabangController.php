@@ -14,7 +14,7 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\PusatKeCabangShowResource;
 use App\Http\Resources\SatuanBeratCreateResource;
@@ -23,26 +23,23 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PusatKeCabangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $pusatKeCabang = PusatKeCabang::select([
                 'id', 'kode', 'id_barang',
-                'id_pusat', 'id_cabang', 
-                'id_satuan_berat', 'berat_satuan_barang', 
-                'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_cabang', 'jumlah_barang', 
+                'tanggal', 'id_status', 'id_verifikasi',
             ])->with([
-                'pusat:id,nama_gudang_toko', 
                 'cabang:id,nama_gudang_toko', 
                 'barang:id,nama_barang',
-                'kurir:id,nama_kurir', 
-                'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->where('flag', '=', 1)
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
+            $opname = $request->attributes->get('opname_status');
 
             $headings = [
                 'ID',
@@ -51,6 +48,7 @@ class PusatKeCabangController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -59,7 +57,8 @@ class PusatKeCabangController extends Controller
                 'data'=> [
                     'pusatKeCabangs' => PusatKeCabangIndexResource::collection($pusatKeCabang),
                     'statuses' => StatusResource::collection($statuses),
-                    
+                    'status_opname' => $opname,
+
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ]
@@ -76,7 +75,9 @@ class PusatKeCabangController extends Controller
     public function create()
     {
         try {
-            $barangs = Barang::select(['id', 'nama_barang'])->get();
+            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])
+                ->with('satuanBerat:id,nama_satuan_berat')
+                ->get();
             $cabang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('id', '!=', 1)
                 ->where('kategori_bangunan', '=', 0)
@@ -109,9 +110,7 @@ class PusatKeCabangController extends Controller
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
                 'jumlah_barang' => 'required|integer|min:1',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
             ]);
 
             $barang = DetailGudang::where('id_gudang', 1)   // gudang pusat
@@ -119,18 +118,26 @@ class PusatKeCabangController extends Controller
                 ->firstOrFail(['jumlah_stok']);
 
             if ($barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                    'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
+            ]);
 
             $currentTime = now();
 
             $pusatKeCabang = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generatePusatKeCabangCode($currentTime),
+                'kode' => CodeHelpers::generatePusatKeCabangCode($currentTime),
                 'id_pusat' => 1, 
                 'id_status' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]); 
 
@@ -152,7 +159,7 @@ class PusatKeCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage()
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([
@@ -172,13 +179,14 @@ class PusatKeCabangController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir', 
                 'satuanBerat:id,nama_satuan_berat', 
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
                 'id', 'kode', 'id_barang',
                 'id_pusat', 'id_cabang', 
                 'id_satuan_berat', 'berat_satuan_barang', 
                 'jumlah_barang', 'tanggal',
-                'id_kurir', 'id_status',
+                'id_kurir', 'id_status', 'id_verifikasi',
             ]);
             
             $namaBarang = $pusatKeCabang->barang->nama_barang ?? 'Tidak diketahui';
@@ -244,7 +252,8 @@ class PusatKeCabangController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
             $pusatKeCabang = PusatKeCabang::findOrFail($id);
@@ -256,14 +265,22 @@ class PusatKeCabangController extends Controller
                 ], 409); // Conflict
             }
 
-            $pusatKeCabang->update($validated);
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Pengiriman ke cabang dengan kode: {$pusatKeCabang->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status pengiriman ke cabang '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
 
-            $namaCabang = $pusatKeCabang->cabang->nama_gudang_toko;
-            $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+            DB::transaction(function () use ($pusatKeCabang, $validated) {
+                $pusatKeCabang->update($validated); 
+            }, 3);
 
             return response()->json([
                 'status' => true,
-                'message' => "Status pengiriman ke cabang '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'",
+                'message' => $pesan,
                 'data' => new PusatKeCabangIndexResource($pusatKeCabang),
             ]);
         } catch (ModelNotFoundException $e) {
@@ -276,7 +293,7 @@ class PusatKeCabangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage()
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([

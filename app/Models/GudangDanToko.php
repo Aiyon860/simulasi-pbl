@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\GudangDanTokoObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+#[ObservedBy([GudangDanTokoObserver::class])]
 class GudangDanToko extends Model
 {
     /** @use HasFactory<\Database\Factories\GudangFactory> */
@@ -68,5 +71,10 @@ class GudangDanToko extends Model
     public function asalPenerimaanDiCabang(): HasMany
     {
         return $this->hasMany(PenerimaanDiCabang::class, 'id_asal_barang');
+    }
+
+    public function gudangOpname(): HasMany
+    {
+        return $this->hasMany(DetailGudang::class, 'id_gudang');
     }
 }

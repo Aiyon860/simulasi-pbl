@@ -22,6 +22,14 @@ return new class extends Migration
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
 
+            $table->unsignedBigInteger('id_satuan_berat');
+            $table->foreign('id_satuan_berat')
+                ->references('id')
+                ->on('satuan_berats')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->integer('berat_satuan_barang');
             $table->integer('flag')->default(1);
 
             $table->timestamps();

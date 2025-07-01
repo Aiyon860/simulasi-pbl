@@ -62,6 +62,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(GudangDanToko::class, 'id_lokasi');
     }
 
+    public function trackLog(): BelongsTo
+    {
+        return $this->belongsTo(TrackLog::class, 'id_user');
+    }
+
     public function hasRole(...$roles): bool
     {
         foreach ($roles as $role) {

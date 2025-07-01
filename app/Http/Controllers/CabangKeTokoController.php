@@ -15,7 +15,7 @@ use App\Http\Resources\TokoCreateResource;
 use App\Http\Resources\KurirCreateResource;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\CabangCreateResource;
-use App\Helpers\ShippingAndReturnCodeHelpers;
+use App\Helpers\CodeHelpers;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\CabangKeTokoShowResource;
 use App\Http\Resources\CabangKeTokoIndexResource;
@@ -24,27 +24,29 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CabangKeTokoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $cabangKeToko = CabangKeToko::select([
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_verifikasi'
             ])->with([
                 'cabang:id,nama_gudang_toko,alamat,no_telepon',
                 'toko:id,nama_gudang_toko,alamat,no_telepon',
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])
             ->where('flag', 1)
             ->orderBy('tanggal', 'desc')
             ->get();
 
             $statuses = Status::select(['id', 'nama_status'])->get();
+            $opname = $request->attributes->get('opname_status');
 
             $headings = [
                 'ID',
@@ -53,6 +55,7 @@ class CabangKeTokoController extends Controller
                 'Jumlah Barang',
                 'Tanggal',
                 'Status',
+                'Verifikasi',
             ];
 
             return response()->json([
@@ -61,6 +64,7 @@ class CabangKeTokoController extends Controller
                 'data' => [
                     'cabangKeTokos' => CabangKeTokoIndexResource::collection($cabangKeToko),
                     'statuses' => StatusResource::collection($statuses),
+                    'status_opname' => $opname,                    
 
                     /** @var array<int, string> */
                     'headings' => $headings,
@@ -119,9 +123,7 @@ class CabangKeTokoController extends Controller
                 'id_cabang' => 'required|exists:gudang_dan_tokos,id',
                 'id_toko' => 'required|exists:gudang_dan_tokos,id',
                 'id_barang' => 'required|exists:barangs,id',
-                'id_satuan_berat' => 'required|exists:satuan_berats,id',
                 'id_kurir' => 'required|exists:kurirs,id',
-                'berat_satuan_barang' => 'required|numeric|min:1',
                 'jumlah_barang' => 'required|integer|min:1',
             ]);
 
@@ -130,17 +132,25 @@ class CabangKeTokoController extends Controller
                 ->first();
 
             if (!$barang || $barang->jumlah_stok < $request->jumlah_barang) {
+                $namaBarang = $barang?->barang?->nama_barang ?? 'Barang tidak ditemukan';
+                $stokTersedia = $barang?->jumlah_stok ?? 0;
                 return response()->json([
                     'status' => false,
-                    'message' => 'Jumlah stok tidak mencukupi untuk dikirim.',
+                    'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
                 ], 409);
             }
+
+            $barangGeneral = Barang::findOrFail($request->id_barang, [
+                'id', 'id_satuan_berat', 'berat_satuan_barang'
+            ]);
 
             $currentTime = now();
 
             $cabangKeToko = array_merge($validated, [
-                'kode' => ShippingAndReturnCodeHelpers::generateCabangKeTokoCode($currentTime),
+                'kode' => CodeHelpers::generateCabangKeTokoCode($currentTime),
                 'id_status' => 1,
+                'id_satuan_berat' => $barangGeneral->id_satuan_berat,
+                'berat_satuan_barang' => $barangGeneral->berat_satuan_barang,
                 'tanggal' => $currentTime,
             ]);
 
@@ -156,7 +166,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Throwable $th) {
             return response()->json([
@@ -176,12 +186,13 @@ class CabangKeTokoController extends Controller
                 'barang:id,nama_barang',
                 'kurir:id,nama_kurir',
                 'satuanBerat:id,nama_satuan_berat',
-                'status:id,nama_status'
+                'status:id,nama_status',
+                'verifikasi:id,jenis_verifikasi'
             ])->findOrFail($id, [
                 'id', 'kode', 'id_cabang',
                 'id_toko', 'id_barang', 'id_satuan_berat',
                 'id_kurir', 'id_status', 'berat_satuan_barang',
-                'jumlah_barang', 'tanggal'
+                'jumlah_barang', 'tanggal', 'id_verifikasi'
             ]);
 
             // Gunakan 'kode' atau atribut lain yang lebih deskriptif
@@ -211,7 +222,8 @@ class CabangKeTokoController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id_status' => 'required|exists:statuses,id',
+                'id_status' => 'nullable|exists:statuses,id',
+                'id_verifikasi' => 'nullable|exists:verifikasi,id',
             ]);
 
             $cabangKeToko = CabangKeToko::findOrFail($id);
@@ -230,11 +242,23 @@ class CabangKeTokoController extends Controller
                 ], 409); // Conflict
             }
 
-            $cabangKeToko->update($validated);
+            $pesan = null;
+            if (isset($validated['id_verifikasi'])) {
+                $pesan = "Pengiriman ke toko dengan kode: {$cabangKeToko->kode} berhasil diverifikasi.";
+            } else if (isset($validated['id_status'])) {
+                $namaCabang = $cabangKeToko->cabang->nama_gudang_toko;
+                $namaStatusBaru = Status::find($validated['id_status'])->nama_status;
+                $pesan = "Status pengiriman ke toko '{$namaCabang}' telah diperbarui menjadi '{$namaStatusBaru}'";
+            }
+
+            DB::transaction(function () use ($cabangKeToko, $validated) {
+                $cabangKeToko->update($validated);
+            }, 3); // Maksimal 3 percobaan jika terjadi deadlock
+
 
             return response()->json([
                 'status' => true,
-                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan ID: {$id}",
+                'message' => "Berhasil memperbarui status pengiriman dari Cabang Ke Toko dengan kode: {$identifier}",
                 'data' => new CabangKeTokoIndexResource($cabangKeToko),
             ]);
         } catch (ModelNotFoundException $e) {
@@ -247,7 +271,7 @@ class CabangKeTokoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid. Mohon periksa kembali input Anda.',
-                'error' => $e->getMessage()
+                'error' => $e->errors()
             ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
             return response()->json([

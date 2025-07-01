@@ -255,7 +255,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang diberikan tidak valid.',
-                'error' => $e->getMessage(),
+                'error' => $e->errors()
             ], 422);
         } catch (ModelNotFoundException $e) {
             return response()->json([

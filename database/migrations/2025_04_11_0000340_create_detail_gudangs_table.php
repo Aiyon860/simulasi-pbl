@@ -26,13 +26,7 @@ return new class extends Migration
                 ->on('barangs')
                 ->cascadeOnUpdate();
 
-            $table->unsignedBigInteger('id_satuan_berat');
-            $table->foreign('id_satuan_berat')
-                ->references('id')
-                ->on('satuan_berats')
-                ->cascadeOnUpdate();
-
-            $table->bigInteger('jumlah_stok');
+            $table->bigInteger('jumlah_stok')->default(0);
             $table->integer('stok_opname')->default(0);
             $table->integer('flag')->default(1);
 

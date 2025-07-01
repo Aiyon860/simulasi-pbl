@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Models;
+use App\Observers\PusatKeSupplierObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+
+#[ObservedBy([PusatKeSupplierObserver::class])]
 class PusatKeSupplier extends Model
 {
     use HasFactory,SoftDeletes;
@@ -22,6 +25,7 @@ class PusatKeSupplier extends Model
         'id_supplier',
         'id_barang',
         'id_satuan_berat',
+        'id_verifikasi',
         'berat_satuan_barang',
         'jumlah_barang',
         'tanggal',
@@ -53,4 +57,8 @@ class PusatKeSupplier extends Model
         return $this->belongsTo(Status::class, 'id_status');
     }   
 
+    public function verifikasi(): BelongsTo
+    {
+        return $this->belongsTo(Verifikasi::class, 'id_verifikasi');
+    }
 }

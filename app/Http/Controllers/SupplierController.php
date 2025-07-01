@@ -22,10 +22,12 @@ class SupplierController extends Controller
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
 
-            $headings = $suppliers->isEmpty() ? [] : array_keys($suppliers->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "ID",
+                "Nama Supplier",
+                "Alamat",
+                "No Telepon"
+            ];
 
             return response()->json([
                 'status' => true,

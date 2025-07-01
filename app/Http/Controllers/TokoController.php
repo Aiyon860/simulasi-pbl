@@ -22,10 +22,12 @@ class TokoController extends Controller
                     'id', 'nama_gudang_toko', 'alamat', 'no_telepon'
                 ]);
 
-            $headings = $tokos->isEmpty() ? [] : array_keys($tokos->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "ID",
+                "Nama Toko",
+                "Alamat", 
+                "No Telepon"
+            ];
 
             return response()->json([
                 'status' => true,

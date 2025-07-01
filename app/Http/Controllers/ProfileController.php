@@ -20,19 +20,19 @@ class ProfileController extends Controller
     public function show(string $id)
     {
         try {
-            if (auth()->user()->id != $id) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Akses tidak sah',
-                ], 403);
-            }
-
             $user = User::with([
                 'role:id,nama_role', 
                 'lokasi:id,nama_gudang_toko'
             ])->findOrFail($id, [
                 'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
             ]);
+
+            if (auth()->user()->id != $id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Akses tidak sah',
+                ], 403);
+            }
 
             return response()->json([
                 'status' => true,
@@ -43,6 +43,7 @@ class ProfileController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Pengguna yang dicari tidak ditemukan.",
+                'error' => $e->getMessage()
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -56,6 +57,12 @@ class ProfileController extends Controller
     public function edit(string $id)
     {
         try {
+            $user = User::with([
+                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
+            ])->findOrFail($id, [
+                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+            ]);
+
             if (auth()->user()->id != $id) {
                 return response()->json([
                     'status' => false,
@@ -63,11 +70,6 @@ class ProfileController extends Controller
                 ], 403);
             }
 
-            $user = User::with([
-                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
-            ])->findOrFail($id, [
-                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
-            ]);
             $roles = Role::select(['id', 'nama_role'])->get();
             $lokasis = GudangDanToko::select(['id', 'nama_gudang_toko'])->get();
 
@@ -84,6 +86,7 @@ class ProfileController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data Pengguna yang dicari tidak ditemukan.",
+                'error' => $e->getMessage()
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
@@ -97,6 +100,13 @@ class ProfileController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            
+            $user = User::with([
+                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
+                ])->findOrFail($id, [
+                    'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
+                ]);
+                
             if (auth()->user()->id != $id) {
                 return response()->json([
                     'status' => false,
@@ -104,15 +114,9 @@ class ProfileController extends Controller
                 ], 403);
             }
 
-            $user = User::with([
-                'role:id,nama_role', 'lokasi:id,nama_gudang_toko'
-            ])->findOrFail($id, [
-                'id', 'nama_user', 'email', 'id_role', 'id_lokasi', 'flag'
-            ]);
-
             $rules = [
-                'nama_user' => 'required|string|max:255',
-                'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'nama_user' => 'nullable|string|max:255',
+                'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
                 'id_role' => 'nullable|exists:roles,id',
                 'id_lokasi' => 'nullable|exists:gudang_dan_tokos,id',
             ];

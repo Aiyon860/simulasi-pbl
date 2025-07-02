@@ -131,7 +131,7 @@ class PusatKeSupplierController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => "Stok untuk barang {$namaBarang} tidak mencukupi. Diminta: {$request->jumlah_barang}, Tersedia: $stokTersedia.",
-                ], 409);
+                ], status: 409);
             }
 
             $barangGeneral = Barang::findOrFail($request->id_barang, [

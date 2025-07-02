@@ -15,7 +15,6 @@ class GudangController extends Controller
     {
         try {
             $GudangDanToko = GudangDanToko::where('kategori_bangunan', 0)
-                ->where('flag', '=', 1)
                 ->orderBy('id')
                 ->get([
                     'id',

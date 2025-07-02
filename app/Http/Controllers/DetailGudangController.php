@@ -20,15 +20,20 @@ class DetailGudangController extends Controller
     public function index(Request $request)
     {
         try{
-            $detailGudang = DetailGudang::select([
+            $data = DetailGudang::select([
                 'id', 'id_barang', 'id_gudang',
                 'jumlah_stok', 'stok_opname'
             ])
             ->with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
-            ])->where('id_gudang', $request->user()->lokasi->id)
-            ->orderBy('stok_opname', 'asc')
+            ]);
+
+            if ($request->user()->lokasi->id != 1) {
+                $data->where('id_gudang', $request->user()->lokasi->id);
+            }
+
+            $detailGudang = $data->orderBy('stok_opname', 'asc')
             ->get();
 
             $headings = $detailGudang->isEmpty() ? [] : array_keys($detailGudang->first()->getAttributes());

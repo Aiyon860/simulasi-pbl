@@ -7,9 +7,9 @@ use App\Models\DetailGudang;
 use Illuminate\Http\Request;
 use App\Models\GudangDanToko;
 use Illuminate\Support\Facades\DB;
+use Dotenv\Exception\ValidationException;
 use App\Http\Resources\BarangCreateResource;
 use App\Http\Resources\GudangCreateResource;
-use Illuminate\Validation\ValidationException;
 use App\Http\Resources\DetailGudangEditResource;
 use App\Http\Resources\DetailGudangShowResource;
 use App\Http\Resources\DetailGudangIndexResource;
@@ -20,15 +20,20 @@ class DetailGudangController extends Controller
     public function index(Request $request)
     {
         try{
-            $detailGudang = DetailGudang::select([
+            $data = DetailGudang::select([
                 'id', 'id_barang', 'id_gudang',
                 'jumlah_stok', 'stok_opname'
             ])
             ->with([
                 'barang:id,nama_barang',
                 'gudang:id,nama_gudang_toko',
-            ])->where('id_gudang', $request->user()->lokasi->id)
-            ->orderBy('stok_opname', 'asc')
+            ]);
+
+            if ($request->user()->lokasi->id != 1) {
+                $data->where('id_gudang', $request->user()->lokasi->id);
+            }
+
+            $detailGudang = $data->orderBy('stok_opname', 'asc')
             ->get();
 
             $headings = $detailGudang->isEmpty() ? [] : array_keys($detailGudang->first()->getAttributes());
@@ -36,15 +41,11 @@ class DetailGudangController extends Controller
                 return str_replace('_', ' ', ucfirst($heading));
             }, $headings);
 
-            $opname = $request->attributes->get('opname_status');
-
             return response()->json([
                 'status' => true,
                 'message' => 'Data Barang Gudang',
                 'data' => [
                     'detailGudangs' => DetailGudangIndexResource::collection($detailGudang),
-                    'status_opname' => $opname,                    
-
                     /** @var array<int, string> */
                     'headings' => $headings,
                 ]
@@ -93,6 +94,7 @@ class DetailGudangController extends Controller
         $validated = $request->validate([
             'id_barang' => 'required|exists:barangs,id',
             'id_gudang' => 'required|exists:gudang_dan_tokos,id',
+            'jumlah_stok' => 'required|integer|min:0',
         ]);
 
         try {
@@ -104,17 +106,11 @@ class DetailGudangController extends Controller
                 'status' => true,
                 'message' => 'Data Barang Gudang berhasil ditambahkan',
             ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data Barang Gudang tidak ditemukan',
-                'error' => $e->getMessage(),
-            ], 404);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data yang anda masukkan tidak valid',
-                'error' => $e->errors()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -133,8 +129,7 @@ class DetailGudangController extends Controller
                 'barang.satuanBerat:id,nama_satuan_berat',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
-                'id', 'id_barang', 
-                'id_gudang', 'jumlah_stok',
+                'id', 'id_barang', 'id_gudang', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
 
@@ -166,11 +161,10 @@ class DetailGudangController extends Controller
                 'barang.satuanBerat:id,nama_satuan_berat',
                 'gudang:id,nama_gudang_toko',
             ])->findOrFail($id, [
-                'id', 'id_barang', 
-                'id_gudang', 'jumlah_stok',
+                'id', 'id_barang', 'id_gudang', 'jumlah_stok',
                 'stok_opname', 'flag'
             ]);
-            $barangs = Barang::select(['id', 'nama_barang', 'id_satuan_berat'])->get();
+            $barangs = Barang::select(['id', 'nama_barang'])->get();
             $gudang = GudangDanToko::select(['id', 'nama_gudang_toko'])
                 ->where('kategori_bangunan', '=', 0)
                 ->get();
@@ -202,9 +196,9 @@ class DetailGudangController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'id_barang' => 'required|exists:barangs,id',
-            'id_gudang' => 'required|exists:gudang_dan_tokos,id',
-            'jumlah_stok' => 'required|integer|min:1',
+            'id_barang' => 'nullable|exists:barangs,id',
+            'id_gudang' => 'nullable|exists:gudang_dan_tokos,id',
+            'jumlah_stok' => 'nullable|integer|min:1',
             'stok_opname' => 'nullable|integer|min:0|max:1', // Ditambahkan nullable agar tidak selalu wajib diisi
         ]);
 
@@ -230,7 +224,7 @@ class DetailGudangController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Data yang anda masukkan tidak valid",
-                'error' => $e->errors()
+                'error' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

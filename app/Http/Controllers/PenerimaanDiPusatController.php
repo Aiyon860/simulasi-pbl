@@ -24,11 +24,11 @@ class PenerimaanDiPusatController extends Controller
     {
         try {
             $penerimaanDiPusat = PenerimaanDiPusat::select([
-                'id', 
+                'id',
                 'id_barang',
-                'id_jenis_penerimaan', 
+                'id_jenis_penerimaan',
                 'id_asal_barang',
-                'jumlah_barang', 
+                'jumlah_barang',
                 'diterima',
                 'tanggal',
                 'id_verifikasi',
@@ -163,16 +163,16 @@ class PenerimaanDiPusatController extends Controller
                 'laporanRetur:id,kode',
                 'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
-                'id', 
+                'id',
                 'kode',
                 'id_barang',
-                'id_jenis_penerimaan', 
+                'id_jenis_penerimaan',
                 'id_asal_barang',
-                'id_satuan_berat', 
+                'id_satuan_berat',
                 'id_laporan_pengiriman',
                 'id_laporan_retur',
                 'berat_satuan_barang',
-                'jumlah_barang', 
+                'jumlah_barang',
                 'diterima',
                 'tanggal',
                 'id_verifikasi'
@@ -189,6 +189,12 @@ class PenerimaanDiPusatController extends Controller
                 'message' => "Data Penerimaan Di Pusat tidak ditemukan.",
                 'error' => $th->getMessage(),
             ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => "Terjadi kesalahan saat mengambil data Penerimaan Di Pusat.",
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -209,16 +215,16 @@ class PenerimaanDiPusatController extends Controller
                 'laporanRetur:id,kode',
                 'verifikasi:id,jenis_verifikasi',
             )->findOrFail($id, [
-                'id', 
+                'id',
                 'kode',
                 'id_barang',
-                'id_jenis_penerimaan', 
+                'id_jenis_penerimaan',
                 'id_asal_barang',
-                'id_satuan_berat', 
+                'id_satuan_berat',
                 'id_laporan_pengiriman',
                 'id_laporan_retur',
                 'berat_satuan_barang',
-                'jumlah_barang', 
+                'jumlah_barang',
                 'diterima',
                 'tanggal',
                 'id_verifikasi',
@@ -278,18 +284,19 @@ class PenerimaanDiPusatController extends Controller
                 'laporanPengiriman:id,kode',
                 'laporanRetur:id,kode',
             )->findOrFail($id, [
-                'id', 
+                'id',
                 'kode',
                 'id_barang',
-                'id_jenis_penerimaan', 
+                'id_jenis_penerimaan',
                 'id_asal_barang',
-                'id_satuan_berat', 
+                'id_satuan_berat',
                 'id_laporan_pengiriman',
                 'id_laporan_retur',
                 'berat_satuan_barang',
-                'jumlah_barang', 
+                'jumlah_barang',
                 'diterima',
                 'tanggal',
+                'flag',
             ]);
 
             if ($penerimaanDiPusat->flag == 0) {

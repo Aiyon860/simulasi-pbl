@@ -32,10 +32,12 @@ class UserController extends Controller
                 'id', 'nama_user', 'email', 'id_role'
             ]);
 
-            $headings = $users->isEmpty() ? [] : array_keys($users->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "NO",
+                "Nama User",
+                "Email",
+                "Role",
+            ];
 
             return response()->json([
                 'status' => true,

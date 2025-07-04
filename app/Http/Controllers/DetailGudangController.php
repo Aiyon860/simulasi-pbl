@@ -36,10 +36,13 @@ class DetailGudangController extends Controller
             $detailGudang = $data->orderBy('stok_opname', 'asc')
             ->get();
 
-            $headings = $detailGudang->isEmpty() ? [] : array_keys($detailGudang->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "NO",
+                "Nama Barang",
+                "Nama Gudang",
+                "Jumlah Stok",
+                "Stok Opname"
+            ];
 
             return response()->json([
                 'status' => true,

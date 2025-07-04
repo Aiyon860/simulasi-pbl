@@ -12,12 +12,10 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CabangKeTokoController;
 use App\Http\Controllers\DetailGudangController;
-use App\Http\Controllers\TokoKeCabangController;
 use App\Http\Controllers\CabangKePusatController;
 use App\Http\Controllers\PusatKeCabangController;
 use App\Http\Controllers\KategoriBarangController;
 use App\Http\Controllers\PusatKeSupplierController;
-use App\Http\Controllers\SupplierKePusatController;
 use App\Http\Controllers\PenerimaanDiPusatController;
 use App\Http\Controllers\PenerimaanDiCabangController;
 
@@ -46,8 +44,6 @@ Route::middleware(['jwt'])->group(function () {
         
             Route::resource('cabang-ke-tokos', CabangKeTokoController::class);
         
-            Route::resource('supplier-ke-pusats', SupplierKePusatController::class);
-        
             Route::resource('penerimaan-di-pusats', PenerimaanDiPusatController::class);
         
             Route::resource('detail-gudangs', DetailGudangController::class);
@@ -55,8 +51,6 @@ Route::middleware(['jwt'])->group(function () {
             Route::resource('pusat-ke-cabangs', PusatKeCabangController::class);
         
             Route::resource('penerimaan-di-cabangs', PenerimaanDiCabangController::class);
-        
-            Route::resource('toko-ke-cabangs', TokoKeCabangController::class);
         });
     });
     

@@ -23,7 +23,7 @@ class TokoController extends Controller
                 ]);
 
             $headings = [
-                "ID",
+                "NO",
                 "Nama Toko",
                 "Alamat", 
                 "No Telepon"
@@ -39,6 +39,7 @@ class TokoController extends Controller
                     'headings' => $headings,
                 ]
             ]);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

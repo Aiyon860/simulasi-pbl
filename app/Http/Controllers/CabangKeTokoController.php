@@ -49,7 +49,7 @@ class CabangKeTokoController extends Controller
             $opname = $request->attributes->get('opname_status');
 
             $headings = [
-                'ID',
+                'NO',
                 'Nama Barang',
                 'Tujuan',
                 'Jumlah Barang',

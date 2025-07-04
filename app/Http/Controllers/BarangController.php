@@ -27,7 +27,7 @@ class BarangController extends Controller
             ->get();
 
             $headings = [
-                'ID',
+                'NO',
                 'Nama Barang',
                 'Kategori Barang',
                 'Satuan Berat'

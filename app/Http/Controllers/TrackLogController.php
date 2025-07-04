@@ -19,7 +19,10 @@ class TrackLogController extends Controller
         ->get();
 
         $headings = [
-            'ID', 'Nama User', 'Aktivitas', 'Tanggal Aktivitas',
+            'NO', 
+            'Nama User', 
+            'Aktivitas', 
+            'Tanggal Aktivitas',
         ];
 
         return response()->json([

@@ -41,7 +41,7 @@ class PenerimaanDiPusatController extends Controller
             ->get();
 
             $headings = [
-                'ID',
+                'NO',
                 'Nama Barang',
                 'Asal Barang',
                 'Jumlah Barang',

@@ -23,7 +23,7 @@ class SupplierController extends Controller
                 ]);
 
             $headings = [
-                "ID",
+                "NO",
                 "Nama Supplier",
                 "Alamat",
                 "No Telepon"

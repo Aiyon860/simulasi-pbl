@@ -22,10 +22,10 @@ class KategoriBarangController extends Controller
             ->orderBy('id')
             ->get();
 
-            $headings = $categories->isEmpty() ? [] : array_keys($categories->first()->getAttributes());
-            $headings = array_map(function ($heading) {
-                return str_replace('_', ' ', ucfirst($heading));
-            }, $headings);
+            $headings = [
+                "NO",
+                "Nama Kategori Barang",
+            ];
 
             return response()->json([
                 'status' => true,
@@ -201,6 +201,14 @@ class KategoriBarangController extends Controller
                     'status' => false,
                     'message' => "Kategori barang {$category->nama_kategori_barang} sudah dinonaktifkan sebelumnya."
                 ]);
+            }
+
+            // Cek apakah kategori sudah memiliki barang terkait
+            if ($category->barangs()->count() > 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Kategori barang {$category->nama_kategori_barang} tidak dapat dinonaktifkan karena sudah tersambung dengan barang di gudang.",
+                ], 409); // 409 Conflict
             }
 
             DB::transaction(function () use ($category) {

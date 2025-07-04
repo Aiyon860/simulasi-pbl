@@ -25,7 +25,7 @@ class GudangController extends Controller
                 ]);
 
             $headings = [
-                "ID",
+                "NO",
                 "Nama Gudang",
                 "Alamat",
                 "No telepon",
